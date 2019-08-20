@@ -15,6 +15,3 @@ shell:
 
 build:
 	docker-compose build
-
-server:
-	flask run
