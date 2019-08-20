@@ -1,0 +1,9 @@
+version: '3'
+services:
+  dashboard:
+    build: .
+    volumes:
+      - .:/usr/src/app
+    command: flask run --host 0.0.0.0
+    ports:
+    - "5000:5000"
