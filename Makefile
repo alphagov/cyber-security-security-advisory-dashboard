@@ -13,5 +13,5 @@ run:
 shell:
 	docker-compose run dashboard sh
 
-build:
+rebuild:
 	docker-compose build
