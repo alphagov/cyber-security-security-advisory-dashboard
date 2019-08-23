@@ -34,16 +34,18 @@ def route_home():
     vulnerable_count = len(vulnerable_list)
     vulnerable_by_severity = stats.collate_vulnerable_by_severity(vulnerable_list)
     severity_counts = stats.count_types(vulnerable_by_severity)
+    severities = stats.get_severity_order()
 
     template_data = {
         "repositories": {
-            "all_repositories": repo_count,
+            "all": repo_count,
             "by_status": status_counts
         },
         "vulnerable": {
-            "all_vulnerable": vulnerable_count,
+            "severities": severities,
+            "all": vulnerable_count,
             "by_severity": severity_counts
         }
     }
 
-    return render_template("debug.html", data=template_data)
+    return render_template("summary.html", data=template_data)

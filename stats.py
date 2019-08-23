@@ -3,12 +3,16 @@ from addict import Dict
 
 class RepositorySummarizer():
 
-    _repositories_by_status = {
-        "public": [],
-        "private": [],
-        "archived": [],
-        "disabled": []
-    }
+    _repositories_by_status = {}
+
+    @classmethod
+    def reset(cls):
+        cls._repositories_by_status = {
+            "public": [],
+            "private": [],
+            "archived": [],
+            "disabled": []
+        }
 
     @classmethod
     def _get_status(cls, repo):
@@ -27,6 +31,7 @@ class RepositorySummarizer():
 
     @classmethod
     def collate_by_status(cls, repositories):
+        cls.reset()
         [cls._get_status(repo) for repo in repositories]
         return Dict(cls._repositories_by_status)
 
@@ -40,6 +45,10 @@ class VulnerabilitySummarizer():
         "HIGH",
         "CRITICAL"
     ]
+
+    @classmethod
+    def get_severity_order(cls):
+        return cls._severities
 
     @classmethod
     def _get_severity(cls, repo):
@@ -67,6 +76,7 @@ class VulnerabilitySummarizer():
 
     @classmethod
     def collate_by_severity(cls, repositories):
+        cls._vulnerable_by_severity = {}
         [cls._get_severity(repository) for repository in repositories]
         return Dict(cls._vulnerable_by_severity)
 
@@ -83,3 +93,6 @@ def count_types(categories):
     for category,list in categories.items():
         counts[category] = len(list)
     return counts
+
+def get_severity_order():
+    return VulnerabilitySummarizer.get_severity_order()
