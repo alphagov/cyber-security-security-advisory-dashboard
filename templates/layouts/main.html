@@ -17,14 +17,14 @@
   <link rel="apple-touch-icon" href="/assets/images/govuk-apple-touch-icon.png">
 
   <!--[if !IE 8]><!-->
-  <link href="/assets/govuk-frontend-3.0.0.min.css" rel="stylesheet" />
+  <link href="/assets/all.css" rel="stylesheet" />
   <!--<![endif]-->
 
   <!--[if IE 8]>
-  <link href="/static/govuk-frontend-ie8-3.0.0.min.css" rel="stylesheet" />
+  <link href="/assets/all-ie8.css" rel="stylesheet" />
   <![endif]-->
 
-  <meta property="og:image" content="/static/assets/images/govuk-opengraph-image.png">
+  <meta property="og:image" content="/assets/images/govuk-opengraph-image.png">
 </head>
 
 <body class="govuk-template__body ">
@@ -53,14 +53,7 @@
     </div>
   </header>
 
-  <div class="govuk-width-container">
-    <main class="govuk-main-wrapper " id="main-content" role="main">
-      <h1 class="govuk-heading-xl">Dashboard</h1>
-      <div class="govuk-body">
-        {{data}}
-      </div>
-    </main>
-  </div>
+  {% block content %}{% endblock %}
 
   <footer class="govuk-footer " role="contentinfo">
     <div class="govuk-width-container ">
@@ -82,7 +75,7 @@
     </div>
   </footer>
 
-  <script src="/assets/govuk-frontend-3.0.0.min.js"></script>
+  <script src="/assets/dist.body.js"></script>
   <script>
     window.GOVUKFrontend.initAll()
 
