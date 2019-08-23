@@ -1,8 +1,11 @@
 query {
   organization(login:"alphagov") {
-    repositories(first:{{nth}}) {
+    repositories(first:{{nth}}{{", after:\""+after+"\"" if after}}) {
       nodes {
         name
+        isArchived
+        isPrivate
+        isDisabled
         vulnerabilityAlerts(first:10) {
           edges {
             node {
@@ -13,7 +16,7 @@ query {
               securityAdvisory {
                 id
                 summary
-                vulnerabilities(first:10{{", after:"+after if after}}) {
+                vulnerabilities(first:10) {
                   edges {
                     node {
                       package {
@@ -34,6 +37,10 @@ query {
           }
         }
       }
+      pageInfo {
+       endCursor
+       hasNextPage
+     }
     }
   }
 }
