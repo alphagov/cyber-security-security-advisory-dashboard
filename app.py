@@ -50,7 +50,8 @@ def cronable_audit():
             "vulnerable": {
                 "severities": severities,
                 "all": vulnerable_count,
-                "by_severity": severity_counts
+                "by_severity": severity_counts,
+                "repositories": vulnerable_by_severity
             }
         }
 
