@@ -5,3 +5,5 @@ __pycache__/
 .idea
 build/node_modules
 static
+output/*
+!output/README.md
