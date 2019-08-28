@@ -1,18 +1,10 @@
 from addict import Dict
 
 
-def reset():
-    _repositories_by_status = {
-        "public": [],
-        "private": [],
-        "archived": [],
-        "disabled": [],
-    }
-
-    return _repositories_by_status
+STATUSES = ["public", "private", "archived", "disabled"]
 
 
-def _get_status(repo):
+def get_status(repo):
     if repo.isArchived:
         status = "archived"
     elif repo.isDisabled:
@@ -25,7 +17,9 @@ def _get_status(repo):
     return status
 
 
-def collate_by_status(repositories):
-    _repositories_by_status = reset()
-    [_repositories_by_status[_get_status(repo)].append(repo) for repo in repositories]
-    return Dict(_repositories_by_status)
+def group_by_status(repositories):
+    repositories_by_status = Dict({status: [] for status in STATUSES})
+    for repo in repositories:
+        status = get_status(repo)
+        repositories_by_status[status].append(repo)
+    return repositories_by_status

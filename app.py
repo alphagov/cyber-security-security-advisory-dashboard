@@ -30,9 +30,7 @@ def cronable_audit():
             cursor = page.organization.repositories.pageInfo.endCursor
 
         repo_count = len(repository_list)
-        repositories_by_status = repository_summarizer.collate_by_status(
-            repository_list
-        )
+        repositories_by_status = repository_summarizer.group_by_status(repository_list)
         status_counts = stats.count_types(repositories_by_status)
 
         vulnerable_list = [
@@ -41,11 +39,11 @@ def cronable_audit():
             if node.vulnerabilityAlerts.edges
         ]
         vulnerable_count = len(vulnerable_list)
-        vulnerable_by_severity = vulnerability_summarizer.collate_by_severity(
+        vulnerable_by_severity = vulnerability_summarizer.group_by_severity(
             vulnerable_list
         )
         severity_counts = stats.count_types(vulnerable_by_severity)
-        severities = vulnerability_summarizer.get_severity_order()
+        severities = vulnerability_summarizer.SEVERITIES
 
         template_data = {
             "repositories": {"all": repo_count, "by_status": status_counts},
