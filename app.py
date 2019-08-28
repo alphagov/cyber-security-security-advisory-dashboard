@@ -1,7 +1,10 @@
 from flask import Flask
 from flask import render_template
 
+
 import pgraph
+import repository_summarizer
+import vulnerability_summarizer
 import stats
 
 app = Flask(__name__, static_url_path="/assets")
@@ -25,16 +28,16 @@ def route_home():
         cursor = page.organization.repositories.pageInfo.endCursor
 
     repo_count = len(repository_list)
-    repositories_by_status = stats.collate_repositories_by_status(repository_list)
+    repositories_by_status = repository_summarizer.collate_by_status(repository_list)
     status_counts = stats.count_types(repositories_by_status)
 
     vulnerable_list = [
         node for node in repositories_by_status.public if node.vulnerabilityAlerts.edges
     ]
     vulnerable_count = len(vulnerable_list)
-    vulnerable_by_severity = stats.collate_vulnerable_by_severity(vulnerable_list)
+    vulnerable_by_severity = vulnerability_summarizer.collate_by_severity(vulnerable_list)
     severity_counts = stats.count_types(vulnerable_by_severity)
-    severities = stats.get_severity_order()
+    severities = vulnerability_summarizer.get_severity_order()
 
     template_data = {
         "repositories": {
