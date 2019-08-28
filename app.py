@@ -31,28 +31,31 @@ def cronable_audit():
             cursor = page.organization.repositories.pageInfo.endCursor
 
         repo_count = len(repository_list)
-        repositories_by_status = repository_summarizer.collate_by_status(repository_list)
+        repositories_by_status = repository_summarizer.collate_by_status(
+            repository_list
+        )
         status_counts = stats.count_types(repositories_by_status)
 
         vulnerable_list = [
-            node for node in repositories_by_status.public if node.vulnerabilityAlerts.edges
+            node
+            for node in repositories_by_status.public
+            if node.vulnerabilityAlerts.edges
         ]
         vulnerable_count = len(vulnerable_list)
-        vulnerable_by_severity = vulnerability_summarizer.collate_by_severity(vulnerable_list)
+        vulnerable_by_severity = vulnerability_summarizer.collate_by_severity(
+            vulnerable_list
+        )
         severity_counts = stats.count_types(vulnerable_by_severity)
         severities = vulnerability_summarizer.get_severity_order()
 
         template_data = {
-            "repositories": {
-                "all": repo_count,
-                "by_status": status_counts
-            },
+            "repositories": {"all": repo_count, "by_status": status_counts},
             "vulnerable": {
                 "severities": severities,
                 "all": vulnerable_count,
                 "by_severity": severity_counts,
-                "repositories": vulnerable_by_severity
-            }
+                "repositories": vulnerable_by_severity,
+            },
         }
 
         with open("output/home.json", "w") as file:
@@ -71,4 +74,4 @@ def route_home():
             template_data = json.loads(file.read())
             return render_template("summary.html", data=template_data)
     except FileNotFoundError as err:
-        pass # handle error
+        pass  # handle error

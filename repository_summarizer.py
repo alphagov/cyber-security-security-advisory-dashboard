@@ -6,7 +6,7 @@ def reset():
         "public": [],
         "private": [],
         "archived": [],
-        "disabled": []
+        "disabled": [],
     }
 
     return _repositories_by_status
