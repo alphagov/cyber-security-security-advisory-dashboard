@@ -20,10 +20,9 @@ _transport = RequestsHTTPTransport(
     },
 )
 
-client = Client(transport=_transport, fetch_schema_from_transport=True)
-
 
 def query(name, **kwargs):
+    client = Client(transport=_transport, fetch_schema_from_transport=True)
     queries = {}
     for filename in os.listdir("query"):
         with open(f"query/{filename}") as query_file:

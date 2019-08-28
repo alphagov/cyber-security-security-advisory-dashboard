@@ -15,3 +15,6 @@ shell:
 
 rebuild:
 	docker-compose build
+
+test:
+	docker-compose run dashboard sh test.sh
