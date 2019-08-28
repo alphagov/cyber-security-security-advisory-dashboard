@@ -4,7 +4,6 @@ import click
 from flask import Flask
 from flask import render_template
 
-
 import pgraph
 import repository_summarizer
 import vulnerability_summarizer
