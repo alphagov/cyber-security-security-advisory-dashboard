@@ -1,0 +1,17 @@
+{% extends "layouts/main.html" %}
+{% block content %}
+<!--
+TODO Separate implementation specific content from templates so we can keep the open code clean
+-->
+<div class="govuk-width-container">
+  <p class="govuk-main-wrapper " id="main-content" role="main">
+    <h1 class="govuk-heading-l">Error</h1>
+      <p class="govuk-body">{{ message }}</p>
+      <p class="govuk-body">
+        Please let us know via the
+        <a target="slack" href="https://gds.slack.com/messages/CCMPJKFDK">#cyber-security-help</a>
+        Slack channel or just come and talk to us.
+      </p>
+  </main>
+</div>
+{% endblock %}
