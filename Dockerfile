@@ -1,10 +1,10 @@
-FROM python:3-alpine
+FROM python:3
 
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-RUN apk add npm
+RUN apt-get update && apt install -y npm
 
 COPY . .
 
