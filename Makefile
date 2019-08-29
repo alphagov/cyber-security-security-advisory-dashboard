@@ -19,8 +19,14 @@ rebuild:
 test:
 	docker-compose run dashboard sh test.sh
 
+gulp:
+	docker-compose run dashboard sh -c 'cd build && npm install && npm rebuild node-sass && gulp'
+
 audit:
 	docker-compose run dashboard flask audit
 
-gulp:
-	docker-compose run dashboard sh -c 'cd build && npm install && npm rebuild node-sass && gulp'
+alert_status:
+	docker-compose run dashboard flask alert-status
+
+build_routes:
+	docker-compose run dashboard flask build-routes
