@@ -71,4 +71,4 @@ def route_home():
             template_data = json.loads(file.read())
             return render_template("summary.html", data=template_data)
     except FileNotFoundError as err:
-        pass  # handle error
+        return render_template("error.html", message="Something went wrong.")
