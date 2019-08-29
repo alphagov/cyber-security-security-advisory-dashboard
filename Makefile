@@ -18,3 +18,6 @@ rebuild:
 
 test:
 	docker-compose run dashboard sh test.sh
+
+audit:
+	docker-compose run dashboard flask audit
