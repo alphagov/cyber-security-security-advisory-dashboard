@@ -76,7 +76,9 @@ def resolve_alert_status():
     with open("output/repositories.json", "r") as repositories_file:
         repositories = Dict(json.loads(repositories_file.read()))
         for repo in repositories["public"]:
-            response = github_rest_client.get(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
+            response = github_rest_client.get(
+                f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts"
+            )
             alerts_enabled = response.status_code == 204
             vulnerable = repo.vulnerabilityAlerts.edges
 
@@ -96,17 +98,40 @@ def resolve_alert_status():
 
 @app.cli.command("build-routes")
 def build_routes():
-    by_alert_status = {
-        "public": {}
-    }
+    by_alert_status = {"public": {}}
     with open("output/alert_status.json", "r") as status_file:
         alert_statuses = json.loads(status_file.read())
 
-        for status,repos in alert_statuses.items():
+        for status, repos in alert_statuses.items():
             by_alert_status["public"][status] = len(repos)
 
     with open("output/count_alert_status.json", "w") as alert_counts_file:
         alert_counts_file.write(json.dumps(by_alert_status, indent=2))
+
+
+@app.cli.command("repo-owners")
+def repo_owners():
+
+    # all_owners = []
+    list_owners = defaultdict(list)
+
+    with open("output/repositories.json", "r") as repositories_file:
+        # owners = {}
+        repositories = Dict(json.loads(repositories_file.read()))
+        for repo in repositories["public"]:
+            # owners["repo_name"] = repo.name
+            list_owners["repo_name"].append(repo.name)
+            repo_topics = []
+            if len(repo.repositoryTopics.edges) > 0:
+                for topics in repo.repositoryTopics.edges:
+                    repo_topics.append(topics.node.topic.name)
+            # owners["repo_topics"] = repo_topics
+            list_owners["repo_topic"].append(repo_topics)
+            # all_owners.append(owners)
+
+    with open("output/owners.json", "w") as owners_file:
+        # owners_file.write(json.dumps(all_owners, indent=2))
+        owners_file.write(json.dumps(list_owners, indent=2))
 
 
 @app.route("/")

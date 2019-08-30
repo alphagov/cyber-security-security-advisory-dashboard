@@ -6,6 +6,16 @@ query {
         owner {
           login
         }
+        repositoryTopics(first: 10) {
+          edges {
+            node {
+              topic {
+                id
+                name 
+                }
+              }
+            }
+          }
         isArchived
         isPrivate
         isDisabled
