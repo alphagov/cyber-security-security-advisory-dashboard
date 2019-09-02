@@ -22,5 +22,8 @@ test:
 audit:
 	docker-compose run dashboard flask audit
 
+dependabot_status:
+	docker-compose run dashboard flask dependabot-status alphagov
+
 gulp:
 	docker-compose run dashboard sh -c 'cd build && npm install && npm rebuild node-sass && gulp'
