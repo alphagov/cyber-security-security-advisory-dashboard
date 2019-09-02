@@ -2,10 +2,12 @@ import sys
 import json
 import time
 import traceback
-from collections import defaultdict
+from collections import defaultdict, Counter
+
 from flask import Flask
 from flask import render_template
 from addict import Dict
+
 import pgraph
 import repository_summarizer
 import vulnerability_summarizer
@@ -133,7 +135,7 @@ def route_home():
     try:
         with open("output/home.json", "r") as template_file:
             template_data = json.loads(template_file.read())
-            return render_template("summary.html", data=template_data)
+        return render_template("summary.html", data=template_data)
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
 
@@ -143,6 +145,19 @@ def route_alert_status():
     try:
         with open("output/count_alert_status.json", "r") as template_file:
             template_data = json.loads(template_file.read())
-            return render_template("alert_status.html", data=template_data)
+        return render_template("alert_status.html", data=template_data)
+    except FileNotFoundError as err:
+        return render_template("error.html", message="Something went wrong.")
+
+
+@app.route("/repo-owners")
+def route_owners():
+    try:
+        with open("output/topics.json", "r") as topics_file:
+            topics = json.loads(topics_file.read())
+        topics_count = Counter({k: len(topics[k]) for k in topics}).most_common(500)
+        topics_list = [(t[0], topics[t[0]]) for t in topics_count]
+
+        return render_template("repo_owners.html", topics_list=topics_list)
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
