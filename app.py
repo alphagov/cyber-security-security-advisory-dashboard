@@ -111,27 +111,21 @@ def build_routes():
 
 @app.cli.command("repo-owners")
 def repo_owners():
-
-    # all_owners = []
     list_owners = defaultdict(list)
-
+    list_topics = defaultdict(list)
     with open("output/repositories.json", "r") as repositories_file:
-        # owners = {}
         repositories = Dict(json.loads(repositories_file.read()))
         for repo in repositories["public"]:
-            # owners["repo_name"] = repo.name
-            list_owners["repo_name"].append(repo.name)
-            repo_topics = []
-            if len(repo.repositoryTopics.edges) > 0:
-                for topics in repo.repositoryTopics.edges:
-                    repo_topics.append(topics.node.topic.name)
-            # owners["repo_topics"] = repo_topics
-            list_owners["repo_topic"].append(repo_topics)
-            # all_owners.append(owners)
 
+            if repo.repositoryTopics.edges:
+                for topics in repo.repositoryTopics.edges:
+                    list_owners[repo.name].append(topics.node.topic.name)
+                    list_topics[topics.node.topic.name].append(repo.name)
     with open("output/owners.json", "w") as owners_file:
-        # owners_file.write(json.dumps(all_owners, indent=2))
         owners_file.write(json.dumps(list_owners, indent=2))
+
+    with open("output/topics.json", "w") as topics_file:
+        topics_file.write(json.dumps(list_topics, indent=2))
 
 
 @app.route("/")
