@@ -177,10 +177,27 @@ def route_owners():
     try:
         with open("output/topics.json", "r") as topics_file:
             topics = json.loads(topics_file.read())
-        topics_count = Counter({k: len(topics[k]) for k in topics}).most_common(500)
-        topics_list = [(t[0], topics[t[0]]) for t in topics_count]
         with open("teams.json", "r") as teams_file:
             teams = json.loads(teams_file.read())
-        return render_template("repo_owners.html", topics_list=topics_list)
+        d = defaultdict(set)
+        for team in teams.keys():
+            for repos in topics[team]:
+                d[team].add(repos)
+
+        team_topics_list = [
+            (topic_name, d[topic_name])
+            for topic_name
+            in d.keys()
+        ]
+        other_topics_list = [
+            (topic_name, topics[topic_name])
+            for topic_name
+            in set(topics.keys()) - set(teams.keys())
+        ]
+
+        return render_template(
+            "repo_owners.html",
+            team_topics_list=team_topics_list,
+            other_topics_list=other_topics_list)
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
