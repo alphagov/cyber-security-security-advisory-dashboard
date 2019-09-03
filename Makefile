@@ -38,3 +38,5 @@ alert_status:
 build_routes:
 	docker-compose run dashboard flask build-routes
 
+repo_owners:
+	docker-compose run dashboard flask repo-owners
