@@ -4,20 +4,44 @@
     <main class="govuk-main-wrapper " id="main-content" role="main">
       <h1 class="govuk-heading-l">Public Repository Owners</h1>
       <div class="govuk-body">
+        <h2 class="govuk-heading-m">Known Teams</h2>
         <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
-          {% for topic_tuple in topics_list %}
+          {% for team in team_topics_list %}
 
           <div class="govuk-accordion__section ">
             <div class="govuk-accordion__section-header">
               <h2 class="govuk-accordion__section-heading">
                 <span class="govuk-accordion__section-button" id="accordion-default-heading-1">
-                  {{topic_tuple|first}}
+                  {{team|first}}
                 </span>
               </h2>
             </div>
             <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
 
-              {% for repo in topic_tuple.1 %}
+              {% for repo in team.1 %}
+                  <p class='govuk-body'>{{repo}}</p>
+              {% endfor %}
+            </div>
+          </div>
+
+          {% endfor %}
+
+        </div>
+        <h2 class="govuk-heading-m">Other Topics</h2>
+        <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
+          {% for topic in other_topics_list %}
+
+          <div class="govuk-accordion__section ">
+            <div class="govuk-accordion__section-header">
+              <h2 class="govuk-accordion__section-heading">
+                <span class="govuk-accordion__section-button" id="accordion-default-heading-1">
+                  {{topic|first}}
+                </span>
+              </h2>
+            </div>
+            <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
+
+              {% for repo in topic.1 %}
                   <p class='govuk-body'>{{repo}}</p>
               {% endfor %}
             </div>

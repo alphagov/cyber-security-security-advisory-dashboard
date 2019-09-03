@@ -184,20 +184,16 @@ def route_owners():
             for repos in topics[team]:
                 d[team].add(repos)
 
-        team_topics_list = [
-            (topic_name, d[topic_name])
-            for topic_name
-            in d.keys()
-        ]
+        team_topics_list = [(topic_name, d[topic_name]) for topic_name in d.keys()]
         other_topics_list = [
             (topic_name, topics[topic_name])
-            for topic_name
-            in set(topics.keys()) - set(teams.keys())
+            for topic_name in set(topics.keys()) - set(teams.keys())
         ]
 
         return render_template(
             "repo_owners.html",
             team_topics_list=team_topics_list,
-            other_topics_list=other_topics_list)
+            other_topics_list=other_topics_list,
+        )
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
