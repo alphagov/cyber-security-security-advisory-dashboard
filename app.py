@@ -133,8 +133,8 @@ def repo_owners():
 @app.route("/")
 def route_home():
     try:
-        with open("output/home.json", "r") as template_file:
-            template_data = json.loads(template_file.read())
+        with open("output/home.json", "r") as home_template_data_file:
+            template_data = json.loads(home_template_data_file.read())
         return render_template("summary.html", data=template_data)
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
@@ -143,8 +143,8 @@ def route_home():
 @app.route("/alert-status")
 def route_alert_status():
     try:
-        with open("output/count_alert_status.json", "r") as template_file:
-            template_data = json.loads(template_file.read())
+        with open("output/count_alert_status.json", "r") as alert_status_template_data_file:
+            template_data = json.loads(alert_status_template_data_file.read())
         return render_template("alert_status.html", data=template_data)
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
