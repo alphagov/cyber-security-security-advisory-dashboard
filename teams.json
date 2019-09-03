@@ -9,7 +9,8 @@
     "datagovuk",
     "govuk-content-publisher",
     "publisher",
-    "design-systems"
+    "design-systems",
+    "whitehall"
   ],
   "verify": [
     "verify",

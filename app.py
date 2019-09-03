@@ -179,12 +179,14 @@ def route_owners():
             topics = json.loads(topics_file.read())
         with open("teams.json", "r") as teams_file:
             teams = json.loads(teams_file.read())
-        d = defaultdict(set)
+        team_dict = defaultdict(set)
         for team in teams.keys():
             for repos in topics[team]:
-                d[team].add(repos)
+                team_dict[team].add(repos)
 
-        team_topics_list = [(topic_name, d[topic_name]) for topic_name in d.keys()]
+        team_topics_list = [
+            (topic_name, team_dict[topic_name]) for topic_name in team_dict.keys()
+        ]
         other_topics_list = [
             (topic_name, topics[topic_name])
             for topic_name in set(topics.keys()) - set(teams.keys())

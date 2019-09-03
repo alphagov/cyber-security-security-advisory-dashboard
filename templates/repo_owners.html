@@ -17,10 +17,10 @@
               </a>
             </li>
           </ul>
+
           <section class="govuk-tabs__panel" id="status">
             <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
               {% for team in team_topics_list %}
-
               <div class="govuk-accordion__section ">
                 <div class="govuk-accordion__section-header">
                   <h2 class="govuk-accordion__section-heading">
@@ -30,22 +30,18 @@
                   </h2>
                 </div>
                 <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
-
                   {% for repo in team.1 %}
                       <p class='govuk-body'><a href="https://github.com/alphagov/{{repo}}" class="govuk-link">{{repo}}</a></p>
                   {% endfor %}
                 </div>
               </div>
-
               {% endfor %}
-
             </div>
           </section>
 
           <section class="govuk-tabs__panel" id="severity">
             <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
               {% for topic in other_topics_list %}
-
               <div class="govuk-accordion__section ">
                 <div class="govuk-accordion__section-header">
                   <h2 class="govuk-accordion__section-heading">
@@ -55,18 +51,15 @@
                   </h2>
                 </div>
                 <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
-
                   {% for repo in topic.1 %}
                       <p class='govuk-body'><a href="https://github.com/alphagov/{{repo}}" class="govuk-link">{{repo}}</a></p>
                   {% endfor %}
                 </div>
               </div>
-
               {% endfor %}
-
             </div>
           </section>
-
+          
         </div>
       </div>
     </main>
