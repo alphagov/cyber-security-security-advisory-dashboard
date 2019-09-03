@@ -4,6 +4,7 @@ import time
 import traceback
 from collections import defaultdict, Counter
 
+import click
 from flask import Flask
 from flask import render_template
 from addict import Dict
