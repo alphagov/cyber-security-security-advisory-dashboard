@@ -4,26 +4,61 @@
     <main class="govuk-main-wrapper " id="main-content" role="main">
       <h1 class="govuk-heading-l">Public Repository Owners</h1>
       <div class="govuk-body">
-        <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
-          {% for topic_tuple in topics_list %}
+        <div class="govuk-tabs" data-module="govuk-tabs">
+          <ul class="govuk-tabs__list">
+            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+              <a class="govuk-tabs__tab" href="#status">
+                Known Teams
+              </a>
+            </li>
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab" href="#severity">
+                Other Topics
+              </a>
+            </li>
+          </ul>
 
-          <div class="govuk-accordion__section ">
-            <div class="govuk-accordion__section-header">
-              <h2 class="govuk-accordion__section-heading">
-                <span class="govuk-accordion__section-button" id="accordion-default-heading-1">
-                  {{topic_tuple|first}}
-                </span>
-              </h2>
-            </div>
-            <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
-
-              {% for repo in topic_tuple.1 %}
-                  <p class='govuk-body'>{{repo}}</p>
+          <section class="govuk-tabs__panel" id="status">
+            <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
+              {% for team, team_repos in team_dict.items() %}
+              <div class="govuk-accordion__section ">
+                <div class="govuk-accordion__section-header">
+                  <h2 class="govuk-accordion__section-heading">
+                    <span class="govuk-accordion__section-button" id="accordion-default-heading-1">
+                      {{team}}
+                    </span>
+                  </h2>
+                </div>
+                <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
+                  {% for repo in team_repos %}
+                      <p class='govuk-body'><a href="https://github.com/alphagov/{{repo}}" class="govuk-link">{{repo}}</a></p>
+                  {% endfor %}
+                </div>
+              </div>
               {% endfor %}
             </div>
-          </div>
+          </section>
 
-          {% endfor %}
+          <section class="govuk-tabs__panel" id="severity">
+            <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
+              {% for topic, repos in other_topics.items() %}
+              <div class="govuk-accordion__section ">
+                <div class="govuk-accordion__section-header">
+                  <h2 class="govuk-accordion__section-heading">
+                    <span class="govuk-accordion__section-button" id="accordion-default-heading-1">
+                      {{topic}}
+                    </span>
+                  </h2>
+                </div>
+                <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
+                  {% for repo in repos %}
+                      <p class='govuk-body'><a href="https://github.com/alphagov/{{repo}}" class="govuk-link">{{repo}}</a></p>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </section>
 
         </div>
       </div>

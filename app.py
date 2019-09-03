@@ -17,7 +17,6 @@ import dependabot_api
 import github_rest_client
 
 
-
 app = Flask(__name__, static_url_path="/assets")
 
 
@@ -94,7 +93,7 @@ def dependabot_status(org):
 
     return updated
 
-  
+
 @app.cli.command("alert-status")
 def resolve_alert_status():
     by_alert_status = defaultdict(list)
@@ -157,8 +156,8 @@ def repo_owners():
 def route_home():
     try:
         with open("output/home.json", "r") as home_template_data_file:
-            template_data = json.loads(home_template_data_file.read())
-        return render_template("summary.html", data=template_data)
+            repo_stats = json.loads(home_template_data_file.read())
+        return render_template("summary.html", data=repo_stats)
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
 
@@ -166,9 +165,9 @@ def route_home():
 @app.route("/alert-status")
 def route_alert_status():
     try:
-        with open("output/count_alert_status.json", "r") as alert_status_template_data_file:
-            template_data = json.loads(alert_status_template_data_file.read())
-        return render_template("alert_status.html", data=template_data)
+        with open("output/count_alert_status.json", "r") as status_file:
+            alert_status = json.loads(status_file.read())
+        return render_template("alert_status.html", data=alert_status)
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
 
@@ -178,9 +177,20 @@ def route_owners():
     try:
         with open("output/topics.json", "r") as topics_file:
             topics = json.loads(topics_file.read())
-        topics_count = Counter({k: len(topics[k]) for k in topics}).most_common(500)
-        topics_list = [(t[0], topics[t[0]]) for t in topics_count]
+        with open("teams.json", "r") as teams_file:
+            teams = json.loads(teams_file.read())
+        team_dict = defaultdict(set)
+        for team in teams.keys():
+            for repos in topics[team]:
+                team_dict[team].add(repos)
 
-        return render_template("repo_owners.html", topics_list=topics_list)
+        other_topics = {
+            topic_name: topics[topic_name]
+            for topic_name in set(topics.keys()) - set(teams.keys())
+        }
+
+        return render_template(
+            "repo_owners.html", other_topics=other_topics, team_dict=team_dict
+        )
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
