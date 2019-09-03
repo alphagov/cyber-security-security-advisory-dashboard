@@ -1,0 +1,50 @@
+{
+  "govuk": [
+    "govuk",
+    "govuk-publishing-frontend",
+    "govuk-design-system-team",
+    "govuk-frontend",
+    "govuk-design-system",
+    "govuk-transition",
+    "datagovuk",
+    "govuk-content-publisher",
+    "publisher",
+    "design-systems"
+  ],
+  "verify": [
+    "verify",
+    "eidas",
+    "idp",
+    "saml",
+    "stub"
+  ],
+  "govuk-pay": [
+    "govuk-pay",
+    "govuk-pay-docs-test"
+  ],
+  "paas": [
+    "paas",
+    "cloudfoundry"
+  ],
+  "govuk-notify": [
+    "govuk-notify"
+  ],
+  "digitalmarketplace": [
+    "digitalmarketplace",
+    "digital-marketplace"
+  ],
+  "reliability-engineering": [
+    "reliability-engineering",
+    "re-observe"
+  ],
+  "cyber-security-team": [
+    "cyber-security-team"
+  ],
+  "govwifi": [
+    "govwifi"
+  ],
+  "gsp": [
+    "gsp",
+    "kubernetes"
+  ]
+}
