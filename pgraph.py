@@ -11,7 +11,7 @@ url = "https://api.github.com/graphql"
 
 api_token = os.environ["TOKEN"]
 
-_transport = RequestsHTTPTransport(
+transport = RequestsHTTPTransport(
     url=url,
     use_json=True,
     headers={
@@ -22,7 +22,7 @@ _transport = RequestsHTTPTransport(
 
 
 def query(name, **kwargs):
-    client = Client(transport=_transport, fetch_schema_from_transport=True)
+    client = Client(transport=transport, fetch_schema_from_transport=True)
     queries = {}
     for filename in os.listdir("query"):
         with open(f"query/{filename}") as query_file:

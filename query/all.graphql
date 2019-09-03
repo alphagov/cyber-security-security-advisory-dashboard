@@ -3,6 +3,9 @@ query {
     repositories(first:{{nth}}{{", after:\""+after+"\"" if after}}) {
       nodes {
         name
+        owner {
+          login
+        }
         isArchived
         isPrivate
         isDisabled

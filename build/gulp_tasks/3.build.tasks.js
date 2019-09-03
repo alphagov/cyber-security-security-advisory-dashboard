@@ -5,5 +5,5 @@ const gulp = require("gulp");
 
 gulp.task(
   "assets",
-  gulp.series("copy.assets", "sass.gov", "concat.js")
+  gulp.series("sass.gov", "concat.js", "copy.assets")
 );

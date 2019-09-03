@@ -1,6 +1,8 @@
-import os
+import sys
 import json
-import click
+import time
+import traceback
+from collections import defaultdict
 from flask import Flask
 from flask import render_template
 from addict import Dict
@@ -10,6 +12,8 @@ import repository_summarizer
 import vulnerability_summarizer
 import stats
 import dependabot_api
+import github_rest_client
+
 
 
 app = Flask(__name__, static_url_path="/assets")
@@ -57,8 +61,11 @@ def cronable_audit():
             },
         }
 
-        with open("output/home.json", "w") as file:
-            file.write(json.dumps(template_data, indent=2))
+        with open("output/repositories.json", "w") as repositories_file:
+            repositories_file.write(json.dumps(repositories_by_status, indent=2))
+
+        with open("output/home.json", "w") as route_file:
+            route_file.write(json.dumps(template_data, indent=2))
 
         updated = True
     except Exception as err:
@@ -85,12 +92,61 @@ def dependabot_status(org):
 
     return updated
 
+  
+@app.cli.command("alert-status")
+def resolve_alert_status():
+    by_alert_status = defaultdict(list)
+    with open("output/repositories.json", "r") as repositories_file:
+        repositories = Dict(json.loads(repositories_file.read()))
+        for repo in repositories["public"]:
+            response = github_rest_client.get(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
+            alerts_enabled = response.status_code == 204
+            vulnerable = repo.vulnerabilityAlerts.edges
+
+            if vulnerable:
+                status = "vulnerable"
+            elif alerts_enabled:
+                status = "clean"
+            else:
+                status = "disabled"
+
+            by_alert_status[status].append(repo)
+            time.sleep(1)
+
+    with open("output/alert_status.json", "w") as status_file:
+        status_file.write(json.dumps(by_alert_status, indent=2))
+
+
+@app.cli.command("build-routes")
+def build_routes():
+    by_alert_status = {
+        "public": {}
+    }
+    with open("output/alert_status.json", "r") as status_file:
+        alert_statuses = json.loads(status_file.read())
+
+        for status,repos in alert_statuses.items():
+            by_alert_status["public"][status] = len(repos)
+
+    with open("output/count_alert_status.json", "w") as alert_counts_file:
+        alert_counts_file.write(json.dumps(by_alert_status, indent=2))
+
 
 @app.route("/")
 def route_home():
     try:
-        with open("output/home.json", "r") as file:
-            template_data = json.loads(file.read())
+        with open("output/home.json", "r") as template_file:
+            template_data = json.loads(template_file.read())
             return render_template("summary.html", data=template_data)
+    except FileNotFoundError as err:
+        return render_template("error.html", message="Something went wrong.")
+
+
+@app.route("/alert-status")
+def route_alert_status():
+    try:
+        with open("output/count_alert_status.json", "r") as template_file:
+            template_data = json.loads(template_file.read())
+            return render_template("alert_status.html", data=template_data)
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
