@@ -6,11 +6,14 @@ from collections import defaultdict
 from flask import Flask
 from flask import render_template
 from addict import Dict
+
 import pgraph
 import repository_summarizer
 import vulnerability_summarizer
 import stats
+import dependabot_api
 import github_rest_client
+
 
 
 app = Flask(__name__, static_url_path="/assets")
@@ -70,6 +73,26 @@ def cronable_audit():
     return updated
 
 
+@app.cli.command("dependabot-status")
+@click.argument("org")
+def dependabot_status(org):
+    try:
+        updated = False
+        data = dependabot_api.get_repos_by_status(org)
+        counts = stats.count_types(data)
+        output = Dict()
+        output.counts = counts
+        output.repositories = data
+
+        with open("output/dependabot_status.json", "w") as data_file:
+            data_file.write(json.dumps(output, indent=2))
+            updated = True
+    except Exception:
+        updated = False
+
+    return updated
+
+  
 @app.cli.command("alert-status")
 def resolve_alert_status():
     by_alert_status = defaultdict(list)
