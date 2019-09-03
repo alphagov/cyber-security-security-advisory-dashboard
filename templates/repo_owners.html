@@ -32,7 +32,7 @@
                 <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
 
                   {% for repo in team.1 %}
-                      <p class='govuk-body'>{{repo}}</p>
+                      <p class='govuk-body'><a href="https://github.com/alphagov/{{repo}}" class="govuk-link">{{repo}}</a></p>
                   {% endfor %}
                 </div>
               </div>
@@ -57,7 +57,7 @@
                 <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
 
                   {% for repo in topic.1 %}
-                      <p class='govuk-body'>{{repo}}</p>
+                      <p class='govuk-body'><a href="https://github.com/alphagov/{{repo}}" class="govuk-link">{{repo}}</a></p>
                   {% endfor %}
                 </div>
               </div>
@@ -66,7 +66,7 @@
 
             </div>
           </section>
-          
+
         </div>
       </div>
     </main>
