@@ -36,3 +36,6 @@ build_routes:
 
 repo_owners:
 	docker-compose run dashboard flask repo-owners
+
+pr_status:
+	docker-compose run dashboard flask pr-status

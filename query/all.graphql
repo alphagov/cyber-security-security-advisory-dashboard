@@ -11,7 +11,7 @@ query {
             node {
               topic {
                 id
-                name 
+                name
                 }
               }
             }
@@ -19,6 +19,18 @@ query {
         isArchived
         isPrivate
         isDisabled
+        pullRequests(last: 5, orderBy: {
+          direction: DESC,
+          field: UPDATED_AT}) {
+          edges {
+            node {
+              merged
+              mergedAt
+              closed
+              closedAt
+            }
+          }
+        }
         vulnerabilityAlerts(first:10) {
           edges {
             node {

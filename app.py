@@ -3,11 +3,14 @@ import json
 import time
 import traceback
 from collections import defaultdict, Counter
+import warnings
 
 import click
 from flask import Flask
 from flask import render_template
 from addict import Dict
+import arrow
+from arrow.factory import ArrowParseWarning
 
 import pgraph
 import repository_summarizer
@@ -16,7 +19,7 @@ import stats
 import dependabot_api
 import github_rest_client
 
-
+warnings.simplefilter("ignore", ArrowParseWarning)
 app = Flask(__name__, static_url_path="/assets")
 
 
@@ -139,17 +142,56 @@ def repo_owners():
     list_topics = defaultdict(list)
     with open("output/repositories.json", "r") as repositories_file:
         repositories = Dict(json.loads(repositories_file.read()))
-        for repo in repositories["public"]:
+    for repo in repositories["public"]:
 
-            if repo.repositoryTopics.edges:
-                for topics in repo.repositoryTopics.edges:
-                    list_owners[repo.name].append(topics.node.topic.name)
-                    list_topics[topics.node.topic.name].append(repo.name)
+        if repo.repositoryTopics.edges:
+            for topics in repo.repositoryTopics.edges:
+                list_owners[repo.name].append(topics.node.topic.name)
+                list_topics[topics.node.topic.name].append(repo.name)
     with open("output/owners.json", "w") as owners_file:
         owners_file.write(json.dumps(list_owners, indent=2))
 
     with open("output/topics.json", "w") as topics_file:
         topics_file.write(json.dumps(list_topics, indent=2))
+
+
+@app.cli.command("pr-status")
+def pr_status():
+
+    with open("output/repositories.json", "r") as repositories_file:
+        repositories = Dict(json.loads(repositories_file.read()))
+    for repo in repositories["public"]:
+
+        pr_final_status = "No pull requests in this repository"
+
+        if repo.pullRequests.edges:
+            merged_status = repo.pullRequests.edges[0].node.merged
+            merged_date = repo.pullRequests.edges[0].node.mergedAt
+            closed_status = repo.pullRequests.edges[0].node.closed
+            closed_date = repo.pullRequests.edges[0].node.closedAt
+
+            if merged_status:
+                if arrow.get(merged_date) < arrow.utcnow().shift(years=-1):
+                    pr_final_status = "Not upated within the last year"
+                elif arrow.get(merged_date) < arrow.utcnow().shift(months=-1):
+                    pr_final_status = "Not upated within the last month"
+                elif arrow.get(merged_date) < arrow.utcnow().shift(weeks=-1):
+                    pr_final_status = "Not updated within the last week"
+                else:
+                    pr_final_status = "Updated this week"
+            elif closed_status:
+                if arrow.get(closed_date) < arrow.utcnow().shift(years=-1):
+                    pr_final_status = "Last PR closed within the last year"
+                elif arrow.get(closed_date) < arrow.utcnow().shift(months=-1):
+                    pr_final_status = "Last PR closed within the last month"
+                elif arrow.get(closed_date) < arrow.utcnow().shift(weeks=-1):
+                    pr_final_status = "Last PR closed within the last week"
+                else:
+                    pr_final_status = "Last PR closed this week"
+
+        repo.pr_final_status = pr_final_status
+    with open("output/repositories.json", "w") as repositories_file:
+        repositories_file.write(json.dumps(repositories, indent=2))
 
 
 @app.route("/")
@@ -179,6 +221,9 @@ def route_owners():
             topics = json.loads(topics_file.read())
         with open("teams.json", "r") as teams_file:
             teams = json.loads(teams_file.read())
+        with open("output/repositories.json", "r") as repositories_file:
+            repositories = Dict(json.loads(repositories_file.read()))
+
         team_dict = defaultdict(set)
         for team in teams.keys():
             for repos in topics[team]:
@@ -190,7 +235,10 @@ def route_owners():
         }
 
         return render_template(
-            "repo_owners.html", other_topics=other_topics, team_dict=team_dict
+            "repo_owners.html",
+            other_topics=other_topics,
+            team_dict=team_dict,
+            repositories={k: v for d in repositories["public"] for k, v in d.items()},
         )
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
