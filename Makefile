@@ -10,6 +10,7 @@ help:
 run: rebuild
 	docker-compose up
 
+# DEVELOP
 shell:
 	docker-compose run dashboard sh
 
@@ -24,3 +25,32 @@ audit:
 
 task:
 	docker-compose run dashboard flask run-task $(TASK)
+
+# DEPLOY
+reset:
+	rm -f setup.cfg
+
+package_dir: clean
+	mkdir -p build/.package/static
+	mkdir -p build/.package/templates
+	mkdir -p build/.package/query
+	mkdir -p build/.package/output
+
+copy_src: package_dir
+	cp *.py build/.package
+	cp -R static/* build/.package/static/
+	cp -R templates/* build/.package/templates/
+	cp -R query/* build/.package/query/
+	cp -R output/* build/.package/output/
+
+add_deps: package_dir
+	bash -c "echo -e '[install]\nprefix=\n' > setup.cfg"; pip3 install -r requirements.txt -t build/.package
+
+clean:
+	rm -rf setup.cnf build/.package build/*.zip
+
+zip: add_deps copy_src
+	cd build/.package; zip -9 ../alphagov_audit_lambda_package.zip -r .
+
+deploy: zip
+	cd build/terraform; terraform apply

@@ -3,7 +3,13 @@ __pycache__/
 *$py.class
 .DS_Store
 .idea
+.pytest_cache/
+
+setup.cfg
 build/node_modules
+build/.package
+build/terraform/.terraform
+build/*.zip
 static
 output/*
 !output/README.md
