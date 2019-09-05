@@ -10,5 +10,5 @@ gql==0.1.0
 requests==2.22.0
 sgqlc==7.0
 waitress==0.8.9 #a pure python WSGI server that is a replacement for gunicorn
-pytest==5.1.1
+pytest==5.1.2
 black==19.3b0
