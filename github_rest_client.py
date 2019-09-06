@@ -3,9 +3,12 @@ import requests
 import json
 
 
+import config
+
+
 ROOT_URL = "https://api.github.com"
 HEADERS = {
-    "Authorization": "token %s" % os.environ["TOKEN"],
+    "Authorization": "token %s" % config.get_value("token"),
     "Accept": "application/vnd.github.dorian-preview+json",
 }
 

@@ -4,10 +4,13 @@ import requests
 from addict import Dict
 
 
+import config
+
+
 ROOT_URL = "https://api.dependabot.com"
 
 
-HEADERS = {"Authorization": "Personal %s" % os.environ["TOKEN"]}
+HEADERS = {"Authorization": "Personal %s" % config.get_value("token")}
 
 
 def get(path):
