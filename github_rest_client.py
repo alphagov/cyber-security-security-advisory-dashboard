@@ -5,8 +5,8 @@ import json
 
 ROOT_URL = "https://api.github.com"
 HEADERS = {
-    'Authorization': 'token %s' % os.environ["TOKEN"],
-    'Accept': "application/vnd.github.dorian-preview+json"
+    "Authorization": "token %s" % os.environ["TOKEN"],
+    "Accept": "application/vnd.github.dorian-preview+json",
 }
 
 
