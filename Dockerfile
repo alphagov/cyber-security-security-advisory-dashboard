@@ -10,6 +10,7 @@ COPY . .
 
 WORKDIR /usr/src/app/build
 
-RUN npm install -g gulp-cli
+RUN npm install -g gulp-cli n
+RUN n 10.16.3
 
 WORKDIR /usr/src/app

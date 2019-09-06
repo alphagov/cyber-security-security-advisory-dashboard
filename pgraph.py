@@ -6,10 +6,14 @@ from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 from jinja2 import Template
 
+
+import config
+
+
 url = "https://api.github.com/graphql"
 
 
-api_token = os.environ["TOKEN"]
+api_token = config.get_value("token")
 
 transport = RequestsHTTPTransport(
     url=url,
