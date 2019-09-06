@@ -12,10 +12,10 @@ query {
               topic {
                 id
                 name
-                }
               }
             }
           }
+        }
         isArchived
         isPrivate
         isDisabled
@@ -28,6 +28,34 @@ query {
               mergedAt
               closed
               closedAt
+            }
+          }
+        }
+        refs(refPrefix: "refs/heads/", last:10, orderBy:{
+          direction: DESC,
+          field: TAG_COMMIT_DATE
+        }) {
+          edges {
+            node {
+              name
+              target {
+                oid
+                abbreviatedOid
+                ... on Commit{
+                  history(first:10){
+                    totalCount
+                    edges{
+                      node{
+                        ... on Commit{
+                          committedDate
+                          abbreviatedOid
+                          oid
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }

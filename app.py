@@ -24,7 +24,7 @@ app = Flask(__name__, static_url_path="/assets")
 
 
 @app.cli.command("audit")
-def cronable_audit():
+def cronable_vulnerability_audit():
 
     try:
         cursor = None
@@ -73,6 +73,74 @@ def cronable_audit():
 
         updated = True
     except Exception as err:
+        updated = False
+    return updated
+
+
+@app.cli.command("activity_refs")
+def activity_refs_audit():
+    try:
+        cursor = None
+        last = False
+        repository_list = []
+
+        while not last:
+
+            page = pgraph.query("refs", nth=50, after=cursor)
+
+            repository_list.extend(page.organization.repositories.nodes)
+            last = not page.organization.repositories.pageInfo.hasNextPage
+            cursor = page.organization.repositories.pageInfo.endCursor
+
+
+        total = len(repository_list)
+        print(f"Repository list count: {total}", sys.stderr)
+
+        repository_lookup = {repo.name: repo for repo in repository_list}
+
+        total = len(repository_lookup.keys())
+        print(f"Repository lookup count: {total}", sys.stderr)
+
+        with open("output/activity_refs.json", "w") as repositories_file:
+            repositories_file.write(json.dumps(repository_lookup, indent=2))
+
+        updated = True
+    except Exception as err:
+        print("Failed to run activity GQL: " + str(err), sys.stderr)
+        updated = False
+    return updated
+
+
+@app.cli.command("activity_prs")
+def activity_prs_audit():
+    try:
+        cursor = None
+        last = False
+        repository_list = []
+
+        while not last:
+
+            page = pgraph.query("prs", nth=100, after=cursor)
+
+            repository_list.extend(page.organization.repositories.nodes)
+            last = not page.organization.repositories.pageInfo.hasNextPage
+            cursor = page.organization.repositories.pageInfo.endCursor
+
+
+        total = len(repository_list)
+        print(f"Repository list count: {total}", sys.stderr)
+
+        repository_lookup = {repo.name: repo for repo in repository_list}
+
+        total = len(repository_lookup.keys())
+        print(f"Repository lookup count: {total}", sys.stderr)
+
+        with open("output/activity_prs.json", "w") as repositories_file:
+            repositories_file.write(json.dumps(repository_lookup, indent=2))
+
+        updated = True
+    except Exception as err:
+        print("Failed to run activity GQL: " + str(err), sys.stderr)
         updated = False
     return updated
 

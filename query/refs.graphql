@@ -1,0 +1,44 @@
+query {
+  organization(login:"alphagov") {
+    repositories(first:{{nth}}{{", after:\""+after+"\"" if after}}) {
+      nodes {
+        name
+        isArchived
+        isPrivate
+        isDisabled
+        refs(refPrefix: "refs/heads/", last:5, orderBy:{
+          direction: DESC,
+          field: TAG_COMMIT_DATE
+        }) {
+          edges {
+            node {
+              name
+              target {
+                oid
+                abbreviatedOid
+                ... on Commit{
+                  history(first:5){
+                    totalCount
+                    edges{
+                      node{
+                        ... on Commit{
+                          committedDate
+                          abbreviatedOid
+                          oid
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      pageInfo {
+       endCursor
+       hasNextPage
+     }
+    }
+  }
+}
