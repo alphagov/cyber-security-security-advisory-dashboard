@@ -6,11 +6,12 @@ query {
         isArchived
         isPrivate
         isDisabled
-        pullRequests(last: 5, orderBy: {
+        pullRequests(first: 5, orderBy: {
           direction: DESC,
           field: UPDATED_AT}) {
           edges {
             node {
+              createdAt
               merged
               mergedAt
               closed

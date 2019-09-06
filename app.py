@@ -225,40 +225,37 @@ def repo_owners():
 
 @app.cli.command("pr-status")
 def pr_status():
-
-    with open("output/repositories.json", "r") as repositories_file:
+    now = arrow.utcnow()
+    with open("output/activity_prs.json", "r") as repositories_file:
         repositories = Dict(json.loads(repositories_file.read()))
-    for repo in repositories["public"]:
+    for repo_name, repo in repositories.items():
 
         pr_final_status = "No pull requests in this repository"
 
         if repo.pullRequests.edges:
-            merged_status = repo.pullRequests.edges[0].node.merged
-            merged_date = repo.pullRequests.edges[0].node.mergedAt
-            closed_status = repo.pullRequests.edges[0].node.closed
-            closed_date = repo.pullRequests.edges[0].node.closedAt
+            node = repo.pullRequests.edges[0].node
 
-            if merged_status:
-                if arrow.get(merged_date) < arrow.utcnow().shift(years=-1):
-                    pr_final_status = "Not upated within the last year"
-                elif arrow.get(merged_date) < arrow.utcnow().shift(months=-1):
-                    pr_final_status = "Not upated within the last month"
-                elif arrow.get(merged_date) < arrow.utcnow().shift(weeks=-1):
-                    pr_final_status = "Not updated within the last week"
-                else:
-                    pr_final_status = "Updated this week"
-            elif closed_status:
-                if arrow.get(closed_date) < arrow.utcnow().shift(years=-1):
-                    pr_final_status = "Last PR closed within the last year"
-                elif arrow.get(closed_date) < arrow.utcnow().shift(months=-1):
-                    pr_final_status = "Last PR closed within the last month"
-                elif arrow.get(closed_date) < arrow.utcnow().shift(weeks=-1):
-                    pr_final_status = "Last PR closed within the last week"
-                else:
-                    pr_final_status = "Last PR closed this week"
+            if node.merged:
+                reference_date = arrow.get(node.mergedAt)
+                pr_status = "merged"
+            elif node.closed:
+                reference_date = arrow.get(node.closedAt)
+                pr_status = "closed"
+            else:
+                reference_date = arrow.get(node.createdAt)
+                pr_status = "open"
+
+            if reference_date < now.shift(years=-1):
+                pr_final_status = f"Last pull request more than a year ago ({pr_status})"
+            elif reference_date < now.shift(months=-1):
+                pr_final_status = f"Last pull request more than a month ago ({pr_status})"
+            elif reference_date < now.shift(weeks=-1):
+                pr_final_status = f"Last pull request more than a week ago ({pr_status})"
+            else:
+                pr_final_status = f"Last pull request this week ({pr_status})"
 
         repo.pr_final_status = pr_final_status
-    with open("output/repositories.json", "w") as repositories_file:
+    with open("output/activity_prs.json", "w") as repositories_file:
         repositories_file.write(json.dumps(repositories, indent=2))
 
 
@@ -289,7 +286,7 @@ def route_owners():
             topics = json.loads(topics_file.read())
         with open("teams.json", "r") as teams_file:
             teams = json.loads(teams_file.read())
-        with open("output/repositories.json", "r") as repositories_file:
+        with open("output/activity_prs.json", "r") as repositories_file:
             repositories = Dict(json.loads(repositories_file.read()))
 
         team_dict = defaultdict(set)
@@ -302,11 +299,14 @@ def route_owners():
             for topic_name in set(topics.keys()) - set(teams.keys())
         }
 
+        total = len([*repositories.keys()])
+        print(f"Count of repos in lookup: {total}", sys.stderr)
+
         return render_template(
             "repo_owners.html",
             other_topics=other_topics,
             team_dict=team_dict,
-            repositories={k: v for d in repositories["public"] for k, v in d.items()},
+            repositories=repositories,
         )
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")

@@ -31,8 +31,11 @@
                 </div>
                 <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
                   {% for repo_name in team_repos %}
-                  {# TODO: - Start here tomorrow suckers #}  <p class='govuk-body'>Test {{repositories[repo_name]}}</p>
-                      <p class='govuk-body'><a href="https://github.com/alphagov/{{repo_name}}" class="govuk-link">{{repo_name}}</a></p>
+                    <p class='govuk-body'><a href="https://github.com/alphagov/{{repo_name}}" class="govuk-link">{{repo_name}}</a></p>
+                    {% if repo_name in repositories %}
+                    {% set repo = repositories[repo_name] %}
+                    <p class='govuk-body'>{{ repo.pr_final_status }}</p>
+                    {% endif %}
                   {% endfor %}
                 </div>
               </div>
