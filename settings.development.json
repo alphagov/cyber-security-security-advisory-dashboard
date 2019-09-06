@@ -1,0 +1,6 @@
+{
+  "token": {
+    "source": "env",
+    "name": "TOKEN"
+  }
+}

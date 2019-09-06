@@ -9,6 +9,19 @@ import boto3
 SETTNGS = None
 
 
+def load():
+    if not SETTNGS:
+        try:
+
+            env = os.environ["FLASK_ENV"]
+            with open(f"settings.{env}.json", "r") as settings_file:
+                SETTINGS = Dict(json.loads(settings_file.read()))
+        except:
+            SETTINGS = {}
+
+    return SETTINGS
+
+
 def get_ssm_client():
     settings = load()
     region = settings.get("aws_region")
@@ -23,20 +36,6 @@ def get_ssm_client():
     else:
         ssm = None
     return ssm
-
-
-def load():
-    if not SETTNGS:
-        try:
-
-            env = os.environ["FLASK_ENV"]
-            with open("settings.json", "r") as settings_file:
-                settings = Dict(json.loads(settings_file.read()))
-                SETTINGS = settings[env]
-        except:
-            SETTINGS = {}
-
-    return SETTINGS
 
 
 def get_value(name):
