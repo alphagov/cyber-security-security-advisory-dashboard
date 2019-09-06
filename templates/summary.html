@@ -1,113 +1,110 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/full_width_with_sideabar.html" %}
+{% block sidebar %}
+{% include "components/sidebars/summary_sidebar_menu.html" %}
+{% endblock %}
 {% block content %}
-  <div class="govuk-width-container">
-    <main class="govuk-main-wrapper " id="main-content" role="main">
-      <div class="govuk-body">
-        <div class="govuk-tabs" data-module="govuk-tabs">
-          <h1 class="govuk-tabs__title">
-            Dashboard
-          </h1>
-          <ul class="govuk-tabs__list">
-            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-              <a class="govuk-tabs__tab" href="#status">
-                All repositories by status
-              </a>
-            </li>
-            <li class="govuk-tabs__list-item">
-              <a class="govuk-tabs__tab" href="#severity">
-                Public vulnerable repositories by severity
-              </a>
-            </li>
-          </ul>
+  <div class="govuk-tabs" data-module="govuk-tabs">
+    <h1 class="govuk-tabs__title">
+      Dashboard
+    </h1>
+    <ul class="govuk-tabs__list">
+      <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+        <a class="govuk-tabs__tab" href="#status">
+          All repositories by status
+        </a>
+      </li>
+      <li class="govuk-tabs__list-item">
+        <a class="govuk-tabs__tab" href="#severity">
+          Public vulnerable repositories by severity
+        </a>
+      </li>
+    </ul>
 
-          <section class="govuk-tabs__panel" id="status">
-            <div class="govuk-grid-row">
-              <div class="govuk-grid-column-one-half">
-                <div class="chart-wrapper"
-                   type="donut"
-                   series="rows"
-                   above="true"
-                   ismultiple="false"
-                   palette='["#0362fc","#fc8c03","#a587c9","#8d8696"]'
-                >
-                  <table class="govuk-table">
-                    <caption class="govuk-table__caption">Repositories by status ({{ data.repositories.all }})</caption>
-                    <thead class="govuk-table__head">
-                      <tr class="govuk-table__row">
-                        <th class="govuk-table__header">Status</th>
-                        <th class="govuk-table__header govuk-table__header--numeric">Count</th>
-                      </tr>
-                    </thead>
-                    <tbody class="govuk-table__body">
-                      {% for status in data.repositories.by_status %}
-                      <tr class="govuk-table__row">
-                        <th class="govuk-table__header">
-                          {{ status }}
-                        </th>
-                        <td class="govuk-table__cell govuk-table__cell--numeric">
-                          {{ data.repositories.by_status[status] }}
-                        </td>
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="govuk-grid-column-one-half">
-                <p class="govuk-body">
-                  Repositories have been classified as archived or disabled first.
-                  For those which are neither archived or disabled they are separated
-                  into public or private.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section class="govuk-tabs__panel" id="severity">
-            <div class="govuk-grid-row">
-
-              <div class="govuk-grid-column-one-half">
-                <div class="chart-wrapper"
-                   type="donut"
-                   series="rows"
-                   above="true"
-                   ismultiple="false"
-                   palette='["#0362fc","#fcba03","#fc9003","#fc2803"]'
-                >
-                  <table class="govuk-table">
-                    <caption class="govuk-table__caption">Vulnerable by severity ({{ data.vulnerable.all }})</caption>
-                    <thead class="govuk-table__head">
-                      <tr class="govuk-table__row">
-                        <th class="govuk-table__header">Severity</th>
-                        <th class="govuk-table__header govuk-table__header--numeric">Count</th>
-                      </tr>
-                    </thead>
-                    <tbody class="govuk-table__body">
-                      {% for severity in data.vulnerable.severities %}
-                      <tr class="govuk-table__row">
-                        <th class="govuk-table__header">
-                          {{ severity }}
-                        </th>
-                        <td class="govuk-table__cell govuk-table__cell--numeric">
-                          {{ data.vulnerable.by_severity[severity] }}
-                        </td>
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="govuk-grid-column-one-half">
-                <p class="govuk-body">
-                  For repositories with vulnerabilities they are broken down by severity.
-                  For repositories with multiple vulnerabilities they are classified
-                  according to the most severe.
-                </p>
-              </div>
-            </div>
-          </section>
+    <section class="govuk-tabs__panel" id="status">
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-one-half">
+          <div class="chart-wrapper"
+             type="donut"
+             series="rows"
+             above="true"
+             ismultiple="false"
+             palette='["#0362fc","#fc8c03","#a587c9","#8d8696"]'
+          >
+            <table class="govuk-table">
+              <caption class="govuk-table__caption">Repositories by status ({{ data.repositories.all }})</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th class="govuk-table__header">Status</th>
+                  <th class="govuk-table__header govuk-table__header--numeric">Count</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                {% for status in data.repositories.by_status %}
+                <tr class="govuk-table__row">
+                  <th class="govuk-table__header">
+                    {{ status }}
+                  </th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">
+                    {{ data.repositories.by_status[status] }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <p class="govuk-body">
+            Repositories have been classified as archived or disabled first.
+            For those which are neither archived or disabled they are separated
+            into public or private.
+          </p>
         </div>
       </div>
-    </main>
+    </section>
+
+    <section class="govuk-tabs__panel" id="severity">
+      <div class="govuk-grid-row">
+
+        <div class="govuk-grid-column-one-half">
+          <div class="chart-wrapper"
+             type="donut"
+             series="rows"
+             above="true"
+             ismultiple="false"
+             palette='["#0362fc","#fcba03","#fc9003","#fc2803"]'
+          >
+            <table class="govuk-table">
+              <caption class="govuk-table__caption">Vulnerable by severity ({{ data.vulnerable.all }})</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th class="govuk-table__header">Severity</th>
+                  <th class="govuk-table__header govuk-table__header--numeric">Count</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                {% for severity in data.vulnerable.severities %}
+                <tr class="govuk-table__row">
+                  <th class="govuk-table__header">
+                    {{ severity }}
+                  </th>
+                  <td class="govuk-table__cell govuk-table__cell--numeric">
+                    {{ data.vulnerable.by_severity[severity] }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="govuk-grid-column-one-half">
+          <p class="govuk-body">
+            For repositories with vulnerabilities they are broken down by severity.
+            For repositories with multiple vulnerabilities they are classified
+            according to the most severe.
+          </p>
+        </div>
+      </div>
+    </section>
   </div>
 {% endblock %}
