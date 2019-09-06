@@ -7,9 +7,7 @@ from addict import Dict
 ROOT_URL = "https://api.dependabot.com"
 
 
-HEADERS={
-    "Authorization": "Personal %s" % os.environ["TOKEN"]
-}
+HEADERS = {"Authorization": "Personal %s" % os.environ["TOKEN"]}
 
 
 def get(path):
@@ -26,13 +24,13 @@ def get_parsed(path):
 
 def get_repos_by_status(org):
     accounts = get_parsed("/accounts")
-    states = ["active","inactive"]
+    states = ["active", "inactive"]
     repositories = {}
     for account in accounts:
         if account.attributes["github-login"] == org:
             for state in states:
-                repositories[state] = get_parsed(f"/repos?account-id={account.id}&account-type=org&installation-state={state}")
+                repositories[state] = get_parsed(
+                    f"/repos?account-id={account.id}&account-type=org&installation-state={state}"
+                )
 
     return repositories
-
-
