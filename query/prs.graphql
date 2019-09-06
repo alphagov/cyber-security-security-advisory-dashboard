@@ -1,0 +1,29 @@
+query {
+  organization(login:"alphagov") {
+    repositories(first:{{nth}}{{", after:\""+after+"\"" if after}}) {
+      nodes {
+        name
+        isArchived
+        isPrivate
+        isDisabled
+        pullRequests(first: 5, orderBy: {
+          direction: DESC,
+          field: UPDATED_AT}) {
+          edges {
+            node {
+              createdAt
+              merged
+              mergedAt
+              closed
+              closedAt
+            }
+          }
+        }
+      }
+      pageInfo {
+       endCursor
+       hasNextPage
+     }
+    }
+  }
+}

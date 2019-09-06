@@ -25,6 +25,12 @@ gulp:
 audit:
 	docker-compose run dashboard flask audit
 
+activity_refs:
+	docker-compose run dashboard flask activity_refs
+
+activity_prs:
+	docker-compose run dashboard flask activity_prs
+
 dependabot_status:
 	docker-compose run dashboard flask dependabot-status alphagov
 
@@ -36,3 +42,6 @@ build_routes:
 
 repo_owners:
 	docker-compose run dashboard flask repo-owners
+
+pr_status:
+	docker-compose run dashboard flask pr-status

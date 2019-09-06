@@ -11,14 +11,54 @@ query {
             node {
               topic {
                 id
-                name 
+                name
+              }
+            }
+          }
+        }
+        isArchived
+        isPrivate
+        isDisabled
+        pullRequests(last: 5, orderBy: {
+          direction: DESC,
+          field: UPDATED_AT}) {
+          edges {
+            node {
+              merged
+              mergedAt
+              closed
+              closedAt
+            }
+          }
+        }
+        refs(refPrefix: "refs/heads/", last:10, orderBy:{
+          direction: DESC,
+          field: TAG_COMMIT_DATE
+        }) {
+          edges {
+            node {
+              name
+              target {
+                oid
+                abbreviatedOid
+                ... on Commit{
+                  history(first:10){
+                    totalCount
+                    edges{
+                      node{
+                        ... on Commit{
+                          committedDate
+                          abbreviatedOid
+                          oid
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
           }
-        isArchived
-        isPrivate
-        isDisabled
+        }
         vulnerabilityAlerts(first:10) {
           edges {
             node {

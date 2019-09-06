@@ -3,11 +3,14 @@ import json
 import time
 import traceback
 from collections import defaultdict, Counter
+import warnings
 
 import click
 from flask import Flask
 from flask import render_template
 from addict import Dict
+import arrow
+from arrow.factory import ArrowParseWarning
 
 import pgraph
 import repository_summarizer
@@ -16,12 +19,12 @@ import stats
 import dependabot_api
 import github_rest_client
 
-
+warnings.simplefilter("ignore", ArrowParseWarning)
 app = Flask(__name__, static_url_path="/assets")
 
 
 @app.cli.command("audit")
-def cronable_audit():
+def cronable_vulnerability_audit():
 
     try:
         cursor = None
@@ -70,6 +73,74 @@ def cronable_audit():
 
         updated = True
     except Exception as err:
+        updated = False
+    return updated
+
+
+@app.cli.command("activity_refs")
+def activity_refs_audit():
+    try:
+        cursor = None
+        last = False
+        repository_list = []
+
+        while not last:
+
+            page = pgraph.query("refs", nth=50, after=cursor)
+
+            repository_list.extend(page.organization.repositories.nodes)
+            last = not page.organization.repositories.pageInfo.hasNextPage
+            cursor = page.organization.repositories.pageInfo.endCursor
+
+
+        total = len(repository_list)
+        print(f"Repository list count: {total}", sys.stderr)
+
+        repository_lookup = {repo.name: repo for repo in repository_list}
+
+        total = len(repository_lookup.keys())
+        print(f"Repository lookup count: {total}", sys.stderr)
+
+        with open("output/activity_refs.json", "w") as repositories_file:
+            repositories_file.write(json.dumps(repository_lookup, indent=2))
+
+        updated = True
+    except Exception as err:
+        print("Failed to run activity GQL: " + str(err), sys.stderr)
+        updated = False
+    return updated
+
+
+@app.cli.command("activity_prs")
+def activity_prs_audit():
+    try:
+        cursor = None
+        last = False
+        repository_list = []
+
+        while not last:
+
+            page = pgraph.query("prs", nth=100, after=cursor)
+
+            repository_list.extend(page.organization.repositories.nodes)
+            last = not page.organization.repositories.pageInfo.hasNextPage
+            cursor = page.organization.repositories.pageInfo.endCursor
+
+
+        total = len(repository_list)
+        print(f"Repository list count: {total}", sys.stderr)
+
+        repository_lookup = {repo.name: repo for repo in repository_list}
+
+        total = len(repository_lookup.keys())
+        print(f"Repository lookup count: {total}", sys.stderr)
+
+        with open("output/activity_prs.json", "w") as repositories_file:
+            repositories_file.write(json.dumps(repository_lookup, indent=2))
+
+        updated = True
+    except Exception as err:
+        print("Failed to run activity GQL: " + str(err), sys.stderr)
         updated = False
     return updated
 
@@ -139,17 +210,53 @@ def repo_owners():
     list_topics = defaultdict(list)
     with open("output/repositories.json", "r") as repositories_file:
         repositories = Dict(json.loads(repositories_file.read()))
-        for repo in repositories["public"]:
+    for repo in repositories["public"]:
 
-            if repo.repositoryTopics.edges:
-                for topics in repo.repositoryTopics.edges:
-                    list_owners[repo.name].append(topics.node.topic.name)
-                    list_topics[topics.node.topic.name].append(repo.name)
+        if repo.repositoryTopics.edges:
+            for topics in repo.repositoryTopics.edges:
+                list_owners[repo.name].append(topics.node.topic.name)
+                list_topics[topics.node.topic.name].append(repo.name)
     with open("output/owners.json", "w") as owners_file:
         owners_file.write(json.dumps(list_owners, indent=2))
 
     with open("output/topics.json", "w") as topics_file:
         topics_file.write(json.dumps(list_topics, indent=2))
+
+
+@app.cli.command("pr-status")
+def pr_status():
+    now = arrow.utcnow()
+    with open("output/activity_prs.json", "r") as repositories_file:
+        repositories = Dict(json.loads(repositories_file.read()))
+    for repo_name, repo in repositories.items():
+
+        pr_final_status = "No pull requests in this repository"
+
+        if repo.pullRequests.edges:
+            node = repo.pullRequests.edges[0].node
+
+            if node.merged:
+                reference_date = arrow.get(node.mergedAt)
+                pr_status = "merged"
+            elif node.closed:
+                reference_date = arrow.get(node.closedAt)
+                pr_status = "closed"
+            else:
+                reference_date = arrow.get(node.createdAt)
+                pr_status = "open"
+
+            if reference_date < now.shift(years=-1):
+                pr_final_status = f"Last pull request more than a year ago ({pr_status})"
+            elif reference_date < now.shift(months=-1):
+                pr_final_status = f"Last pull request more than a month ago ({pr_status})"
+            elif reference_date < now.shift(weeks=-1):
+                pr_final_status = f"Last pull request more than a week ago ({pr_status})"
+            else:
+                pr_final_status = f"Last pull request this week ({pr_status})"
+
+        repo.pr_final_status = pr_final_status
+    with open("output/activity_prs.json", "w") as repositories_file:
+        repositories_file.write(json.dumps(repositories, indent=2))
 
 
 @app.route("/")
@@ -179,6 +286,9 @@ def route_owners():
             topics = json.loads(topics_file.read())
         with open("teams.json", "r") as teams_file:
             teams = json.loads(teams_file.read())
+        with open("output/activity_prs.json", "r") as repositories_file:
+            repositories = Dict(json.loads(repositories_file.read()))
+
         team_dict = defaultdict(set)
         for team in teams.keys():
             for repos in topics[team]:
@@ -189,8 +299,14 @@ def route_owners():
             for topic_name in set(topics.keys()) - set(teams.keys())
         }
 
+        total = len([*repositories.keys()])
+        print(f"Count of repos in lookup: {total}", sys.stderr)
+
         return render_template(
-            "repo_owners.html", other_topics=other_topics, team_dict=team_dict
+            "repo_owners.html",
+            other_topics=other_topics,
+            team_dict=team_dict,
+            repositories=repositories,
         )
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
