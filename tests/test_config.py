@@ -1,9 +1,10 @@
 import os
+import sys
+
 import config
 
-
+REGION = "eu-west-1"
 token_value = "123abc"
-os.environ["FLASK_ENV"] == "development"
 os.environ["TOKEN"] == token_value
 
 
@@ -12,7 +13,9 @@ def test_load():
     Test that the settings.json file loads and parses successfully
     """
     settings = config.load()
+    print(settings, sys.stderr)
     assert settings, "Environment settings loaded"
+    assert settings.token.source == "env", "Token source is set to env var"
 
 
 def test_get_value():

@@ -2,5 +2,12 @@
   "token": {
     "source": "env",
     "name": "TOKEN"
+  },
+  "storage": {
+    "source": "this",
+    "name": {
+      "type": "local",
+      "location": "output"
+    }
   }
 }

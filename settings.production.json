@@ -5,6 +5,14 @@
   },
   "aws_region": {
     "source": "this",
-    "name": "eu-west-2"
+    "name": "eu-west-1"
+  },
+  "storage": {
+    "source": "this",
+    "name": {
+      "type": "s3",
+      "location": "ssd-test-to-be-removed",
+      "region": "eu-west-1"
+    }
   }
 }

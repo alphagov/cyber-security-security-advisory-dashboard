@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 
 
@@ -6,25 +7,39 @@ from addict import Dict
 import boto3
 
 
-SETTNGS = None
+SETTINGS = None
+REGION = None
+
+
+def set_region(region):
+    global REGION
+    REGION = region
 
 
 def load():
-    if not SETTNGS:
+    global SETTINGS
+    if not SETTINGS:
         try:
+            # Unset all empty env vars.
+            for var, val in os.environ.items():
+                if val == "":
+                    del os.environ[var]
 
             env = os.environ["FLASK_ENV"]
-            with open(f"settings.{env}.json", "r") as settings_file:
+            settings_file = f"settings.{env}.json"
+            # print(f"Settings file: {settings_file}", sys.stderr)
+            with open(settings_file, "r") as settings_file:
                 SETTINGS = Dict(json.loads(settings_file.read()))
+                set_region(get_value("aws_region"))
+
         except:
-            SETTINGS = {}
+            SETTINGS = Dict({})
 
     return SETTINGS
 
 
 def get_ssm_client():
-    settings = load()
-    region = settings.get("aws_region")
+    region = get_value("aws_region")
     if "AWS_SECRET_ACCESS_KEY" in os.environ:
         ssm = boto3.client(
             "ssm",
@@ -40,7 +55,8 @@ def get_ssm_client():
 
 def get_value(name):
     settings = load()
-    setting = settings.get(name, {"source": None})
+    setting = settings.get(name, Dict({"source": None}))
+    value = None
     if "source" in setting:
         if setting.source == "env":
             value = os.environ[setting.name]
@@ -52,8 +68,9 @@ def get_value(name):
                 value = param["Value"]
             else:
                 value = None
-        else:
-            value = None
+        elif setting.source == "this":
+            value = setting.name
+
     return value
 
 
