@@ -19,7 +19,7 @@ transport = RequestsHTTPTransport(
     url=url,
     use_json=True,
     headers={
-        "Authorization": "token %s" % api_token,
+        "Authorization": "Bearer %s" % api_token,
         "Accept": "application/vnd.github.vixen-preview+json",
     },
 )
