@@ -7,6 +7,10 @@
     "source": "this",
     "name": "eu-west-1"
   },
+  "github_org": {
+    "source": "env",
+    "name": "GITHUB_ORG"
+  },
   "storage": {
     "source": "this",
     "name": {
