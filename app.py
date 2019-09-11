@@ -6,7 +6,6 @@ import traceback
 from collections import defaultdict, Counter
 import warnings
 
-import click
 from flask import Flask
 from flask import render_template
 from addict import Dict
@@ -26,16 +25,13 @@ import storage
 warnings.simplefilter("ignore", ArrowParseWarning)
 app = Flask(__name__, static_url_path="/assets")
 settings = config.load()
-# print(str(settings))
 
 if settings.aws_region:
     storage.set_region(config.get_value("aws_region"))
 
 if settings.storage:
     storage_options = config.get_value("storage")
-    # print("storage.options is a " + str(type(storage_options)), sys.stderr)
     storage.set_options(storage_options)
-    # print(str(storage.get_options()))
 
 
 @app.cli.command("audit")
@@ -286,14 +282,32 @@ def route_data_overview_alert_status(today):
     return status
 
 
+def get_header():
+    org_name = config.get_value("github_org").title()
+    return {
+        "app_name": f"{org_name} Audit"
+    }
+
 @app.route("/")
 def route_home():
     try:
         today = datetime.date.today().isoformat()
-        repo_stats = storage.read_json(f"{today}/routes/home.json")
-        return render_template("summary.html", data=repo_stats)
+
+        content = {
+            "title": "Home"
+        }
+        return render_template("pages/home.html", header=get_header(), content=content)
     except FileNotFoundError as err:
-        return render_template("error.html", message="Something went wrong.")
+        return render_template("pages/error.html", message="Something went wrong.")
+
+@app.route("/overview")
+def route_overview():
+    try:
+        today = datetime.date.today().isoformat()
+        repo_stats = storage.read_json(f"{today}/routes/home.json")
+        return render_template("pages/summary.html", data=repo_stats)
+    except FileNotFoundError as err:
+        return render_template("pages/error.html", message="Something went wrong.")
 
 
 @app.route("/alert-status")
@@ -301,9 +315,9 @@ def route_alert_status():
     try:
         today = datetime.date.today().isoformat()
         alert_status = storage.read_json(f"{today}/routes/count_alert_status.json")
-        return render_template("alert_status.html", data=alert_status)
+        return render_template("pages/alert_status.html", data=alert_status)
     except FileNotFoundError as err:
-        return render_template("error.html", message="Something went wrong.")
+        return render_template("pages/error.html", message="Something went wrong.")
 
 
 @app.route("/repo-owners")
@@ -332,10 +346,10 @@ def route_owners():
         print(f"Count of repos in lookup: {total}", sys.stderr)
 
         return render_template(
-            "repo_owners.html",
+            "pages/repo_owners.html",
             other_topics=other_topics,
             team_dict=team_dict,
             repositories=repositories,
         )
     except FileNotFoundError as err:
-        return render_template("error.html", message="Something went wrong.")
+        return render_template("pages/error.html", message="Something went wrong.")
