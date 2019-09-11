@@ -288,42 +288,61 @@ def get_header():
         "app_name": f"{org_name} Audit"
     }
 
+def get_error_data(message):
+    return {
+        "header": get_header(),
+        "content": {
+            "title": message
+        },
+        "message": message
+    }
+
 @app.route("/")
 def route_home():
     try:
         today = datetime.date.today().isoformat()
 
         content = {
-            "title": "Home"
+            "title": "Introduction",
+            "org": config.get_value("github_org")
         }
         return render_template("pages/home.html", header=get_header(), content=content)
     except FileNotFoundError as err:
-        return render_template("pages/error.html", message="Something went wrong.")
+        return render_template("pages/error.html", **get_error_data("Something went wrong."))
 
 @app.route("/overview")
 def route_overview():
     try:
         today = datetime.date.today().isoformat()
+        content = {
+            "title": "Overview"
+        }
         repo_stats = storage.read_json(f"{today}/routes/home.json")
-        return render_template("pages/summary.html", data=repo_stats)
+        return render_template("pages/summary.html", header=get_header(), content=content, data=repo_stats)
     except FileNotFoundError as err:
-        return render_template("pages/error.html", message="Something went wrong.")
+        return render_template("pages/error.html", **get_error_data("Something went wrong."))
 
 
 @app.route("/alert-status")
 def route_alert_status():
     try:
         today = datetime.date.today().isoformat()
+        content = {
+            "title": "Overview - Alert status"
+        }
         alert_status = storage.read_json(f"{today}/routes/count_alert_status.json")
-        return render_template("pages/alert_status.html", data=alert_status)
+        return render_template("pages/alert_status.html", header=get_header(), content=content, data=alert_status)
     except FileNotFoundError as err:
-        return render_template("pages/error.html", message="Something went wrong.")
+        return render_template("pages/error.html", **get_error_data("Something went wrong."))
 
 
-@app.route("/repo-owners")
+@app.route("/by-repository")
 def route_owners():
     try:
         today = datetime.date.today().isoformat()
+        content = {
+            "title": "By repository"
+        }
         topics = storage.read_json(f"{today}/data/topics.json")
         repositories = storage.read_json(f"{today}/data/activity_prs.json")
 
@@ -347,9 +366,11 @@ def route_owners():
 
         return render_template(
             "pages/repo_owners.html",
+            header=get_header(),
+            content=content,
             other_topics=other_topics,
             team_dict=team_dict,
             repositories=repositories,
         )
     except FileNotFoundError as err:
-        return render_template("pages/error.html", message="Something went wrong.")
+        return render_template("pages/error.html", **get_error_data("Something went wrong."))
