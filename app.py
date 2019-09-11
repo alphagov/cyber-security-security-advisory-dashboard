@@ -1,6 +1,7 @@
 import sys
 import json
 import time
+import datetime
 import traceback
 from collections import defaultdict, Counter
 import warnings
@@ -21,6 +22,7 @@ import github_rest_client
 import config
 import storage
 
+
 warnings.simplefilter("ignore", ArrowParseWarning)
 app = Flask(__name__, static_url_path="/assets")
 settings = config.load()
@@ -38,142 +40,27 @@ if settings.storage:
 
 @app.cli.command("audit")
 def cronable_vulnerability_audit():
+    today = datetime.date.today().isoformat()
+    org = config.get_value("github_org")
+    # todo - set maintenance mode
+    repository_status = get_github_repositories_and_classify_by_status(org, today)
+    refs_status = get_github_activity_refs_audit(org, today)
+    prs_status = get_github_activity_prs_audit(org, today)
+    dbot_status = get_dependabot_status(org, today)
+    ownership_status = analyse_repo_ownership(today)
+    pr_status = analyse_pull_request_status(today)
 
-    try:
-        cursor = None
-        last = False
-        repository_list = []
-
-        while not last:
-
-            page = pgraph.query("all", nth=100, after=cursor)
-
-            repository_list.extend(page.organization.repositories.nodes)
-            last = not page.organization.repositories.pageInfo.hasNextPage
-            cursor = page.organization.repositories.pageInfo.endCursor
-
-        repo_count = len(repository_list)
-        repositories_by_status = repository_summarizer.group_by_status(repository_list)
-        status_counts = stats.count_types(repositories_by_status)
-
-        vulnerable_list = [
-            node
-            for node in repositories_by_status.public
-            if node.vulnerabilityAlerts.edges
-        ]
-        vulnerable_count = len(vulnerable_list)
-        vulnerable_by_severity = vulnerability_summarizer.group_by_severity(
-            vulnerable_list
-        )
-        severity_counts = stats.count_types(vulnerable_by_severity)
-        severities = vulnerability_summarizer.SEVERITIES
-
-        template_data = {
-            "repositories": {"all": repo_count, "by_status": status_counts},
-            "vulnerable": {
-                "severities": severities,
-                "all": vulnerable_count,
-                "by_severity": severity_counts,
-                "repositories": vulnerable_by_severity,
-            },
-        }
-
-        updated = storage.save_json("repositories.json", repositories_by_status)
-
-        # TODO move to build_routes
-        home_status = storage.save_json("home.json", template_data)
-
-        updated = True
-    except Exception as err:
-        updated = False
-    return updated
-
-
-@app.cli.command("activity_refs")
-def activity_refs_audit():
-    try:
-        cursor = None
-        last = False
-        repository_list = []
-
-        while not last:
-
-            page = pgraph.query("refs", nth=50, after=cursor)
-
-            repository_list.extend(page.organization.repositories.nodes)
-            last = not page.organization.repositories.pageInfo.hasNextPage
-            cursor = page.organization.repositories.pageInfo.endCursor
-
-        total = len(repository_list)
-        print(f"Repository list count: {total}", sys.stderr)
-
-        repository_lookup = {repo.name: repo for repo in repository_list}
-
-        total = len(repository_lookup.keys())
-        print(f"Repository lookup count: {total}", sys.stderr)
-
-        updated = storage.save_json("activity_refs.json", repository_lookup)
-
-    except Exception as err:
-        print("Failed to run activity GQL: " + str(err), sys.stderr)
-        updated = False
-    return updated
-
-
-@app.cli.command("activity_prs")
-def activity_prs_audit():
-    try:
-        cursor = None
-        last = False
-        repository_list = []
-
-        while not last:
-
-            page = pgraph.query("prs", nth=100, after=cursor)
-
-            repository_list.extend(page.organization.repositories.nodes)
-            last = not page.organization.repositories.pageInfo.hasNextPage
-            cursor = page.organization.repositories.pageInfo.endCursor
-
-        total = len(repository_list)
-        print(f"Repository list count: {total}", sys.stderr)
-
-        repository_lookup = {repo.name: repo for repo in repository_list}
-
-        total = len(repository_lookup.keys())
-        print(f"Repository lookup count: {total}", sys.stderr)
-
-        updated = storage.save_json("activity_prs.json", repository_lookup)
-
-    except Exception as err:
-        print("Failed to run activity GQL: " + str(err), sys.stderr)
-        updated = False
-    return updated
-
-
-@app.cli.command("dependabot-status")
-@click.argument("org")
-def dependabot_status(org):
-    try:
-        updated = False
-        data = dependabot_api.get_repos_by_status(org)
-        counts = stats.count_types(data)
-        output = Dict()
-        output.counts = counts
-        output.repositories = data
-
-        updated = storage.save_json("dependabot_status.json", output)
-    except Exception:
-        updated = False
-
-    return updated
+    build_route_data(today)
+    # todo - set enabled mode
+    return True
 
 
 @app.cli.command("alert-status")
-def resolve_alert_status():
+def get_github_resolve_alert_status():
+    today = datetime.date.today().isoformat()
     by_alert_status = defaultdict(list)
 
-    repositories = storage.read_json("repositories.json")
+    repositories = storage.read_json(f"{today}/data/repositories.json")
     for repo in repositories["public"]:
         response = github_rest_client.get(
             f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts"
@@ -191,26 +78,114 @@ def resolve_alert_status():
         by_alert_status[status].append(repo)
         time.sleep(1)
 
-    status = storage.save_json("alert_status.json", by_alert_status)
+    status = storage.save_json("all/data/alert_status.json", by_alert_status)
     return status
 
 
-@app.cli.command("build-routes")
-def build_routes():
-    by_alert_status = {"public": {}}
-    alert_statuses = storage.read_json("alert_status.json")
-    for status, repos in alert_statuses.items():
-        by_alert_status["public"][status] = len(repos)
+def get_github_repositories_and_classify_by_status(org, today):
+    try:
+        cursor = None
+        last = False
+        repository_list = []
 
-    status = storage.save_json("count_alert_status.json", by_alert_status)
-    return status
+        while not last:
+
+            page = pgraph.query("all", org=org, nth=100, after=cursor)
+
+            repository_list.extend(page.organization.repositories.nodes)
+            last = not page.organization.repositories.pageInfo.hasNextPage
+            cursor = page.organization.repositories.pageInfo.endCursor
+
+        repositories_by_status = repository_summarizer.group_by_status(repository_list)
+        save_to = f"{today}/data/repositories.json"
+        updated = storage.save_json(save_to, repositories_by_status)
+
+    except Exception as err:
+        print(str(err), sys.stderr)
+        updated = False
+    return updated
 
 
-@app.cli.command("repo-owners")
-def repo_owners():
+def get_github_activity_refs_audit(org, today):
+    try:
+        cursor = None
+        last = False
+        repository_list = []
+
+        while not last:
+
+            page = pgraph.query("refs", org=org, nth=50, after=cursor)
+
+            repository_list.extend(page.organization.repositories.nodes)
+            last = not page.organization.repositories.pageInfo.hasNextPage
+            cursor = page.organization.repositories.pageInfo.endCursor
+
+        total = len(repository_list)
+        print(f"Repository list count: {total}", sys.stderr)
+
+        repository_lookup = {repo.name: repo for repo in repository_list}
+
+        total = len(repository_lookup.keys())
+        print(f"Repository lookup count: {total}", sys.stderr)
+
+        updated = storage.save_json(f"{today}/data/activity_refs.json", repository_lookup)
+
+    except Exception as err:
+        print("Failed to run activity GQL: " + str(err), sys.stderr)
+        updated = False
+    return updated
+
+
+def get_github_activity_prs_audit(org, today):
+    try:
+        cursor = None
+        last = False
+        repository_list = []
+
+        while not last:
+
+            page = pgraph.query("prs", org=org, nth=100, after=cursor)
+
+            repository_list.extend(page.organization.repositories.nodes)
+            last = not page.organization.repositories.pageInfo.hasNextPage
+            cursor = page.organization.repositories.pageInfo.endCursor
+
+        total = len(repository_list)
+        print(f"Repository list count: {total}", sys.stderr)
+
+        repository_lookup = {repo.name: repo for repo in repository_list}
+
+        total = len(repository_lookup.keys())
+        print(f"Repository lookup count: {total}", sys.stderr)
+
+        updated = storage.save_json(f"{today}/data/activity_prs.json", repository_lookup)
+
+    except Exception as err:
+        print("Failed to run activity GQL: " + str(err), sys.stderr)
+        updated = False
+    return updated
+
+
+def get_dependabot_status(org, today):
+    try:
+        updated = False
+        data = dependabot_api.get_repos_by_status(org)
+        counts = stats.count_types(data)
+        output = Dict()
+        output.counts = counts
+        output.repositories = data
+
+        updated = storage.save_json(f"{today}/data/dependabot_status.json", output)
+    except Exception:
+        updated = False
+
+    return updated
+
+
+def analyse_repo_ownership(today):
     list_owners = defaultdict(list)
     list_topics = defaultdict(list)
-    repositories = storage.read_json("repositories.json")
+    repositories = storage.read_json(f"{today}/data/repositories.json")
     for repo in repositories["public"]:
 
         if repo.repositoryTopics.edges:
@@ -218,14 +193,14 @@ def repo_owners():
                 list_owners[repo.name].append(topics.node.topic.name)
                 list_topics[topics.node.topic.name].append(repo.name)
 
-    owner_status = storage.save_json("owners.json", list_owners)
-    topic_status = storage.save_json("topics.json", list_topics)
+    owner_status = storage.save_json(f"{today}/data/owners.json", list_owners)
+    topic_status = storage.save_json(f"{today}/data/topics.json", list_topics)
+    return owner_status and topic_status
 
 
-@app.cli.command("pr-status")
-def pr_status():
+def analyse_pull_request_status(today):
     now = arrow.utcnow()
-    repositories = storage.read_json("activity_prs.json")
+    repositories = storage.read_json(f"{today}/data/activity_prs.json")
     for repo_name, repo in repositories.items():
 
         pr_final_status = "No pull requests in this repository"
@@ -260,13 +235,62 @@ def pr_status():
 
         repo.pr_final_status = pr_final_status
 
-    storage.save_json("activity_prs.json", repositories)
+    status = storage.save_json(f"{today}/data/activity_prs.json", repositories)
+    return status
+
+
+def build_route_data(today):
+    route_data_overview_repositories_by_status(today)
+    route_data_overview_alert_status(today)
+
+
+def route_data_overview_repositories_by_status(today):
+    repositories_by_status = storage.read_json(f"{today}/data/repositories.json")
+    status_counts = stats.count_types(repositories_by_status)
+    repo_count = sum(status_counts.values())
+
+    vulnerable_list = [
+        node
+        for node in repositories_by_status.public
+        if node.vulnerabilityAlerts.edges
+    ]
+    vulnerable_count = len(vulnerable_list)
+    vulnerable_by_severity = vulnerability_summarizer.group_by_severity(
+        vulnerable_list
+    )
+    severity_counts = stats.count_types(vulnerable_by_severity)
+    severities = vulnerability_summarizer.SEVERITIES
+
+    template_data = {
+        "repositories": {"all": repo_count, "by_status": status_counts},
+        "vulnerable": {
+            "severities": severities,
+            "all": vulnerable_count,
+            "by_severity": severity_counts,
+            "repositories": vulnerable_by_severity,
+        },
+    }
+
+    home_status = storage.save_json(f"{today}/routes/home.json", template_data)
+    return home_status
+
+
+def route_data_overview_alert_status(today):
+
+    by_alert_status = {"public": {}}
+    alert_statuses = storage.read_json(f"all/data/alert_status.json")
+    for status, repos in alert_statuses.items():
+        by_alert_status["public"][status] = len(repos)
+
+    status = storage.save_json(f"{today}/routes/count_alert_status.json", by_alert_status)
+    return status
 
 
 @app.route("/")
 def route_home():
     try:
-        repo_stats = storage.read_json("home.json")
+        today = datetime.date.today().isoformat()
+        repo_stats = storage.read_json(f"{today}/routes/home.json")
         return render_template("summary.html", data=repo_stats)
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
@@ -275,7 +299,8 @@ def route_home():
 @app.route("/alert-status")
 def route_alert_status():
     try:
-        alert_status = storage.read_json("count_alert_status.json")
+        today = datetime.date.today().isoformat()
+        alert_status = storage.read_json(f"{today}/routes/count_alert_status.json")
         return render_template("alert_status.html", data=alert_status)
     except FileNotFoundError as err:
         return render_template("error.html", message="Something went wrong.")
@@ -284,8 +309,9 @@ def route_alert_status():
 @app.route("/repo-owners")
 def route_owners():
     try:
-        topics = storage.read_json("topics.json")
-        repositories = storage.read_json("activity_prs.json")
+        today = datetime.date.today().isoformat()
+        topics = storage.read_json(f"{today}/data/topics.json")
+        repositories = storage.read_json(f"{today}/data/activity_prs.json")
 
         # This one can't currently use storage because it's
         # outside the output folder and not written to S3.
