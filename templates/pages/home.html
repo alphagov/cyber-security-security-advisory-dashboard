@@ -1,0 +1,23 @@
+{% extends "layouts/full_width_no_sideabar.html" %}
+{% block sidebar %}
+{% endblock %}
+{% block content %}
+  <h1 class="govuk-heading-l">Introduction</h1>
+  <p class="govuk-body">
+    This tool captures and analyses a bunch of data about the repositories within a GitHub organisation.
+  </p>
+  <p class="govuk-body">
+    The goal is to identify potential security improvements in terms of:
+    <ul>
+      <li>
+        configuring active monitoring and patching.
+      </li>
+      <li>
+        identifying known vulnerabilities
+      </li>
+      <li>
+        identifying un-archived and un-maintained repositories
+      </li>
+    </ul>
+  </p>
+{% endblock %}
