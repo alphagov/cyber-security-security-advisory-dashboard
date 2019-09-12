@@ -405,8 +405,8 @@ def route_overview_repository_status():
         )
 
 
-@app.route("/overview/repository-vulnerabilities")
-def route_overview_repository_vulnerabilities():
+@app.route("/overview/vulnerable-repositories")
+def route_overview_vulnerable_repositories():
     try:
         # today = datetime.date.today().isoformat()
         today = get_current_audit()
@@ -417,7 +417,7 @@ def route_overview_repository_vulnerabilities():
         footer = {"updated": today}
         repo_stats = storage.read_json(f"{today}/routes/overview.json")
         return render_template(
-            "pages/overview_repository_vulnerabilities.html",
+            "pages/overview_vulnerable_repositories.html",
             header=get_header(),
             content=content,
             footer=footer,
@@ -429,8 +429,8 @@ def route_overview_repository_vulnerabilities():
         )
 
 
-@app.route("/overview/alert-status")
-def route_alert_status():
+@app.route("/overview/repository-monitoring-status")
+def route_overview_repository_monitoring_status():
     try:
         # today = datetime.date.today().isoformat()
         today = get_current_audit()
@@ -439,7 +439,7 @@ def route_alert_status():
 
         alert_status = storage.read_json(f"{today}/routes/count_alert_status.json")
         return render_template(
-            "pages/overview_alert_status.html",
+            "pages/overview_repository_monitoring_status.html",
             header=get_header(),
             content=content,
             footer=footer,
@@ -452,7 +452,7 @@ def route_alert_status():
 
 
 @app.route("/by-repository")
-def route_owners():
+def route_by_repository():
     try:
         # today = datetime.date.today().isoformat()
         today = get_current_audit()
@@ -480,7 +480,7 @@ def route_owners():
         print(f"Count of repos in lookup: {total}", sys.stderr)
 
         return render_template(
-            "pages/repo_owners.html",
+            "pages/by_repository.html",
             header=get_header(),
             content=content,
             footer=footer,
