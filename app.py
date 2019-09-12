@@ -335,11 +335,7 @@ def route_data_overview_alert_status(today):
 def get_header():
     org = config.get_value("github_org")
     org_name = org.title()
-    return {
-        "org": org,
-        "app_name": f"{org_name} Audit",
-        "route": request.path
-    }
+    return {"org": org, "app_name": f"{org_name} Audit", "route": request.path}
 
 
 def get_error_data(message):
