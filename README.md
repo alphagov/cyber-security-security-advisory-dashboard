@@ -11,10 +11,16 @@ docker --version
 docker-compose --version
 ```
 
+A GITHUB_ORG env var containing the organisation login short name 
+from the GitHub URL.
+
 A TOKEN env var containing a read-only personal access token for a GitHub org 
 admin user. 
 
-    TODO implement secrets management for this before go live  
+Alternatively the token can be retrieved from SSM if the make command 
+is run via aws-vault or similar to set AWS credentials.  
+
+Create or change the `settings.[env].json` file 
 
 ## Setup 
 
@@ -35,6 +41,10 @@ Gets the paged repository data with vulnerability alerts
 make audit
 ```
 
+The audit process runs the api calls to collect vulnerability and 
+activity data from github as well as the dependabot config API to 
+determine which repositories have dependabot enabled. 
+
 ### alert_status 
 
 For each repository call the v3 REST API to determine whether vulnerability
@@ -43,34 +53,8 @@ alerts are enabled.
 make alert_status
 ```
 
-### dependabot_status 
-
-Call the dependabot config API to determine which alphagov repositories
-have dependabot automated PRs enabled  
-```dependabot_status
-make dependabot_status
-```
-
-### build_routes
-
-Currently this just builds the /alert-status route template data file. 
-
-The idea is that this takes the raw api response data from GitHub and 
-Dependabot and builds the route json files to populate the route templates. 
-
-```build_routes
-make build_routes
-```
-
-### repo_owners
-
-Uses the `repositoryTopics` data to allocate repositories to teams. 
-```repo_owners
-make repo_owners
-```
-
-
-
+This task has been kept separate because currently it takes too long 
+to run. 
 
 ## Run a local dev server 
 
