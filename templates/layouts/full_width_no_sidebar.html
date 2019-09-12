@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="govuk-template ">
 
-{% set full_width = False %}
+{% set full_width = True %}
 
 <head>
   <meta charset="utf-8" />
@@ -39,10 +39,11 @@
 
   {% include "components/header/main.html" %}
 
-  <div class="govuk-width-container">
-    <main class="govuk-main-wrapper " id="main-content" role="main">
+  <div>
+    {% include "components/phase/phase_banner.html" %}
+    <main class="govuk-main-wrapper govuk-width-container" id="main-content" role="main">
+
       <div class="govuk-body">
-        {% include "components/phase/phase_banner.html" %}
         {% block content %}{% endblock %}
       </div>
     </main>

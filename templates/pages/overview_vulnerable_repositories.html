@@ -1,0 +1,91 @@
+{% extends "layouts/full_width_with_sidebar.html" %}
+{% block sidebar %}
+{% include "components/sidebars/overview_sidebar_menu.html" %}
+{% endblock %}
+{% block content %}
+  <h2 class="govuk-heading-l">
+    {{ content.title }}
+  </h2>
+  <div class="govuk-grid-row">
+
+    <div class="govuk-grid-column-one-half">
+      <div class="chart-wrapper"
+         type="donut"
+         series="rows"
+         above="true"
+         ismultiple="false"
+         palette='["#0362fc","#fcba03","#fc9003","#fc2803"]'
+      >
+        <table class="govuk-table">
+          <caption class="govuk-table__caption">Vulnerable by severity ({{ data.vulnerable.all }})</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">Severity</th>
+              <th class="govuk-table__header govuk-table__header--numeric">Count</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for severity in data.vulnerable.severities %}
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">
+                {{ severity | title }}
+              </th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">
+                {{ data.vulnerable.by_severity[severity] }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-half">
+      <p class="govuk-body">
+        For repositories with vulnerabilities they are broken down by severity.
+        For repositories with multiple vulnerabilities they are classified
+        according to the most severe.
+      </p>
+
+    </div>
+  </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+      {% for severity in data.vulnerable.severities | reverse %}
+        <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+        <h3 class="govuk-heading-m">
+          Most severe = {{ severity | title}} ({{ data.vulnerable.by_severity[severity] }})
+        </h3>
+        {% set repositories = data.vulnerable.repositories[severity] %}
+        {% for repo in repositories %}
+          <div>
+            <details class="govuk-details" data-module="govuk-details">
+              <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                  <a class="govuk-link" target="github" href="https://github.com/{{repo.owner.login}}/{{repo.name}}">
+                    {{ repo.name }}
+                  </a>
+                </span>
+              </summary>
+              <div class="govuk-details__text">
+                <h4 class="govuk-heading-s">Recommendations</h4>
+                {% for v_edge in repo.vulnerabilityAlerts.edges %}
+                  {% set vulnerability = v_edge.node %}
+                  {% for a_edge in vulnerability.securityAdvisory.vulnerabilities.edges %}
+                    {% set advisory = a_edge.node %}
+                    <p class="govuk-body">
+                      Patch {{ vulnerability.packageName }}
+                      from {{ vulnerability.vulnerableRequirements }}
+                      to {{ advisory.firstPatchedVersion.identifier }}
+                    </p>
+                  {% endfor %}
+                {% endfor %}
+              </div>
+            </details>
+          </div>
+        {% endfor %}
+      {% endfor %}
+
+    </div>
+  </div>
+{% endblock %}

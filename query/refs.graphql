@@ -1,5 +1,5 @@
 query {
-  organization(login:"alphagov") {
+  organization(login:"{{org}}") {
     repositories(first:{{nth}}{{", after:\""+after+"\"" if after}}) {
       nodes {
         name

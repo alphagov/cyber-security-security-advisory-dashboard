@@ -3,6 +3,10 @@
     "source": "env",
     "name": "TOKEN"
   },
+  "github_org": {
+    "source": "env",
+    "name": "GITHUB_ORG"
+  },
   "storage": {
     "source": "this",
     "name": {

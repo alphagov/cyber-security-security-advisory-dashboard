@@ -1,0 +1,49 @@
+{% extends "layouts/full_width_no_sidebar.html" %}
+{% block sidebar %}
+{% endblock %}
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Introduction</h1>
+      <p class="govuk-body">
+        This tool captures and analyses a bunch of data about the repositories
+        within the GitHub {{ content.org }} organisation.
+      </p>
+      <p class="govuk-body">
+        The goal is to identify potential security improvements in terms of:
+        <ul>
+          <li>
+            configuring active monitoring with GitHub security advisories
+          </li>
+          <li>
+            automated patching with Dependabot
+          </li>
+          <li>
+            identifying current known vulnerabilities
+          </li>
+          <li>
+            targeting high and critical severity patches
+          </li>
+          <li>
+            identifying un-archived and un-maintained repositories
+          </li>
+        </ul>
+      </p>
+      <p class="govuk-body">
+        The app has 2 primary pages
+      </p>
+      <h2 class="govuk-heading-m">
+        Overview
+      </h2>
+      <p class="govuk-body">
+        Shows statistics about the alphagov organisation.
+      </p>
+      <h2 class="govuk-heading-m">
+        By repository
+      </h2>
+      <p class="govuk-body">
+        Shows the individual repositories and their config.
+      </p>
+    </div>
+  </div>
+{% endblock %}

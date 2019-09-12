@@ -1,0 +1,52 @@
+{% extends "layouts/full_width_with_sidebar.html" %}
+{% block sidebar %}
+{% include "components/sidebars/overview_sidebar_menu.html" %}
+{% endblock %}
+{% block content %}
+  <h1 class="govuk-heading-l">
+    {{ content.title }}
+  </h1>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-half">
+      <div class="chart-wrapper"
+         type="donut"
+         series="rows"
+         above="true"
+         ismultiple="false"
+         palette="monochrome_blue"
+      >
+        <!-- '["#fc2803","#fc9003","#3fbd31"]' -->
+        <table class="govuk-table">
+          <caption class="govuk-table__caption">Public repositories by alert status</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">Status</th>
+              <th class="govuk-table__header govuk-table__header--numeric">Count</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for status in data.public %}
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">
+                {{ status | title }}
+              </th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">
+                {{ data.public[status] }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="govuk-grid-column-one-half">
+      <p class="govuk-body">
+        This is the split of public alphagov repositories which
+        have security alerts enabled.
+        Those that do are split between those that currenty contain
+        known vulnerabilities and those that are "clean".
+      </p>
+    </div>
+  </div>
+{% endblock %}

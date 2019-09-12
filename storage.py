@@ -44,9 +44,13 @@ def save(path, content):
     return status
 
 
-def read_json(path):
+def read_json(path, default=""):
     content = read(path)
-    parsed = Dict(json.loads(content))
+    try:
+        parsed = Dict(json.loads(content))
+    except json.decoder.JSONDecodeError:
+        print("Not decodable - returning default content", sys.stderr)
+        parsed = default
     return parsed
 
 

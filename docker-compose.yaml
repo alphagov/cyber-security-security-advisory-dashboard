@@ -11,6 +11,7 @@ services:
       - FLASK_APP=app.py
       - FLASK_ENV=development
       - TOKEN=${TOKEN}
+      - GITHUB_ORG=${GITHUB_ORG}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}

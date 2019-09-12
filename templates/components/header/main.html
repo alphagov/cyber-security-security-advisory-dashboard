@@ -1,0 +1,14 @@
+<header class="govuk-header " role="banner" data-module="govuk-header">
+  <div class="govuk-header__container {{ 'govuk-!-padding-2' if full_width else 'govuk-width-container' }}">
+    <div class="govuk-header__logo">
+      <a href="/" class="govuk-header__link govuk-header__link--homepage">
+        <span class="govuk-header__logotype">
+          <span class="govuk-header__logotype-text">
+            {{header.app_name}}
+          </span>
+        </span>
+      </a>
+    </div>
+    {% include "components/menu/main.html" %}
+  </div>
+</header>

@@ -1,0 +1,50 @@
+{% extends "layouts/full_width_with_sidebar.html" %}
+{% block sidebar %}
+{% include "components/sidebars/overview_sidebar_menu.html" %}
+{% endblock %}
+{% block content %}
+  <h2 class="govuk-heading-l">
+    {{ content.title }}
+  </h2>
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-half">
+      <div class="chart-wrapper"
+         type="donut"
+         series="rows"
+         above="true"
+         ismultiple="false"
+         palette='["#0362fc","#fc8c03","#a587c9","#8d8696"]'
+      >
+        <table class="govuk-table">
+          <caption class="govuk-table__caption">Repositories by status ({{ data.repositories.all }})</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">Status</th>
+              <th class="govuk-table__header govuk-table__header--numeric">Count</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for status in data.repositories.by_status %}
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">
+                {{ status | title }}
+              </th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">
+                {{ data.repositories.by_status[status] }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-half">
+      <p class="govuk-body">
+        Repositories have been classified as archived or disabled first.
+        For those which are neither archived or disabled they are separated
+        into public or private.
+      </p>
+    </div>
+  </div>
+{% endblock %}
