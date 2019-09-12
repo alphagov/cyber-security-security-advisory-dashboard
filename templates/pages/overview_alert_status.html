@@ -1,6 +1,11 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/full_width_with_sidebar.html" %}
+{% block sidebar %}
+{% include "components/sidebars/overview_sidebar_menu.html" %}
+{% endblock %}
 {% block content %}
-  <h1 class="govuk-heading-l">Public Repository Alert Status</h1>
+  <h1 class="govuk-heading-l">
+    {{ content.title }}
+  </h1>
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-one-half">
       <div class="chart-wrapper"
@@ -23,7 +28,7 @@
             {% for status in data.public %}
             <tr class="govuk-table__row">
               <th class="govuk-table__header">
-                {{ status }}
+                {{ status | title }}
               </th>
               <td class="govuk-table__cell govuk-table__cell--numeric">
                 {{ data.public[status] }}
