@@ -35,20 +35,17 @@ if settings.storage:
     storage.set_options(storage_options)
 
 
-@app.template_filter('iso_date')
+@app.template_filter("iso_date")
 def filter_iso_date(iso_date):
     """Convert a string to all caps."""
-    parsed = arrow.get(iso_date,"YYYY-MM-DD")
+    parsed = arrow.get(iso_date, "YYYY-MM-DD")
     return parsed.format("DD/MM/YYYY")
 
 
 def get_history():
     history_file = "all/data/history.json"
 
-    default = Dict({
-        "current": None,
-        "alltime": {}
-    })
+    default = Dict({"current": None, "alltime": {}})
     history = storage.read_json(history_file, default=default)
 
     print(str(history), sys.stderr)
@@ -174,7 +171,9 @@ def get_github_activity_refs_audit(org, today):
         total = len(repository_lookup.keys())
         print(f"Repository lookup count: {total}", sys.stderr)
 
-        updated = storage.save_json(f"{today}/data/activity_refs.json", repository_lookup)
+        updated = storage.save_json(
+            f"{today}/data/activity_refs.json", repository_lookup
+        )
 
     except Exception as err:
         print("Failed to run activity GQL: " + str(err), sys.stderr)
@@ -204,7 +203,9 @@ def get_github_activity_prs_audit(org, today):
         total = len(repository_lookup.keys())
         print(f"Repository lookup count: {total}", sys.stderr)
 
-        updated = storage.save_json(f"{today}/data/activity_prs.json", repository_lookup)
+        updated = storage.save_json(
+            f"{today}/data/activity_prs.json", repository_lookup
+        )
 
     except Exception as err:
         print("Failed to run activity GQL: " + str(err), sys.stderr)
@@ -296,14 +297,10 @@ def route_data_overview_repositories_by_status(today):
     repo_count = sum(status_counts.values())
 
     vulnerable_list = [
-        node
-        for node in repositories_by_status.public
-        if node.vulnerabilityAlerts.edges
+        node for node in repositories_by_status.public if node.vulnerabilityAlerts.edges
     ]
     vulnerable_count = len(vulnerable_list)
-    vulnerable_by_severity = vulnerability_summarizer.group_by_severity(
-        vulnerable_list
-    )
+    vulnerable_by_severity = vulnerability_summarizer.group_by_severity(vulnerable_list)
     severity_counts = stats.count_types(vulnerable_by_severity)
     severities = vulnerability_summarizer.SEVERITIES
 
@@ -315,7 +312,7 @@ def route_data_overview_repositories_by_status(today):
             "by_severity": severity_counts,
             "repositories": vulnerable_by_severity,
         },
-        "updated": today
+        "updated": today,
     }
 
     home_status = storage.save_json(f"{today}/routes/overview.json", template_data)
@@ -329,25 +326,19 @@ def route_data_overview_alert_status(today):
     for status, repos in alert_statuses.items():
         by_alert_status["public"][status] = len(repos)
 
-    status = storage.save_json(f"{today}/routes/count_alert_status.json", by_alert_status)
+    status = storage.save_json(
+        f"{today}/routes/count_alert_status.json", by_alert_status
+    )
     return status
 
 
 def get_header():
     org_name = config.get_value("github_org").title()
-    return {
-        "app_name": f"{org_name} Audit"
-    }
+    return {"app_name": f"{org_name} Audit"}
 
 
 def get_error_data(message):
-    return {
-        "header": get_header(),
-        "content": {
-            "title": message
-        },
-        "message": message
-    }
+    return {"header": get_header(), "content": {"title": message}, "message": message}
 
 
 @app.route("/")
@@ -356,19 +347,15 @@ def route_home():
         # today = datetime.date.today().isoformat()
         today = get_current_audit()
 
-        content = {
-            "title": "Introduction",
-            "org": config.get_value("github_org")
-        }
-        footer = {
-            "updated": today
-        }
-        return render_template("pages/home.html",
-                               header=get_header(),
-                               content=content,
-                               footer=footer)
+        content = {"title": "Introduction", "org": config.get_value("github_org")}
+        footer = {"updated": today}
+        return render_template(
+            "pages/home.html", header=get_header(), content=content, footer=footer
+        )
     except FileNotFoundError as err:
-        return render_template("pages/error.html", **get_error_data("Something went wrong."))
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
 
 
 @app.route("/overview")
@@ -376,20 +363,20 @@ def route_overview():
     try:
         # today = datetime.date.today().isoformat()
         today = get_current_audit()
-        content = {
-            "title": "Overview"
-        }
-        footer = {
-            "updated": today
-        }
+        content = {"title": "Overview"}
+        footer = {"updated": today}
         repo_stats = storage.read_json(f"{today}/routes/overview.json")
-        return render_template("pages/overview.html",
-                               header=get_header(),
-                               content=content,
-                               footer=footer,
-                               data=repo_stats)
+        return render_template(
+            "pages/overview.html",
+            header=get_header(),
+            content=content,
+            footer=footer,
+            data=repo_stats,
+        )
     except FileNotFoundError as err:
-        return render_template("pages/error.html", **get_error_data("Something went wrong."))
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
 
 
 @app.route("/overview/repository-status")
@@ -397,20 +384,20 @@ def route_overview_repository_status():
     try:
         # today = datetime.date.today().isoformat()
         today = get_current_audit()
-        content = {
-            "title": "Overview - Repository status"
-        }
-        footer = {
-            "updated": today
-        }
+        content = {"title": "Overview - Repository status"}
+        footer = {"updated": today}
         repo_stats = storage.read_json(f"{today}/routes/overview.json")
-        return render_template("pages/overview_repository_status.html",
-                               header=get_header(),
-                               content=content,
-                               footer=footer,
-                               data=repo_stats)
+        return render_template(
+            "pages/overview_repository_status.html",
+            header=get_header(),
+            content=content,
+            footer=footer,
+            data=repo_stats,
+        )
     except FileNotFoundError as err:
-        return render_template("pages/error.html", **get_error_data("Something went wrong."))
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
 
 
 @app.route("/overview/repository-vulnerabilities")
@@ -420,19 +407,21 @@ def route_overview_repository_vulnerabilities():
         today = get_current_audit()
         content = {
             "title": "Overview - Repository vulnerabilities",
-            "org": config.get_value("github_org")
+            "org": config.get_value("github_org"),
         }
-        footer = {
-            "updated": today
-        }
+        footer = {"updated": today}
         repo_stats = storage.read_json(f"{today}/routes/overview.json")
-        return render_template("pages/overview_repository_vulnerabilities.html",
-                               header=get_header(),
-                               content=content,
-                               footer=footer,
-                               data=repo_stats)
+        return render_template(
+            "pages/overview_repository_vulnerabilities.html",
+            header=get_header(),
+            content=content,
+            footer=footer,
+            data=repo_stats,
+        )
     except FileNotFoundError as err:
-        return render_template("pages/error.html", **get_error_data("Something went wrong."))
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
 
 
 @app.route("/overview/alert-status")
@@ -440,21 +429,21 @@ def route_alert_status():
     try:
         # today = datetime.date.today().isoformat()
         today = get_current_audit()
-        content = {
-            "title": "Overview - Alert status"
-        }
-        footer = {
-            "updated": today
-        }
+        content = {"title": "Overview - Alert status"}
+        footer = {"updated": today}
 
         alert_status = storage.read_json(f"{today}/routes/count_alert_status.json")
-        return render_template("pages/overview_alert_status.html",
-                               header=get_header(),
-                               content=content,
-                               footer=footer,
-                               data=alert_status)
+        return render_template(
+            "pages/overview_alert_status.html",
+            header=get_header(),
+            content=content,
+            footer=footer,
+            data=alert_status,
+        )
     except FileNotFoundError as err:
-        return render_template("pages/error.html", **get_error_data("Something went wrong."))
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
 
 
 @app.route("/by-repository")
@@ -462,12 +451,8 @@ def route_owners():
     try:
         # today = datetime.date.today().isoformat()
         today = get_current_audit()
-        content = {
-            "title": "By repository"
-        }
-        footer = {
-            "updated": today
-        }
+        content = {"title": "By repository"}
+        footer = {"updated": today}
         topics = storage.read_json(f"{today}/data/topics.json")
         repositories = storage.read_json(f"{today}/data/activity_prs.json")
 
@@ -499,4 +484,6 @@ def route_owners():
             repositories=repositories,
         )
     except FileNotFoundError as err:
-        return render_template("pages/error.html", **get_error_data("Something went wrong."))
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
