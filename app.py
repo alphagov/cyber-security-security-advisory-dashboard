@@ -8,7 +8,7 @@ from collections import defaultdict, Counter
 import warnings
 
 from flask import Flask
-from flask import render_template
+from flask import render_template, request
 from addict import Dict
 import arrow
 from arrow.factory import ArrowParseWarning
@@ -333,8 +333,13 @@ def route_data_overview_alert_status(today):
 
 
 def get_header():
-    org_name = config.get_value("github_org").title()
-    return {"app_name": f"{org_name} Audit"}
+    org = config.get_value("github_org")
+    org_name = org.title()
+    return {
+        "org": org,
+        "app_name": f"{org_name} Audit",
+        "route": request.path
+    }
 
 
 def get_error_data(message):

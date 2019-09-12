@@ -1,13 +1,12 @@
 <button role="button" class ="govuk-header__menu-button js-header-toggle" aria-controls="navigation" aria-label="Show or hide Top Level Navigation">Menu</button>
 <nav>
-  {% set item_active = "overview" %}
   <ul id="navigation" class="govuk-header__navigation " aria-label="Top Level Navigation">
-    <li class="govuk-header__navigation-item {{ 'govuk-header__navigation-item--active' if item_active == 'overview' }}">
+    <li class="govuk-header__navigation-item {{ 'govuk-header__navigation-item--active' if 'overview' in header.route }}">
       <a class="govuk-header__link" href="/overview">
         Overview
       </a>
     </li>
-    <li class="govuk-header__navigation-item">
+    <li class="govuk-header__navigation-item {{ 'govuk-header__navigation-item--active' if 'by-repository' in header.route }}">
       <a class="govuk-header__link" href="/by-repository">
         By repository
       </a>
