@@ -24,8 +24,18 @@
           </ul>
 
           <section class="govuk-tabs__panel" id="teams">
+            <p class="govuk-body">
+              We have used existing repository topic tags to classify repositories as well as we can
+              into service teams.
+
+              Where we have been unable to identify a team we have grouped those repositories under
+              an "unknown" category.
+
+              If we have got a repository wrong you can either add a topic yourself or let us know.
+            </p>
             <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-team">
-              {% for team, team_repos in team_dict.items() %}
+              {% for team in teams %}
+              {% set team_repos = team_dict[team] %}
               <div class="govuk-accordion__section ">
                 <div class="govuk-accordion__section-header">
                   <h2 class="govuk-accordion__section-heading">

@@ -108,6 +108,7 @@ def cronable_vulnerability_audit():
     pr_status = analyse_pull_request_status(today)
     ref_status = analyse_activity_refs(today)
     patch_status = analyse_vulnerability_patch_recommendations(today)
+    team_status = analyse_team_membership(today)
 
     # build page template data
     build_route_data(today)
@@ -139,8 +140,9 @@ def cli_task(task):
             update_github_advisories_status()
         else:
             get_github_resolve_alert_status()
-    elif task == "ownership-status":
+    elif task == "membership":
         analyse_repo_ownership(today)
+        analyse_team_membership(today)
     elif task == "analyse-activity":
         analyse_pull_request_status(today)
         analyse_activity_refs(today)
@@ -436,6 +438,37 @@ def analyse_activity_refs(today):
     return updated
 
 
+def analyse_team_membership(today):
+
+    try:
+        topics = storage.read_json(f"{today}/data/topics.json")
+        repositories = storage.read_json(f"{today}/data/repositories.json")
+
+        # This one can't currently use storage because it's
+        # outside the output folder and not written to S3.
+        with open("teams.json", "r") as teams_file:
+            teams = json.loads(teams_file.read())
+
+        for status, repo_list in repositories.items():
+            for repo in repo_list:
+                repo_team = "unknown"
+                repo_topics = []
+                if repo.repositoryTopics:
+                    repo_topics = [topic_edge.node.topic.name for topic_edge in repo.repositoryTopics.edges]
+
+                for team, team_topics in teams.items():
+                    for topic in team_topics:
+                        if topic in repo_topics:
+                            repo_team = team
+                repo.team = repo_team
+
+        updated = storage.save_json(f"{today}/data/repositories.json", repositories)
+    except Exception as err:
+        print(str(err))
+        updated = False
+    return updated
+
+
 def get_uniform_version(version):
     components = re.findall(r"\d+", version)
     uniform = ".".join(components)
@@ -719,19 +752,16 @@ def route_by_repository():
         raw_repositories = storage.read_json(f"{today}/data/repositories.json")
         repositories = {repo.name: repo for repo in raw_repositories["public"]}
 
-        # This one can't currently use storage because it's
-        # outside the output folder and not written to S3.
-        with open("teams.json", "r") as teams_file:
-            teams = json.loads(teams_file.read())
+        team_dict = defaultdict(list)
+        for repo_name, repo in repositories.items():
+            team_dict[repo.team].append(repo_name)
 
-        team_dict = defaultdict(set)
-        for team in teams.keys():
-            for repos in topics[team]:
-                team_dict[team].add(repos)
+        teams = list(team_dict.keys())
+        teams.sort()
 
         other_topics = {
             topic_name: topics[topic_name]
-            for topic_name in set(topics.keys()) - set(teams.keys())
+            for topic_name in set(topics.keys())
         }
 
         total = len([*repositories.keys()])
@@ -743,6 +773,7 @@ def route_by_repository():
             content=content,
             footer=footer,
             other_topics=other_topics,
+            teams=teams,
             team_dict=team_dict,
             repositories=repositories,
             pull_requests=pr_data,
