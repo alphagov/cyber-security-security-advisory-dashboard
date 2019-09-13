@@ -8,7 +8,7 @@ var sass = require("gulp-sass");
 
 gulp.task("sass.gov", function() {
   return gulp
-    .src("node_modules/govuk-frontend/govuk/*.scss")
+    .src("sass/*.scss")
     .pipe(sass().on("error", sass.logError))
     .pipe(gulp.dest("../static"));
 });
