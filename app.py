@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import re
 import time
 import datetime
 import traceback
@@ -8,6 +9,7 @@ from collections import defaultdict, Counter
 import warnings
 
 from flask import Flask
+import click
 from flask import render_template, request
 from addict import Dict
 import arrow
@@ -40,6 +42,19 @@ def filter_iso_date(iso_date):
     """Convert a string to all caps."""
     parsed = arrow.get(iso_date, "YYYY-MM-DD")
     return parsed.format("DD/MM/YYYY")
+
+
+@app.template_filter("abbreviate")
+def filter_abbreviate(word):
+    lowercase_word = word.lower()
+    abbrevs = {
+        "critical": "crit",
+        "moderate": "mod",
+        "medium": "med",
+        "dependabot": "dbot",
+        "advisory": "adv"
+    }
+    return abbrevs[lowercase_word] if (lowercase_word in abbrevs) else word
 
 
 def get_history():
@@ -83,9 +98,16 @@ def cronable_vulnerability_audit():
     prs_status = get_github_activity_prs_audit(org, today)
     dbot_status = get_dependabot_status(org, today)
 
+    if history.current:
+        update_github_advisories_status()
+    else:
+        get_github_resolve_alert_status()
+
     # analyse raw data
     ownership_status = analyse_repo_ownership(today)
     pr_status = analyse_pull_request_status(today)
+    ref_status = analyse_activity_refs(today)
+    patch_status = analyse_vulnerability_patch_recommendations(today)
 
     # build page template data
     build_route_data(today)
@@ -98,7 +120,36 @@ def cronable_vulnerability_audit():
     return True
 
 
-@app.cli.command("alert-status")
+@app.cli.command("run-task")
+@click.argument("task")
+def cli_task(task):
+    today = datetime.date.today().isoformat()
+    org = config.get_value("github_org")
+    history = get_history()
+
+    if (task == "repository-status"):
+        get_github_repositories_and_classify_by_status(org, today)
+    elif (task == "get-activity"):
+        get_github_activity_refs_audit(org, today)
+        get_github_activity_prs_audit(org, today)
+    elif (task == "dependabot"):
+        get_dependabot_status(org, today)
+    elif (task == "advisories"):
+        if history.current:
+            update_github_advisories_status()
+        else:
+            get_github_resolve_alert_status()
+    elif (task == "ownership-status"):
+        analyse_repo_ownership(today)
+    elif (task == "analyse-activity"):
+        analyse_pull_request_status(today)
+        analyse_activity_refs(today)
+    elif (task == "patch"):
+        analyse_vulnerability_patch_recommendations(today)
+    elif (task == "routes"):
+        build_route_data(today)
+
+
 def get_github_resolve_alert_status():
     today = datetime.date.today().isoformat()
     by_alert_status = defaultdict(list)
@@ -118,10 +169,61 @@ def get_github_resolve_alert_status():
         else:
             status = "disabled"
 
-        by_alert_status[status].append(repo)
-        time.sleep(1)
+        # append status to repo in original repositories file
+        repo.securityAdvisoriesEnabledStatus = alerts_enabled
 
-    status = storage.save_json("all/data/alert_status.json", by_alert_status)
+        by_alert_status[status].append(repo)
+        time.sleep(0.2)
+
+    repo_status = storage.save_json(f"{today}/data/repositories.json", repositories)
+    status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
+    return status
+
+
+def update_github_advisories_status():
+    today = datetime.date.today().isoformat()
+    current = get_current_audit()
+
+    by_alert_status = defaultdict(list)
+
+    today_repositories = storage.read_json(f"{today}/data/repositories.json")
+    current_repositories = storage.read_json(f"{current}/data/repositories.json")
+    for today_repo in today_repositories["public"]:
+        new_repo = True
+        update_status = False
+        for current_repo in current_repositories["public"]:
+            if today_repo.name == current_repo.name:
+                if not current_repo.securityAdvisoriesEnabledStatus:
+                    update_status = True
+                    new_repo = False
+
+        if new_repo | update_status:
+
+            response = github_rest_client.get(
+                f"/repos/{today_repo.owner.login}/{today_repo.name}/vulnerability-alerts"
+            )
+            alerts_enabled = response.status_code == 204
+            vulnerable = today_repo.vulnerabilityAlerts.edges
+
+            if vulnerable:
+                status = "vulnerable"
+            elif alerts_enabled:
+                status = "clean"
+            else:
+                status = "disabled"
+
+            # append status to repo in original repositories file
+            today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
+
+            by_alert_status[status].append(today_repo)
+            time.sleep(0.1)
+        else:
+            alerts_enabled = current_repo.securityAdvisoriesEnabledStatus
+            today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
+
+    repo_status = storage.save_json(f"{today}/data/repositories.json", today_repositories)
+    status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
+    status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
     return status
 
 
@@ -216,13 +318,23 @@ def get_github_activity_prs_audit(org, today):
 def get_dependabot_status(org, today):
     try:
         updated = False
-        data = dependabot_api.get_repos_by_status(org)
-        counts = stats.count_types(data)
+        dependabot_status = dependabot_api.get_repos_by_status(org)
+        counts = stats.count_types(dependabot_status)
         output = Dict()
         output.counts = counts
-        output.repositories = data
+        output.repositories = dependabot_status
 
-        updated = storage.save_json(f"{today}/data/dependabot_status.json", output)
+        raw_data_saved = storage.save_json(f"{today}/data/dependabot_status.json", output)
+
+        repositories = storage.read_json(f"{today}/data/repositories.json")
+        for repo in repositories["public"]:
+            for status, dbot_repositories in dependabot_status.items():
+                for dbot_repo in dbot_repositories:
+                    if dbot_repo.attributes.name == repo.name:
+                        repo.dependabotEnabledStatus = (status == "active")
+
+        updated = storage.save_json(f"{today}/data/repositories.json", repositories)
+
     except Exception:
         updated = False
 
@@ -286,6 +398,138 @@ def analyse_pull_request_status(today):
     return status
 
 
+def analyse_activity_refs(today):
+    now = arrow.utcnow()
+    refs = storage.read_json(f"{today}/data/activity_refs.json")
+    repositories = storage.read_json(f"{today}/data/repositories.json")
+    repo_activity = {}
+    for repo_name, repo in refs.items():
+        repo_commit_dates = []
+        for ref in repo.refs.edges:
+            branch = ref.node
+            for commit_edge in branch.target.history.edges:
+                commit = commit_edge.node
+                committed_date = arrow.get(commit.committedDate)
+                repo_commit_dates.append(committed_date)
+        repo_commit_dates.sort()
+        if len(repo_commit_dates) > 0:
+            first_commit = repo_commit_dates[0]
+            last_commit = repo_commit_dates[-1]
+            delta = last_commit - first_commit
+            average_delta = delta / len(repo_commit_dates)
+            average_days = average_delta.days
+            currency_delta = now - last_commit
+            currency_days = currency_delta.days
+
+            for repo in repositories["public"]:
+                if repo.name == repo_name:
+                    repo.recentCommitDaysAgo = currency_days
+                    repo.averageCommitFrequency = average_days
+                    repo.isActive = (currency_days < 365 and average_days < 180)
+
+    updated = storage.save_json(f"{today}/data/repositories.json", repositories)
+
+    return updated
+
+
+def get_uniform_version(version):
+    components = re.findall(r"\d+",version)
+    uniform = ".".join(components)
+    return uniform
+
+
+def get_sortable_version(version):
+    version_components = re.findall(r"\d+",version)
+    print(version_components)
+    sortable = []
+    for component in version_components:
+        sortable.append(format(int(component), '04d'))
+
+    return ".".join(sortable)
+
+
+def analyse_vulnerability_patch_recommendations(today):
+    repositories = storage.read_json(f"{today}/data/repositories.json")
+
+    severities = vulnerability_summarizer.SEVERITIES
+
+    vulnerable_list = [
+        node for node in repositories.public if node.vulnerabilityAlerts.edges
+    ]
+    vulnerable_by_severity = vulnerability_summarizer.group_by_severity(vulnerable_list)
+
+    saved = storage.save_json(f"{today}/data/vulnerable_by_severity.json", vulnerable_by_severity)
+
+    for repo in repositories.public:
+        repo_patches = {}
+        for severity, vuln_repos in vulnerable_by_severity.items():
+            for vuln_repo in vuln_repos:
+                if repo.name == vuln_repo.name:
+                    print(repo.name)
+                    repo.maxSeverity = severity
+                    for v_edge in repo.vulnerabilityAlerts.edges:
+                        package = v_edge.node.packageName
+                        print(package)
+                        dependency_file = v_edge.node.vulnerableManifestPath
+                        required_version = get_uniform_version(v_edge.node.vulnerableRequirements)
+                        sortable_version = get_sortable_version(required_version)
+                        print (f"{required_version} == {sortable_version}")
+
+                        patch_sortable_version = None
+                        patch_version = None
+                        patchable = False
+                        max_severity = 0
+                        advisories = v_edge.node.securityAdvisory.vulnerabilities.edges
+                        for a_edge in advisories:
+                            advisory = a_edge.node
+                            severity_index = severities.index(advisory.severity)
+                            if severity_index > max_severity:
+                                max_severity = severity_index
+
+                            if advisory.firstPatchedVersion:
+                                patchable = True
+                                advisory_patch_version = get_uniform_version(advisory.firstPatchedVersion.identifier)
+                                advisory_sortable_version = get_sortable_version(advisory_patch_version)
+
+                                if (not patch_version) or (advisory_sortable_version > patch_sortable_version):
+                                    patch_version = advisory_patch_version
+                                    patch_sortable_version = advisory_sortable_version
+
+                        first = package not in repo_patches
+                        later = False
+
+                        if package in repo_patches:
+                            later = (patch_sortable_version
+                                 and (repo_patches[package]["sortable_version"] <  patch_sortable_version))
+                            if repo_patches[package]["severity_index"] > max_severity:
+                                max_severity = repo_patches[package]["severity_index"]
+
+                        newer = first or later
+
+                        if newer:
+                            repo_patches[package] = {
+                                "package": package,
+                                "dependency_file": dependency_file,
+                                "current_version": required_version,
+                                "patch_available": patchable,
+                                "patch_version": patch_version,
+                                "sortable_version": patch_sortable_version,
+                                "severity": severities[max_severity],
+                                "severity_index": max_severity
+                            }
+                            print(f"For {repo.name} patch {package} from {required_version} to {patch_version}")
+
+        if (len(repo_patches.keys()) > 0):
+            patch_list = [patch for package, patch in repo_patches.items()]
+            patch_list.sort(key=lambda patch: patch['severity_index'], reverse=True)
+            print(patch_list)
+            repo.patches = {patch["package"]: patch for patch in patch_list}
+
+
+    updated = storage.save_json(f"{today}/data/repositories.json", repositories)
+    return updated
+
+
 def build_route_data(today):
     route_data_overview_repositories_by_status(today)
     route_data_overview_alert_status(today)
@@ -296,12 +540,9 @@ def route_data_overview_repositories_by_status(today):
     status_counts = stats.count_types(repositories_by_status)
     repo_count = sum(status_counts.values())
 
-    vulnerable_list = [
-        node for node in repositories_by_status.public if node.vulnerabilityAlerts.edges
-    ]
-    vulnerable_count = len(vulnerable_list)
-    vulnerable_by_severity = vulnerability_summarizer.group_by_severity(vulnerable_list)
+    vulnerable_by_severity = storage.read_json(f"{today}/data/vulnerable_by_severity.json")
     severity_counts = stats.count_types(vulnerable_by_severity)
+    vulnerable_count = sum(severity_counts.values())
     severities = vulnerability_summarizer.SEVERITIES
 
     template_data = {
@@ -315,14 +556,14 @@ def route_data_overview_repositories_by_status(today):
         "updated": today,
     }
 
-    home_status = storage.save_json(f"{today}/routes/overview.json", template_data)
-    return home_status
+    overview_status = storage.save_json(f"{today}/routes/overview.json", template_data)
+    return overview_status
 
 
 def route_data_overview_alert_status(today):
 
     by_alert_status = {"public": {}}
-    alert_statuses = storage.read_json(f"all/data/alert_status.json")
+    alert_statuses = storage.read_json(f"{today}/data/alert_status.json")
     for status, repos in alert_statuses.items():
         by_alert_status["public"][status] = len(repos)
 
@@ -455,7 +696,9 @@ def route_by_repository():
         content = {"title": "By repository"}
         footer = {"updated": today}
         topics = storage.read_json(f"{today}/data/topics.json")
-        repositories = storage.read_json(f"{today}/data/activity_prs.json")
+        pr_data = storage.read_json(f"{today}/data/activity_prs.json")
+        raw_repositories = storage.read_json(f"{today}/data/repositories.json")
+        repositories = {repo.name: repo for repo in raw_repositories["public"]}
 
         # This one can't currently use storage because it's
         # outside the output folder and not written to S3.
@@ -483,6 +726,7 @@ def route_by_repository():
             other_topics=other_topics,
             team_dict=team_dict,
             repositories=repositories,
+            pull_requests=pr_data
         )
     except FileNotFoundError as err:
         return render_template(

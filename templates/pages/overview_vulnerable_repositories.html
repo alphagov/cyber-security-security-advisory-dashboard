@@ -14,7 +14,7 @@
          series="rows"
          above="true"
          ismultiple="false"
-         palette='["#0362fc","#fcba03","#fc9003","#fc2803"]'
+         palette='["#fc2803","#fc9003","#fcba03","#0362fc"]'
       >
         <table class="govuk-table">
           <caption class="govuk-table__caption">Vulnerable by severity ({{ data.vulnerable.all }})</caption>
@@ -25,7 +25,7 @@
             </tr>
           </thead>
           <tbody class="govuk-table__body">
-            {% for severity in data.vulnerable.severities %}
+            {% for severity in data.vulnerable.severities | reverse %}
             <tr class="govuk-table__row">
               <th class="govuk-table__header">
                 {{ severity | title }}
