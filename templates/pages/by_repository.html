@@ -7,12 +7,12 @@
         <div class="govuk-tabs" data-module="govuk-tabs">
           <ul class="govuk-tabs__list">
             <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-              <a class="govuk-tabs__tab" href="#status">
-                Known Teams
+              <a class="govuk-tabs__tab" href="#teams">
+                Teams
               </a>
             </li>
             <li class="govuk-tabs__list-item">
-              <a class="govuk-tabs__tab" href="#severity">
+              <a class="govuk-tabs__tab" href="#topics">
                 Other Topics
               </a>
             </li>
@@ -23,7 +23,7 @@
             </li>
           </ul>
 
-          <section class="govuk-tabs__panel" id="status">
+          <section class="govuk-tabs__panel" id="teams">
             <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-team">
               {% for team, team_repos in team_dict.items() %}
               <div class="govuk-accordion__section ">
@@ -158,7 +158,7 @@
             </div>
           </section>
 
-          <section class="govuk-tabs__panel" id="severity">
+          <section class="govuk-tabs__panel" id="topics">
             <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-topic">
               {% for topic, repos in other_topics.items() %}
               <div class="govuk-accordion__section ">
@@ -180,6 +180,8 @@
           </section>
 
           <section class="govuk-tabs__panel" id="key">
+
+
 
             <h3 class="govuk-heading-m">Commit history</h3>
             <strong class="govuk-tag__fixed-width--passed">act</strong>
