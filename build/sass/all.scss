@@ -1,0 +1,9 @@
+$govuk-global-styles: true;
+
+$govuk-assets-path: "/assets/";
+
+@import "../node_modules/c3/c3";
+@import "../node_modules/govuk-frontend/govuk/all";
+
+@import "partials/boxes";
+@import "partials/tags";

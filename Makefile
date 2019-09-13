@@ -25,5 +25,5 @@ gulp:
 audit:
 	docker-compose run dashboard flask audit
 
-alert_status:
-	docker-compose run dashboard flask alert-status
+task:
+	docker-compose run dashboard flask run-task $(TASK)

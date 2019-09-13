@@ -2,40 +2,165 @@
 {% block content %}
   <div class="govuk-width-container">
     <main class="govuk-main-wrapper " id="main-content" role="main">
-      <h1 class="govuk-heading-l">Public Repository Owners</h1>
+      <h2 class="govuk-heading-l">By repository</h2>
       <div class="govuk-body">
         <div class="govuk-tabs" data-module="govuk-tabs">
           <ul class="govuk-tabs__list">
             <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-              <a class="govuk-tabs__tab" href="#status">
-                Known Teams
+              <a class="govuk-tabs__tab" href="#teams">
+                Teams
               </a>
             </li>
             <li class="govuk-tabs__list-item">
-              <a class="govuk-tabs__tab" href="#severity">
+              <a class="govuk-tabs__tab" href="#topics">
                 Other Topics
+              </a>
+            </li>
+            <li class="govuk-tabs__list-item">
+              <a class="govuk-tabs__tab" href="#key">
+                Key
               </a>
             </li>
           </ul>
 
-          <section class="govuk-tabs__panel" id="status">
-            <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
-              {% for team, team_repos in team_dict.items() %}
+          <section class="govuk-tabs__panel" id="teams">
+            <p class="govuk-body">
+              We have used existing repository topic tags to classify repositories as well as we can
+              into service teams.
+
+              Where we have been unable to identify a team we have grouped those repositories under
+              an "unknown" category.
+
+              If we have got a repository wrong you can either add a topic yourself or let us know.
+            </p>
+            <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-team">
+              {% for team in teams %}
+              {% set team_repos = team_dict[team] %}
               <div class="govuk-accordion__section ">
                 <div class="govuk-accordion__section-header">
                   <h2 class="govuk-accordion__section-heading">
-                    <span class="govuk-accordion__section-button" id="accordion-default-heading-1">
+                    <span class="govuk-accordion__section-button" id="accordion-team-heading-{{team}}">
                       {{team}}
                     </span>
                   </h2>
                 </div>
-                <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
+                <div id="accordion-team-content-{{team}}" class="govuk-accordion__section-content" aria-labelledby="accordion-team-heading-{{team}}">
                   {% for repo_name in team_repos %}
-                    <p class='govuk-body'><a href="https://github.com/alphagov/{{repo_name}}" class="govuk-link">{{repo_name}}</a></p>
                     {% if repo_name in repositories %}
                     {% set repo = repositories[repo_name] %}
-                    <p class='govuk-body'>{{ repo.pr_final_status }}</p>
-                    {% endif %}
+                    {% set pr_repo = pull_requests[repo_name] %}
+                    <div class="govuk-grid-row">
+                      <div class="govuk-grid-column-one-third">
+                        <strong class="govuk-tag__fixed-width--{{'passed' if repo.isActive else 'not-applicable'}}">act</strong>
+                        <strong class="govuk-tag__fixed-width--{{'passed' if repo.securityAdvisoriesEnabledStatus else 'not-applicable'}}">adv</strong>
+                        <strong class="govuk-tag__fixed-width--{{'passed' if repo.dependabotEnabledStatus else 'not-applicable'}}">dbot</strong>
+                        {% if repo.maxSeverity %}
+                        <strong class="govuk-tag__fixed-width--{{repo.maxSeverity | lower }}">{{ repo.maxSeverity | abbreviate }}</strong>
+                        {% else %}
+                        <strong class="govuk-tag__fixed-width--not-applicable">none</strong>
+                        {% endif %}
+                      </div>
+                      <div class="govuk-grid-column-two-thirds">
+                        <h3 class='govuk-heading-m'>
+                          <a href="https://github.com/alphagov/{{repo_name}}" class="govuk-link">{{repo_name}}</a>
+                        </h3>
+                      </div>
+                    </div>
+                    <details class="govuk-details" data-module="govuk-details">
+                      <summary class="govuk-details__summary">
+                        <span class="govuk-details__summary-text">
+                          Details
+                        </span>
+                      </summary>
+                      <div class="govuk-details__text">
+                        <div class="govuk-box__suggested_action">
+                          <h4 class="govuk-heading-m">
+                            Suggested action: {{ 'Patch?' if repo.isActive else 'Archive?' }}
+                          </h4>
+                          <p class="govuk-body">
+                          {% if repo.isActive %}
+                          Activity data suggests this repository is in-use and should be patched.
+                          {% else %}
+                          The lack of activity suggests this repository could be a candidate for archiving.
+                          {% endif %}
+                          </p>
+                        </div>
+                        <div class="govuk-grid-row">
+                          <div class="govuk-grid-column-one-half">
+                            <h4 class="govuk-heading-s">Activity</h4>
+                            <dl class="govuk-summary-list">
+                              {% if pr_repo.pr_final_status %}
+                              <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                  Pull request
+                                </dt>
+                                <dd class="govuk-summary-list__value">
+                                  {{ pr_repo.pr_final_status }}
+                                </dd>
+                              </div>
+                              {% endif %}
+                              {% if repo.recentCommitDaysAgo %}
+                              <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                  Latest commit
+                                </dt>
+                                <dd class="govuk-summary-list__value">
+                                  {{ 'daily' if repo.recentCommitDaysAgo == 0 else (repo.recentCommitDaysAgo | string) + ' days ago' }}
+                                </dd>
+                              </div>
+                              {% endif %}
+                              {% if repo.averageCommitDeltaDays %}
+                              <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                  Commit frequency
+                                </dt>
+                                <dd class="govuk-summary-list__value">
+                                  {{ 'daily' if repo.averageCommitDeltaDays == 0 else (repo.averageCommitFrequency | string) + ' days' }}
+                                </dd>
+                              </div>
+                              {% else %}
+                              <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                  Commits
+                                </dt>
+                                <dd class="govuk-summary-list__value">
+                                  No activity data available
+                                </dd>
+                              </div>
+                              {% endif %}
+                            </dl>
+                          </div>
+                          <div class="govuk-grid-column-one-half">
+                            <h4 class="govuk-heading-s">Patched versions</h4>
+                            {% if repo.patches %}
+                            <dl class="govuk-summary-list">
+                              {% for package, patch in repo.patches.items() %}
+                              <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">
+                                  <strong class="govuk-tag__fixed-width--{{patch.severity | lower }}">{{ patch.severity | abbreviate }}</strong>
+                                  <br/>
+                                  {{ patch.package }}
+                                </dt>
+                                <dd class="govuk-summary-list__value">
+                                  {% if patch.patch_available %}
+                                  Patch {{ patch.current_version }} to {{ patch.patch_version }}
+                                  {% else %}
+                                  No current patch available
+                                  {% endif %}
+                                  <br/>
+                                  (in {{ patch.dependency_file}})
+                                </dd>
+                              </div>
+                              {% endfor %}
+                            </dl>
+                            {% else %}
+                            No patch data available
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    </details>
+                  {% endif %}
                   {% endfor %}
                 </div>
               </div>
@@ -43,18 +168,18 @@
             </div>
           </section>
 
-          <section class="govuk-tabs__panel" id="severity">
-            <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
+          <section class="govuk-tabs__panel" id="topics">
+            <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-topic">
               {% for topic, repos in other_topics.items() %}
               <div class="govuk-accordion__section ">
                 <div class="govuk-accordion__section-header">
                   <h2 class="govuk-accordion__section-heading">
-                    <span class="govuk-accordion__section-button" id="accordion-default-heading-1">
+                    <span class="govuk-accordion__section-button" id="accordion-topic-heading-{{topic}}">
                       {{topic}}
                     </span>
                   </h2>
                 </div>
-                <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
+                <div id="accordion-topic-content-{{topic}}" class="govuk-accordion__section-content" aria-labelledby="accordion-topic-heading-{{topic}}">
                   {% for repo in repos %}
                       <p class='govuk-body'><a href="https://github.com/alphagov/{{repo}}" class="govuk-link">{{repo}}</a></p>
                   {% endfor %}
@@ -62,6 +187,57 @@
               </div>
               {% endfor %}
             </div>
+          </section>
+
+          <section class="govuk-tabs__panel" id="key">
+
+            <p class="govuk-body">
+              The teams tab shows 4 tags against each repository.
+              The tags represent the four properties shown below:
+            </p>
+
+            <h3 class="govuk-heading-m">Commit history</h3>
+            <strong class="govuk-tag__fixed-width--passed">act</strong>
+            <span class="govuk-body">Has recent activity</span>
+            <br/>
+            <strong class="govuk-tag__fixed-width--not-applicable">act</strong>
+            <span class="govuk-body">No recent activity</span>
+
+            <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+            <h3 class="govuk-heading-m">Security advisories</h3>
+            <strong class="govuk-tag__fixed-width--passed">adv</strong>
+            <span class="govuk-body">Enabled</span>
+            <br/>
+            <strong class="govuk-tag__fixed-width--not-applicable">adv</strong>
+            <span class="govuk-body">Disabled</span>
+
+            <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+            <h3 class="govuk-heading-m">Dependabot status</h3>
+            <strong class="govuk-tag__fixed-width--passed">dbot</strong>
+            <span class="govuk-body">Enabled</span>
+            <br/>
+            <strong class="govuk-tag__fixed-width--not-applicable">dbot</strong>
+            <span class="govuk-body">Disabled</span>
+
+            <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
+            <h3 class="govuk-heading-m">Vulnerabilities</h3>
+            <p class="govuk-body">Has known vulnerabilities with maximum severity</p>
+
+            <strong class="govuk-tag__fixed-width--critical">{{ "critical" | abbreviate }}</strong>
+            <span class="govuk-body">Critical</span>
+            <br/>
+            <strong class="govuk-tag__fixed-width--high">{{ "high" | abbreviate }}</strong>
+            <span class="govuk-body">High</span>
+            <br/>
+            <strong class="govuk-tag__fixed-width--moderate">{{ "moderate" | abbreviate }}</strong>
+            <span class="govuk-body">Moderate</span>
+            <br/>
+            <strong class="govuk-tag__fixed-width--low">{{ "low" | abbreviate }}</strong>
+            <span class="govuk-body">Low</span>
+            <br/>
+            <strong class="govuk-tag__fixed-width--not-applicable">none</strong>
+            <span class="govuk-body">None</span>
+
           </section>
 
         </div>

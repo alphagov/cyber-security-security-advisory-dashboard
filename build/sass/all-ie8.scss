@@ -1,0 +1,7 @@
+$govuk-global-styles: true;
+
+$govuk-assets-path: "/app/assets/govuk-frontend/assets/";
+
+@import "node_modules/govuk-frontend/govuk/all-ie8";
+
+@import "partials/tags";
