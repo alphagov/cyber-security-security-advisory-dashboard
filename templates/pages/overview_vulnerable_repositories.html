@@ -14,10 +14,10 @@
          series="rows"
          above="true"
          ismultiple="false"
-         palette='["#fc2803","#fc9003","#fcba03","#0362fc"]'
+         palette='["000000","#fc2803","#fc9003","#fcba03", "#00703c", "#6f777b"]'
       >
         <table class="govuk-table">
-          <caption class="govuk-table__caption">Vulnerable by severity ({{ data.vulnerable.all }})</caption>
+          <caption class="govuk-table__caption">Vulnerable by severity ({{ content.vulnerable.all }})</caption>
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
               <th class="govuk-table__header">Severity</th>
@@ -25,16 +25,30 @@
             </tr>
           </thead>
           <tbody class="govuk-table__body">
-            {% for severity in data.vulnerable.severities | reverse %}
+            {% for severity in content.vulnerable.severities | reverse %}
             <tr class="govuk-table__row">
               <th class="govuk-table__header">
                 {{ severity | title }}
               </th>
               <td class="govuk-table__cell govuk-table__cell--numeric">
-                {{ data.vulnerable.by_severity[severity] }}
+                {{ content.vulnerable.by_severity[severity] }}
               </td>
             </tr>
             {% endfor %}
+
+            {% for status in content.alert_status.public %}
+            {% if status != 'vulnerable' %}
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">
+                {{ status | title }}
+              </th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">
+                {{ content.alert_status.public[status] }}
+              </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+
           </tbody>
         </table>
       </div>
@@ -51,40 +65,26 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
 
-      {% for severity in data.vulnerable.severities | reverse %}
-        <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
-        <h3 class="govuk-heading-m">
-          Most severe = {{ severity | title}} ({{ data.vulnerable.by_severity[severity] }})
-        </h3>
-        {% set repositories = data.vulnerable.repositories[severity] %}
-        {% for repo in repositories %}
-          <div>
-            <details class="govuk-details" data-module="govuk-details">
-              <summary class="govuk-details__summary">
-                <span class="govuk-details__summary-text">
-                  <a class="govuk-link" target="github" href="https://github.com/{{repo.owner.login}}/{{repo.name}}">
-                    {{ repo.name }}
-                  </a>
-                </span>
-              </summary>
-              <div class="govuk-details__text">
-                <h4 class="govuk-heading-s">Recommendations</h4>
-                {% for v_edge in repo.vulnerabilityAlerts.edges %}
-                  {% set vulnerability = v_edge.node %}
-                  {% for a_edge in vulnerability.securityAdvisory.vulnerabilities.edges %}
-                    {% set advisory = a_edge.node %}
-                    <p class="govuk-body">
-                      Patch {{ vulnerability.packageName }}
-                      from {{ vulnerability.vulnerableRequirements }}
-                      to {{ advisory.firstPatchedVersion.identifier }}
-                    </p>
-                  {% endfor %}
-                {% endfor %}
-              </div>
-            </details>
+      <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-severity">
+      {% for severity in content.vulnerable.severities | reverse %}
+
+        <div class="govuk-accordion__section ">
+          <div class="govuk-accordion__section-header">
+            <h2 class="govuk-accordion__section-heading">
+              <span class="govuk-accordion__section-button" id="accordion-severity-heading-{{severity}}">
+                Most severe = {{ severity | title}} ({{ content.vulnerable.by_severity[severity] }})
+              </span>
+            </h2>
           </div>
-        {% endfor %}
+          <div id="accordion-severity-content-{{severity}}" class="govuk-accordion__section-content" aria-labelledby="accordion-severity-heading-{{severity}}">
+
+          {% set repositories = content.vulnerable.repositories[severity] %}
+          {% for repo in repositories %}
+            {% include "components/content_blocks/repository_summary.html" %}
+          {% endfor %}
+          </div>
       {% endfor %}
+      </div>
 
     </div>
   </div>

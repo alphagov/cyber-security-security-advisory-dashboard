@@ -150,6 +150,8 @@ def cli_task(task):
         analyse_vulnerability_patch_recommendations(today)
     elif task == "routes":
         build_route_data(today)
+    else:
+        print("ERROR: Undefined task")
 
 
 def get_github_resolve_alert_status():
@@ -365,13 +367,16 @@ def analyse_repo_ownership(today):
 
 def analyse_pull_request_status(today):
     now = arrow.utcnow()
-    repositories = storage.read_json(f"{today}/data/activity_prs.json")
-    for repo_name, repo in repositories.items():
+    pull_requests = storage.read_json(f"{today}/data/activity_prs.json")
+    repositories = storage.read_json(f"{today}/data/repositories.json")
+    for repo in repositories.public:
+
+        repo_prs = pull_requests[repo.name]
 
         pr_final_status = "No pull requests in this repository"
 
-        if repo.pullRequests.edges:
-            node = repo.pullRequests.edges[0].node
+        if repo_prs.pullRequests.edges:
+            node = repo_prs.pullRequests.edges[0].node
 
             if node.merged:
                 reference_date = arrow.get(node.mergedAt)
@@ -398,9 +403,9 @@ def analyse_pull_request_status(today):
             else:
                 pr_final_status = f"Last pull request this week ({pr_status})"
 
-        repo.pr_final_status = pr_final_status
+        repo.recentPullRequestStatus = pr_final_status
 
-    status = storage.save_json(f"{today}/data/activity_prs.json", repositories)
+    status = storage.save_json(f"{today}/data/repositories.json", repositories)
     return status
 
 
@@ -501,6 +506,7 @@ def analyse_vulnerability_patch_recommendations(today):
 def build_route_data(today):
     route_data_overview_repositories_by_status(today)
     route_data_overview_alert_status(today)
+    route_data_overview_vulnerable_repositories(today)
 
 
 def route_data_overview_repositories_by_status(today):
@@ -517,12 +523,6 @@ def route_data_overview_repositories_by_status(today):
 
     template_data = {
         "repositories": {"all": repo_count, "by_status": status_counts},
-        "vulnerable": {
-            "severities": severities,
-            "all": vulnerable_count,
-            "by_severity": severity_counts,
-            "repositories": vulnerable_by_severity,
-        },
         "updated": today,
     }
 
@@ -541,6 +541,38 @@ def route_data_overview_alert_status(today):
         f"{today}/routes/count_alert_status.json", by_alert_status
     )
     return status
+
+
+def route_data_overview_vulnerable_repositories(today):
+
+    alert_status = storage.read_json(f"{today}/routes/count_alert_status.json")
+
+    vulnerable_by_severity = storage.read_json(
+        f"{today}/data/vulnerable_by_severity.json"
+    )
+    severity_counts = stats.count_types(vulnerable_by_severity)
+    vulnerable_count = sum(severity_counts.values())
+    severities = vulnerability_summarizer.SEVERITIES
+
+    template_data = {
+        "content": {
+            "title": "Overview - Vulnerable repositories",
+            "org": config.get_value("github_org"),
+            "vulnerable": {
+                "severities": severities,
+                "all": vulnerable_count,
+                "by_severity": severity_counts,
+                "repositories": vulnerable_by_severity,
+            },
+            "alert_status": alert_status
+        },
+        "footer": {
+            "updated": today
+        }
+    }
+
+    template_status = storage.save_json(f"{today}/routes/overview_vulnerable_repositories.json", template_data)
+    return template_status
 
 
 def get_header():
@@ -615,24 +647,16 @@ def route_overview_repository_status():
 @app.route("/overview/vulnerable-repositories")
 def route_overview_vulnerable_repositories():
     try:
-        # today = datetime.date.today().isoformat()
-        today = get_current_audit()
-        content = {
-            "title": "Overview - Repository vulnerabilities",
-            "org": config.get_value("github_org"),
-        }
-        footer = {"updated": today}
-        repo_stats = storage.read_json(f"{today}/routes/overview.json")
+        current = get_current_audit()
+        template_data = storage.read_json(f"{current}/routes/overview_vulnerable_repositories.json")
         return render_template(
             "pages/overview_vulnerable_repositories.html",
             header=get_header(),
-            content=content,
-            footer=footer,
-            data=repo_stats,
+            **template_data
         )
     except FileNotFoundError as err:
         return render_template(
-            "pages/error.html", **get_error_data("Something went wrong.")
+            "pages/error.html", **get_error_data("File not found.")
         )
 
 
@@ -666,7 +690,6 @@ def route_by_repository():
         content = {"title": "By repository"}
         footer = {"updated": today}
         topics = storage.read_json(f"{today}/data/topics.json")
-        pr_data = storage.read_json(f"{today}/data/activity_prs.json")
         raw_repositories = storage.read_json(f"{today}/data/repositories.json")
         repositories = {repo.name: repo for repo in raw_repositories["public"]}
 
@@ -693,7 +716,6 @@ def route_by_repository():
             teams=teams,
             team_dict=team_dict,
             repositories=repositories,
-            pull_requests=pr_data,
         )
     except FileNotFoundError as err:
         return render_template(
