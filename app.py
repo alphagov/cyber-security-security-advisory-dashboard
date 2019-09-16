@@ -454,7 +454,10 @@ def analyse_team_membership(today):
                 repo_team = "unknown"
                 repo_topics = []
                 if repo.repositoryTopics:
-                    repo_topics = [topic_edge.node.topic.name for topic_edge in repo.repositoryTopics.edges]
+                    repo_topics = [
+                        topic_edge.node.topic.name
+                        for topic_edge in repo.repositoryTopics.edges
+                    ]
 
                 for team, team_topics in teams.items():
                     for topic in team_topics:
@@ -467,22 +470,6 @@ def analyse_team_membership(today):
         print(str(err))
         updated = False
     return updated
-
-
-def get_uniform_version(version):
-    components = re.findall(r"\d+", version)
-    uniform = ".".join(components)
-    return uniform
-
-
-def get_sortable_version(version):
-    version_components = re.findall(r"\d+", version)
-    print(version_components)
-    sortable = []
-    for component in version_components:
-        sortable.append(format(int(component), "04d"))
-
-    return ".".join(sortable)
 
 
 def analyse_vulnerability_patch_recommendations(today):
@@ -500,81 +487,12 @@ def analyse_vulnerability_patch_recommendations(today):
     )
 
     for repo in repositories.public:
-        repo_patches = {}
         for severity, vuln_repos in vulnerable_by_severity.items():
             for vuln_repo in vuln_repos:
                 if repo.name == vuln_repo.name:
                     print(repo.name)
                     repo.maxSeverity = severity
-                    for v_edge in repo.vulnerabilityAlerts.edges:
-                        package = v_edge.node.packageName
-                        print(package)
-                        dependency_file = v_edge.node.vulnerableManifestPath
-                        required_version = get_uniform_version(
-                            v_edge.node.vulnerableRequirements
-                        )
-                        sortable_version = get_sortable_version(required_version)
-                        print(f"{required_version} == {sortable_version}")
-
-                        patch_sortable_version = None
-                        patch_version = None
-                        patchable = False
-                        max_severity = 0
-                        advisories = v_edge.node.securityAdvisory.vulnerabilities.edges
-                        for a_edge in advisories:
-                            advisory = a_edge.node
-                            severity_index = severities.index(advisory.severity)
-                            if severity_index > max_severity:
-                                max_severity = severity_index
-
-                            if advisory.firstPatchedVersion:
-                                patchable = True
-                                advisory_patch_version = get_uniform_version(
-                                    advisory.firstPatchedVersion.identifier
-                                )
-                                advisory_sortable_version = get_sortable_version(
-                                    advisory_patch_version
-                                )
-
-                                if (not patch_version) or (
-                                    advisory_sortable_version > patch_sortable_version
-                                ):
-                                    patch_version = advisory_patch_version
-                                    patch_sortable_version = advisory_sortable_version
-
-                        first = package not in repo_patches
-                        later = False
-
-                        if package in repo_patches:
-                            later = patch_sortable_version and (
-                                repo_patches[package]["sortable_version"]
-                                < patch_sortable_version
-                            )
-                            if repo_patches[package]["severity_index"] > max_severity:
-                                max_severity = repo_patches[package]["severity_index"]
-
-                        newer = first or later
-
-                        if newer:
-                            repo_patches[package] = {
-                                "package": package,
-                                "dependency_file": dependency_file,
-                                "current_version": required_version,
-                                "patch_available": patchable,
-                                "patch_version": patch_version,
-                                "sortable_version": patch_sortable_version,
-                                "severity": severities[max_severity],
-                                "severity_index": max_severity,
-                            }
-                            print(
-                                f"For {repo.name} patch {package} from {required_version} to {patch_version}"
-                            )
-
-        if len(repo_patches.keys()) > 0:
-            patch_list = [patch for package, patch in repo_patches.items()]
-            patch_list.sort(key=lambda patch: patch["severity_index"], reverse=True)
-            print(patch_list)
-            repo.patches = {patch["package"]: patch for patch in patch_list}
+                    repo.patches = vulnerability_summarizer.get_patch_list(repo)
 
     updated = storage.save_json(f"{today}/data/repositories.json", repositories)
     return updated
@@ -760,8 +678,7 @@ def route_by_repository():
         teams.sort()
 
         other_topics = {
-            topic_name: topics[topic_name]
-            for topic_name in set(topics.keys())
+            topic_name: topics[topic_name] for topic_name in set(topics.keys())
         }
 
         total = len([*repositories.keys()])
