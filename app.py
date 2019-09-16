@@ -656,7 +656,7 @@ def route_overview_vulnerable_repositories():
         )
     except FileNotFoundError as err:
         return render_template(
-            "pages/error.html", **get_error_data("Something went wrong.")
+            "pages/error.html", **get_error_data("File not found.")
         )
 
 
