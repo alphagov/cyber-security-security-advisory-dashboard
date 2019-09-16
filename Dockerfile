@@ -24,5 +24,5 @@ COPY build/gulpfile.js .
 COPY build/gulp_tasks ./gulp_tasks
 RUN gulp
 
-COPY . .
 WORKDIR /usr/src/app
+COPY . .
