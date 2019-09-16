@@ -506,6 +506,7 @@ def analyse_vulnerability_patch_recommendations(today):
 def build_route_data(today):
     route_data_overview_repositories_by_status(today)
     route_data_overview_alert_status(today)
+    route_data_overview_vulnerable_repositories(today)
 
 
 def route_data_overview_repositories_by_status(today):
@@ -522,12 +523,6 @@ def route_data_overview_repositories_by_status(today):
 
     template_data = {
         "repositories": {"all": repo_count, "by_status": status_counts},
-        "vulnerable": {
-            "severities": severities,
-            "all": vulnerable_count,
-            "by_severity": severity_counts,
-            "repositories": vulnerable_by_severity,
-        },
         "updated": today,
     }
 
@@ -546,6 +541,38 @@ def route_data_overview_alert_status(today):
         f"{today}/routes/count_alert_status.json", by_alert_status
     )
     return status
+
+
+def route_data_overview_vulnerable_repositories(today):
+
+    alert_status = storage.read_json(f"{today}/routes/count_alert_status.json")
+
+    vulnerable_by_severity = storage.read_json(
+        f"{today}/data/vulnerable_by_severity.json"
+    )
+    severity_counts = stats.count_types(vulnerable_by_severity)
+    vulnerable_count = sum(severity_counts.values())
+    severities = vulnerability_summarizer.SEVERITIES
+
+    template_data = {
+        "content": {
+            "title": "Overview - Vulnerable repositories",
+            "org": config.get_value("github_org"),
+            "vulnerable": {
+                "severities": severities,
+                "all": vulnerable_count,
+                "by_severity": severity_counts,
+                "repositories": vulnerable_by_severity,
+            },
+            "alert_status": alert_status
+        },
+        "footer": {
+            "updated": today
+        }
+    }
+
+    template_status = storage.save_json(f"{today}/routes/overview_vulnerable_repositories.json", template_data)
+    return template_status
 
 
 def get_header():
@@ -620,22 +647,12 @@ def route_overview_repository_status():
 @app.route("/overview/vulnerable-repositories")
 def route_overview_vulnerable_repositories():
     try:
-        # today = datetime.date.today().isoformat()
-        today = get_current_audit()
-        content = {
-            "title": "Overview - Vulnerable repositories",
-            "org": config.get_value("github_org"),
-        }
-        footer = {"updated": today}
-        repo_stats = storage.read_json(f"{today}/routes/overview.json")
-        alert_status = storage.read_json(f"{today}/routes/count_alert_status.json")
+        current = get_current_audit()
+        template_data = storage.read_json(f"{current}/routes/overview_vulnerable_repositories.json")
         return render_template(
             "pages/overview_vulnerable_repositories.html",
             header=get_header(),
-            content=content,
-            footer=footer,
-            data=repo_stats,
-            alert_status=alert_status,
+            **template_data
         )
     except FileNotFoundError as err:
         return render_template(
