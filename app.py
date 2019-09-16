@@ -669,7 +669,6 @@ def route_by_repository():
         content = {"title": "By repository"}
         footer = {"updated": today}
         topics = storage.read_json(f"{today}/data/topics.json")
-        pr_data = storage.read_json(f"{today}/data/activity_prs.json")
         raw_repositories = storage.read_json(f"{today}/data/repositories.json")
         repositories = {repo.name: repo for repo in raw_repositories["public"]}
 
@@ -695,8 +694,7 @@ def route_by_repository():
             other_topics=other_topics,
             teams=teams,
             team_dict=team_dict,
-            repositories=repositories,
-            pull_requests=pr_data,
+            repositories=repositories
         )
     except FileNotFoundError as err:
         return render_template(
