@@ -13,4 +13,11 @@ WORKDIR /usr/src/app/build
 RUN npm install -g gulp-cli n
 RUN n 10.16.3
 
+WORKDIR /usr/src/app/build
+
+RUN npm install
+RUN npm rebuild node-sass
+RUN gulp
+
+
 WORKDIR /usr/src/app
