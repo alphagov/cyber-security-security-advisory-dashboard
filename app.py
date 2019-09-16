@@ -150,6 +150,8 @@ def cli_task(task):
         analyse_vulnerability_patch_recommendations(today)
     elif task == "routes":
         build_route_data(today)
+    else:
+        print("ERROR: Undefined task")
 
 
 def get_github_resolve_alert_status():
@@ -621,17 +623,19 @@ def route_overview_vulnerable_repositories():
         # today = datetime.date.today().isoformat()
         today = get_current_audit()
         content = {
-            "title": "Overview - Repository vulnerabilities",
+            "title": "Overview - Vulnerable repositories",
             "org": config.get_value("github_org"),
         }
         footer = {"updated": today}
         repo_stats = storage.read_json(f"{today}/routes/overview.json")
+        alert_status = storage.read_json(f"{today}/routes/count_alert_status.json")
         return render_template(
             "pages/overview_vulnerable_repositories.html",
             header=get_header(),
             content=content,
             footer=footer,
             data=repo_stats,
+            alert_status=alert_status,
         )
     except FileNotFoundError as err:
         return render_template(
@@ -694,7 +698,7 @@ def route_by_repository():
             other_topics=other_topics,
             teams=teams,
             team_dict=team_dict,
-            repositories=repositories
+            repositories=repositories,
         )
     except FileNotFoundError as err:
         return render_template(
