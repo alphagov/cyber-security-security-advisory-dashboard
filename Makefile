@@ -7,7 +7,7 @@ help:
 	@echo "Commands:"
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
 
-run: gulp
+run: rebuild
 	docker-compose up
 
 shell:
@@ -18,9 +18,6 @@ rebuild:
 
 test:
 	docker-compose run dashboard sh test.sh
-
-gulp:
-	docker-compose run dashboard sh -c 'cd build && gulp'
 
 audit:
 	docker-compose run dashboard flask audit
