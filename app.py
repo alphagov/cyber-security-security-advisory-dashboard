@@ -365,13 +365,16 @@ def analyse_repo_ownership(today):
 
 def analyse_pull_request_status(today):
     now = arrow.utcnow()
-    repositories = storage.read_json(f"{today}/data/activity_prs.json")
-    for repo_name, repo in repositories.items():
+    pull_requests = storage.read_json(f"{today}/data/activity_prs.json")
+    repositories = storage.read_json(f"{today}/data/repositories.json")
+    for repo in repositories.public:
+
+        repo_prs = pull_requests[repo.name]
 
         pr_final_status = "No pull requests in this repository"
 
-        if repo.pullRequests.edges:
-            node = repo.pullRequests.edges[0].node
+        if repo_prs.pullRequests.edges:
+            node = repo_prs.pullRequests.edges[0].node
 
             if node.merged:
                 reference_date = arrow.get(node.mergedAt)
@@ -398,9 +401,9 @@ def analyse_pull_request_status(today):
             else:
                 pr_final_status = f"Last pull request this week ({pr_status})"
 
-        repo.pr_final_status = pr_final_status
+        repo.recentPullRequestStatus = pr_final_status
 
-    status = storage.save_json(f"{today}/data/activity_prs.json", repositories)
+    status = storage.save_json(f"{today}/data/repositories.json", repositories)
     return status
 
 
