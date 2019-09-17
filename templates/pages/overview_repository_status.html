@@ -17,7 +17,7 @@
          palette='["#0362fc","#fc8c03","#a587c9","#8d8696"]'
       >
         <table class="govuk-table">
-          <caption class="govuk-table__caption">Repositories by status ({{ data.repositories.all }})</caption>
+          <caption class="govuk-table__caption">Repositories by status ({{ content.repositories.all }})</caption>
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
               <th class="govuk-table__header">Status</th>
@@ -25,13 +25,13 @@
             </tr>
           </thead>
           <tbody class="govuk-table__body">
-            {% for status in data.repositories.by_status %}
+            {% for status in content.repositories.by_status %}
             <tr class="govuk-table__row">
               <th class="govuk-table__header">
                 {{ status | title }}
               </th>
               <td class="govuk-table__cell govuk-table__cell--numeric">
-                {{ data.repositories.by_status[status] }}
+                {{ content.repositories.by_status[status] }}
               </td>
             </tr>
             {% endfor %}
@@ -45,6 +45,32 @@
         For those which are neither archived or disabled they are separated
         into public or private.
       </p>
+    </div>
+  </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+      <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-status">
+      {% for status in content.repositories.by_status %}
+
+        <div class="govuk-accordion__section ">
+          <div class="govuk-accordion__section-header">
+            <h2 class="govuk-accordion__section-heading">
+              <span class="govuk-accordion__section-button" id="accordion-status-heading-{{status}}">
+                {{ status | title}} ({{ content.repositories.by_status[status] }})
+              </span>
+            </h2>
+          </div>
+          <div id="accordion-status-content-{{status}}" class="govuk-accordion__section-content" aria-labelledby="accordion-status-heading-{{status}}">
+
+          {% set repositories = content.repositories.repos_by_status[status] %}
+          {% for repo in repositories %}
+            {% include "components/content_blocks/repository_summary.html" %}
+          {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+      </div>
     </div>
   </div>
 {% endblock %}
