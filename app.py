@@ -523,11 +523,8 @@ def route_data_overview_monitoring_status(today):
     advisory_count = 0
 
     for repo in monitoring["public"]:
-        print(repo.name)
         dependabot_status = repo.dependabotEnabledStatus
-        print(dependabot_status)
         advisory_status = repo.securityAdvisoriesEnabledStatus
-        print(advisory_status)
 
         if dependabot_status:
             dependabot_count += 1
