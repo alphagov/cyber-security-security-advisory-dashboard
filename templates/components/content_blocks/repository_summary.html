@@ -12,7 +12,7 @@
     </div>
     <div class="govuk-grid-column-two-thirds">
       <h3 class='govuk-heading-m'>
-        <a href="https://github.com/{{repo.owner.login}}/{{repo.name}}" class="govuk-link">{{repo.name}}</a>
+        <a href="https://github.com/{{repo.owner.login}}/{{repo.name}}/network/alerts" target="github" class="govuk-link">{{repo.name}}</a>
       </h3>
     </div>
   </div>
@@ -94,6 +94,9 @@
               <dd class="govuk-summary-list__value">
                 {% if patch.patch_available %}
                 Patch {{ patch.current_version }} to {{ patch.patch_version }}
+                {% if (patch.alternative_patched_versions | length) > 0 %}
+                  <br/>or [ {{ patch.alternative_patched_versions|join(' | ', attribute='version') }} ]
+                {% endif %}
                 {% else %}
                 No current patch available
                 {% endif %}

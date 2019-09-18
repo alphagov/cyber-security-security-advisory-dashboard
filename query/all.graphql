@@ -19,7 +19,11 @@ query {
         isArchived
         isPrivate
         isDisabled
-        vulnerabilityAlerts(first:10) {
+        vulnerabilityAlerts(first:20) {
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
           edges {
             node {
               id
@@ -29,7 +33,11 @@ query {
               securityAdvisory {
                 id
                 summary
-                vulnerabilities(first:10) {
+                vulnerabilities(first:20) {
+                  pageInfo {
+                    endCursor
+                    hasNextPage
+                  }
                   edges {
                     node {
                       package {
