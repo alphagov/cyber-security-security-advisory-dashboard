@@ -14,7 +14,7 @@
          series="rows"
          above="true"
          ismultiple="false"
-         palette='["000000","#fc2803","#fc9003","#fcba03", "#00703c", "#6f777b"]'
+         palette='monochrome_blue'
       >
         <table class="govuk-table">
           <caption class="govuk-table__caption">Recent activity</caption>
@@ -25,7 +25,7 @@
             </tr>
           </thead>
           <tbody class="govuk-table__body">
-            {% for currency in content.activity.counts %}
+            {% for currency in content.activity.bands %}
             <tr class="govuk-table__row">
               <th class="govuk-table__header">
                 {{ currency | title }}
@@ -52,7 +52,7 @@
     <div class="govuk-grid-column-full">
 
       <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-severity">
-      {% for currency in content.activity.counts %}
+      {% for currency in content.activity.bands %}
 
         <div class="govuk-accordion__section ">
           <div class="govuk-accordion__section-header">
