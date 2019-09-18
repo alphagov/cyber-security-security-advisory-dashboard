@@ -1,0 +1,65 @@
+{% extends "layouts/full_width_with_sidebar.html" %}
+{% block sidebar %}
+{% include "components/sidebars/overview_sidebar_menu.html" %}
+{% endblock %}
+{% block content %}
+  <h1 class="govuk-heading-l">
+    {{ content.title }}
+  </h1>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-half">
+      <div class="chart-wrapper"
+         type="donut"
+         series="rows"
+         above="true"
+         ismultiple="false"
+         palette="monochrome_blue"
+      >
+        <!-- '["#fc2803","#fc9003","#3fbd31"]' -->
+        <table class="govuk-table">
+          <caption class="govuk-table__caption">Public repositories by monitoring status</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">Monitored Status</th>
+              <th class="govuk-table__header govuk-table__header--numeric">Count</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">
+                Dependabot Enabled
+              </th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">
+                {{ content.monitoring.dependabot_enabled }}
+              </td>
+            </tr>
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">
+                Security Advisory Enabled
+              </th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">
+                {{ content.monitoring.advisory_enabled }}
+              </td>
+            </tr>
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">
+                Advisories Disabled
+              </th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">
+                {{ content.monitoring.disabled }}
+              </td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="govuk-grid-column-one-half">
+      <p class="govuk-body">
+        This is the split of public alphagov repositories by monitoring status,
+        including whether they are monitored by GitHub Security Advisory or Dependabot.
+      </p>
+    </div>
+  </div>
+{% endblock %}
