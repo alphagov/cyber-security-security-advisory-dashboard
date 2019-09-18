@@ -522,11 +522,22 @@ def route_data_overview_repositories_by_status(today):
     severities = vulnerability_summarizer.SEVERITIES
 
     template_data = {
-        "repositories": {"all": repo_count, "by_status": status_counts},
-        "updated": today,
+        "content": {
+            "title": "Overview - Repositories by status",
+            "org": config.get_value("github_org"),
+            "repositories": {
+                "all": repo_count,
+                "by_status": status_counts,
+                "repos_by_status": repositories_by_status,
+            },
+            "vulnerable_by_severity": vulnerable_by_severity,
+        },
+        "footer": {"updated": today},
     }
 
-    overview_status = storage.save_json(f"{today}/routes/overview.json", template_data)
+    overview_status = storage.save_json(
+        f"{today}/routes/overview_repositories_by_status.json", template_data
+    )
     return overview_status
 
 
@@ -564,14 +575,14 @@ def route_data_overview_vulnerable_repositories(today):
                 "by_severity": severity_counts,
                 "repositories": vulnerable_by_severity,
             },
-            "alert_status": alert_status
+            "alert_status": alert_status,
         },
-        "footer": {
-            "updated": today
-        }
+        "footer": {"updated": today},
     }
 
-    template_status = storage.save_json(f"{today}/routes/overview_vulnerable_repositories.json", template_data)
+    template_status = storage.save_json(
+        f"{today}/routes/overview_vulnerable_repositories.json", template_data
+    )
     return template_status
 
 
@@ -626,17 +637,14 @@ def route_overview():
 @app.route("/overview/repository-status")
 def route_overview_repository_status():
     try:
-        # today = datetime.date.today().isoformat()
-        today = get_current_audit()
-        content = {"title": "Overview - Repository status"}
-        footer = {"updated": today}
-        repo_stats = storage.read_json(f"{today}/routes/overview.json")
+        current = get_current_audit()
+        template_data = storage.read_json(
+            f"{current}/routes/overview_repositories_by_status.json"
+        )
         return render_template(
             "pages/overview_repository_status.html",
             header=get_header(),
-            content=content,
-            footer=footer,
-            data=repo_stats,
+            **template_data,
         )
     except FileNotFoundError as err:
         return render_template(
@@ -648,16 +656,16 @@ def route_overview_repository_status():
 def route_overview_vulnerable_repositories():
     try:
         current = get_current_audit()
-        template_data = storage.read_json(f"{current}/routes/overview_vulnerable_repositories.json")
+        template_data = storage.read_json(
+            f"{current}/routes/overview_vulnerable_repositories.json"
+        )
         return render_template(
             "pages/overview_vulnerable_repositories.html",
             header=get_header(),
-            **template_data
+            **template_data,
         )
     except FileNotFoundError as err:
-        return render_template(
-            "pages/error.html", **get_error_data("File not found.")
-        )
+        return render_template("pages/error.html", **get_error_data("File not found."))
 
 
 @app.route("/overview/repository-monitoring-status")
