@@ -498,7 +498,9 @@ def analyse_vulnerability_patch_recommendations(today):
                     print(repo.name)
                     repo.maxSeverity = severity
                     repo.patches = vulnerability_summarizer.get_patch_list(repo)
-                    repo.vulnerabiltyCounts = vulnerability_summarizer.get_repository_severity_counts(repo)
+                    repo.vulnerabiltyCounts = vulnerability_summarizer.get_repository_severity_counts(
+                        repo
+                    )
 
     updated = storage.save_json(f"{today}/data/repositories.json", repositories)
     return updated
@@ -508,6 +510,48 @@ def build_route_data(today):
     route_data_overview_repositories_by_status(today)
     route_data_overview_alert_status(today)
     route_data_overview_vulnerable_repositories(today)
+    route_data_overview_monitoring_status(today)
+
+
+def route_data_overview_monitoring_status(today):
+    monitoring_disabled = storage.read_json(f"{today}/data/alert_status.json")
+    monitoring = storage.read_json(f"{today}/data/repositories.json")
+
+    monitoring_alert = len(monitoring_disabled["disabled"])
+
+    dependabot_count = 0
+    advisory_count = 0
+
+    for repo in monitoring["public"]:
+        print(repo.name)
+        dependabot_status = repo.dependabotEnabledStatus
+        print(dependabot_status)
+        advisory_status = repo.securityAdvisoriesEnabledStatus
+        print(advisory_status)
+
+        if dependabot_status:
+            dependabot_count += 1
+
+        if advisory_status:
+            advisory_count += 1
+
+    template_data = {
+        "content": {
+            "title": "Overview - Monitoring status",
+            "org": config.get_value("github_org"),
+            "monitoring": {
+                "dependabot_enabled": dependabot_count,
+                "advisory_enabled": advisory_count,
+                "disabled": monitoring_alert,
+            },
+        },
+        "footer": {"updated": today},
+    }
+
+    monitoring_status = storage.save_json(
+        f"{today}/routes/overview_monitoring_status.json", template_data
+    )
+    return monitoring_status
 
 
 def route_data_overview_repositories_by_status(today):
@@ -628,6 +672,24 @@ def route_overview():
             content=content,
             footer=footer,
             data=repo_stats,
+        )
+    except FileNotFoundError as err:
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
+
+
+@app.route("/overview/monitoring-status")
+def route_overview_monitoring_status():
+    try:
+        current = get_current_audit()
+        template_data = storage.read_json(
+            f"{current}/routes/overview_monitoring_status.json"
+        )
+        return render_template(
+            "pages/overview_monitoring_status.html",
+            header=get_header(),
+            **template_data,
         )
     except FileNotFoundError as err:
         return render_template(
