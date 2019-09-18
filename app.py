@@ -432,11 +432,23 @@ def analyse_activity_refs(today):
             currency_delta = now - last_commit
             currency_days = currency_delta.days
 
-            for repo in repositories["public"]:
-                if repo.name == repo_name:
-                    repo.recentCommitDaysAgo = currency_days
-                    repo.averageCommitFrequency = average_days
-                    repo.isActive = currency_days < 365 and average_days < 180
+            for status, repo_list in repositories.items():
+                if status in ["public","private"]:
+                    for repo in repo_list:
+                        if repo.name == repo_name:
+                            repo.recentCommitDaysAgo = currency_days
+                            repo.averageCommitFrequency = average_days
+                            repo.isActive = currency_days < 365 and average_days < 180
+
+                            currency_band = "older"
+                            if currency_days <= 28:
+                                currency_band = "within a month"
+                            elif currency_days <= 91:
+                                currency_band = "within a quarter"
+                            elif currency_days <= 365:
+                                currency_band = "within a year"
+
+                            repo.currencyBand = currency_band
 
     updated = storage.save_json(f"{today}/data/repositories.json", repositories)
 
@@ -628,6 +640,37 @@ def route_data_overview_vulnerable_repositories(today):
     return template_status
 
 
+def route_data_overview_activity(today):
+    repositories_by_status = storage.read_json(f"{today}/data/repositories.json")
+    bands = defaultdict(int)
+    repositories_by_activity = defaultdict(list)
+    for status, repo_list in repositories_by_status.items():
+        if status in ["public","private"]:
+            for repo in repo_list:
+                if "recentCommitDaysAgo" in repo:
+                    currency = repo.currencyBand
+                    bands[currency] += 1
+                    repositories_by_activity[currency].append(repo)
+
+
+    template_data = {
+        "content": {
+            "title": "Overview - Activity",
+            "org": config.get_value("github_org"),
+            "activity": {
+                "counts": bands,
+                "repositories": repositories_by_activity
+            }
+        },
+        "footer": {
+            "updated": today
+        }
+    }
+
+    overview_activity_status = storage.save_json(f"{today}/routes/overview_activity.json", template_data)
+    return overview_activity_status
+
+
 def get_header():
     org = config.get_value("github_org")
     org_name = org.title()
@@ -747,6 +790,21 @@ def route_overview_repository_monitoring_status():
     except FileNotFoundError as err:
         return render_template(
             "pages/error.html", **get_error_data("Something went wrong.")
+        )
+
+
+def route_overview_activity():
+    try:
+        current = get_current_audit()
+        template_data = storage.read_json(f"{current}/routes/overview_activity.json")
+        return render_template(
+            "pages/overview_activity.html",
+            header=get_header(),
+            **template_data
+        )
+    except FileNotFoundError as err:
+        return render_template(
+            "pages/error.html", **get_error_data("File not found.")
         )
 
 

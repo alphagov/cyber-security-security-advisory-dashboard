@@ -1,0 +1,77 @@
+{% extends "layouts/full_width_with_sidebar.html" %}
+{% block sidebar %}
+{% include "components/sidebars/overview_sidebar_menu.html" %}
+{% endblock %}
+{% block content %}
+  <h2 class="govuk-heading-l">
+    {{ content.title }}
+  </h2>
+  <div class="govuk-grid-row">
+
+    <div class="govuk-grid-column-one-half">
+      <div class="chart-wrapper"
+         type="donut"
+         series="rows"
+         above="true"
+         ismultiple="false"
+         palette='["000000","#fc2803","#fc9003","#fcba03", "#00703c", "#6f777b"]'
+      >
+        <table class="govuk-table">
+          <caption class="govuk-table__caption">Recent activity</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">Age band</th>
+              <th class="govuk-table__header govuk-table__header--numeric">Count</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            {% for currency in content.activity.counts %}
+            <tr class="govuk-table__row">
+              <th class="govuk-table__header">
+                {{ currency | title }}
+              </th>
+              <td class="govuk-table__cell govuk-table__cell--numeric">
+                {{ content.activity.counts[currency] }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="govuk-grid-column-one-half">
+      <p class="govuk-body">
+        We have classified all non-archived repositories by their most recent commits into age bands.
+        The aim is to spot repositories which are candidates for archiving or repositories that look
+        to be falling out of maintenance.
+      </p>
+
+    </div>
+  </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+      <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-severity">
+      {% for currency in content.activity.counts %}
+
+        <div class="govuk-accordion__section ">
+          <div class="govuk-accordion__section-header">
+            <h2 class="govuk-accordion__section-heading">
+              <span class="govuk-accordion__section-button" id="accordion-severity-heading-{{severity}}">
+                {{ currency | title }}
+              </span>
+            </h2>
+          </div>
+          <div id="accordion-severity-content-{{severity}}" class="govuk-accordion__section-content" aria-labelledby="accordion-severity-heading-{{severity}}">
+
+          {% set repositories = content.activity.repositories[currency] %}
+          {% for repo in repositories %}
+            {% include "components/content_blocks/repository_summary.html" %}
+          {% endfor %}
+          </div>
+      {% endfor %}
+      </div>
+
+    </div>
+  </div>
+{% endblock %}
