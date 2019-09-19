@@ -1,0 +1,121 @@
+{% extends "layouts/full_width_with_sidebar.html" %}
+{% block sidebar %}
+{% include "components/sidebars/overview_sidebar_menu.html" %}
+{% endblock %}
+{% block content %}
+  <h1 class="govuk-heading-l">
+    {{ content.title }}
+  </h1>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-half">
+      <p class="govuk-body">
+        This is an overview of repositories categorised by the time since the last commit.
+      </p>
+    </div>
+  </div>
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+      <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-more-since">
+        <div class="govuk-accordion__section ">
+          <div class="govuk-accordion__section-header">
+            <h2 class="govuk-accordion__section-heading">
+              <span class="govuk-accordion__section-button" id="accordion-activity-heading-more-since">
+                More than a year since the last commit ({{ content.activity.more_since_count }})
+              </span>
+            </h2>
+          </div>
+          <div id="accordion-severity-content-" class="govuk-accordion__section-content" aria-labelledby="accordion-severity-heading-more-since">
+
+          {% for repo in content.activity.activity_list.more_since %}
+          <h3 class='govuk-heading-s'>
+            <a href="https://github.com/{{repo.owner_login}}/{{repo}}/network/alerts" target="github" class="govuk-link">{{repo}}</a>
+          </h3>
+          {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-year-since">
+        <div class="govuk-accordion__section ">
+          <div class="govuk-accordion__section-header">
+            <h2 class="govuk-accordion__section-heading">
+              <span class="govuk-accordion__section-button" id="accordion-activity-heading-year-since">
+                Year since the last commit ({{ content.activity.year_since_count }})
+              </span>
+            </h2>
+          </div>
+          <div id="accordion-severity-content-" class="govuk-accordion__section-content" aria-labelledby="accordion-severity-heading-year-since">
+
+          {% for repo in content.activity.activity_list.year_since %}
+          <h3 class='govuk-heading-s'>
+            <a href="https://github.com/{{repo.owner_login}}/{{repo}}/network/alerts" target="github" class="govuk-link">{{repo}}</a>
+          </h3>
+          {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-month-since">
+        <div class="govuk-accordion__section ">
+          <div class="govuk-accordion__section-header">
+            <h2 class="govuk-accordion__section-heading">
+              <span class="govuk-accordion__section-button" id="accordion-activity-heading-month-since">
+                Month since the last commit ({{ content.activity.month_since_count }})
+              </span>
+            </h2>
+          </div>
+          <div id="accordion-severity-content-" class="govuk-accordion__section-content" aria-labelledby="accordion-severity-heading-month-since">
+
+          {% for repo in content.activity.activity_list.month_since %}
+          <h3 class='govuk-heading-s'>
+            <a href="https://github.com/{{repo.owner_login}}/{{repo}}/network/alerts" target="github" class="govuk-link">{{repo}}</a>
+          </h3>
+          {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-week-since">
+        <div class="govuk-accordion__section ">
+          <div class="govuk-accordion__section-header">
+            <h2 class="govuk-accordion__section-heading">
+              <span class="govuk-accordion__section-button" id="accordion-activity-heading-week-since">
+                Week since the last commit ({{ content.activity.week_since_count }})
+              </span>
+            </h2>
+          </div>
+          <div id="accordion-severity-content-" class="govuk-accordion__section-content" aria-labelledby="accordion-severity-heading-week-since">
+
+          {% for repo in content.activity.activity_list.week_since %}
+          <h3 class='govuk-heading-s'>
+            <a href="https://github.com/{{repo.owner_login}}/{{repo}}/network/alerts" target="github" class="govuk-link">{{repo}}</a>
+          </h3>
+          {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-no_commits">
+        <div class="govuk-accordion__section ">
+          <div class="govuk-accordion__section-header">
+            <h2 class="govuk-accordion__section-heading">
+              <span class="govuk-accordion__section-button" id="accordion-activity-heading-no_commits">
+                No commits ({{ content.activity.no_commits_count }})
+              </span>
+            </h2>
+          </div>
+          <div id="accordion-severity-content-" class="govuk-accordion__section-content" aria-labelledby="accordion-severity-heading-no_commits">
+
+          {% for repo in content.activity.activity_list.no_commits %}
+          <h3 class='govuk-heading-s'>
+            <a href="https://github.com/{{repo.owner_login}}/{{repo}}/network/alerts" target="github" class="govuk-link">{{repo}}</a>
+          </h3>
+          {% endfor %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock %}

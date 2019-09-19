@@ -511,6 +511,54 @@ def build_route_data(today):
     route_data_overview_alert_status(today)
     route_data_overview_vulnerable_repositories(today)
     route_data_overview_monitoring_status(today)
+    route_data_overview_activity(today)
+
+
+def route_data_overview_activity(today):
+    repo_activity = storage.read_json(f"{today}/data/repositories.json")
+
+    activity_list = defaultdict(list)
+
+    for repo in repo_activity["public"]:
+        days_since_commit = repo.recentCommitDaysAgo
+        if repo.get("recentCommitDaysAgo") == None:
+            activity_list["no_commits"].append(repo.name)
+        elif days_since_commit <= 7:
+            activity_list["week_since"].append(repo.name)
+        elif days_since_commit <= 30:
+            activity_list["month_since"].append(repo.name)
+        elif days_since_commit <= 365:
+            activity_list["year_since"].append(repo.name)
+        elif days_since_commit > 365:
+            activity_list["more_since"].append(repo.name)
+
+    no_commits_count = len(activity_list["no_commits"])
+    week_since_count = len(activity_list["week_since"])
+    month_since_count = len(activity_list["month_since"])
+    year_since_count = len(activity_list["year_since"])
+    more_since_count = len(activity_list["more_since"])
+
+    template_data = {
+        "content": {
+            "title": "Overview - Activity",
+            "org": config.get_value("github_org"),
+            "activity": {
+                "activity_list": activity_list,
+                "owner_login": repo.owner.login,
+                "no_commits_count": no_commits_count,
+                "week_since_count": week_since_count,
+                "month_since_count": month_since_count,
+                "year_since_count": year_since_count,
+                "more_since_count": more_since_count,
+            },
+        },
+        "footer": {"updated": today},
+    }
+
+    activity_status = storage.save_json(
+        f"{today}/routes/overview_activity_status.json", template_data
+    )
+    return activity_status
 
 
 def route_data_overview_monitoring_status(today):
@@ -669,6 +717,22 @@ def route_overview():
             content=content,
             footer=footer,
             data=repo_stats,
+        )
+    except FileNotFoundError as err:
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
+
+
+@app.route("/overview/activity")
+def route_overview_activity():
+    try:
+        current = get_current_audit()
+        template_data = storage.read_json(
+            f"{current}/routes/overview_activity_status.json"
+        )
+        return render_template(
+            "pages/overview_activity_status.html", header=get_header(), **template_data
         )
     except FileNotFoundError as err:
         return render_template(
