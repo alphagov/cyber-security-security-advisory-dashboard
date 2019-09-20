@@ -49,13 +49,13 @@
               </dd>
             </div>
             {% endif %}
-            {% if repo.recentCommitDaysAgo %}
+            {% if repo.recentCommitDaysAgo is not none %}
             <div class="govuk-summary-list__row">
               <dt class="govuk-summary-list__key">
                 Latest commit
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ 'daily' if repo.recentCommitDaysAgo == 0 else (repo.recentCommitDaysAgo | string) + ' days ago' }}
+                {{ 'Daily' if repo.recentCommitDaysAgo == 0 else (repo.recentCommitDaysAgo | string) + ' days ago' }}
               </dd>
             </div>
             {% endif %}
