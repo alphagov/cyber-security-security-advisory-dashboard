@@ -728,28 +728,6 @@ def route_overview_vulnerable_repositories():
         return render_template("pages/error.html", **get_error_data("File not found."))
 
 
-@app.route("/overview/repository-monitoring-status")
-def route_overview_repository_monitoring_status():
-    try:
-        # today = datetime.date.today().isoformat()
-        today = get_current_audit()
-        content = {"title": "Overview - Alert status"}
-        footer = {"updated": today}
-
-        alert_status = storage.read_json(f"{today}/routes/count_alert_status.json")
-        return render_template(
-            "pages/overview_repository_monitoring_status.html",
-            header=get_header(),
-            content=content,
-            footer=footer,
-            data=alert_status,
-        )
-    except FileNotFoundError as err:
-        return render_template(
-            "pages/error.html", **get_error_data("Something went wrong.")
-        )
-
-
 @app.route("/by-repository")
 def route_by_repository():
     try:
