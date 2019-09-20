@@ -542,7 +542,7 @@ def route_data_overview_monitoring_status(today):
         if dependabot_status:
             dependabot_count += 1
 
-        if advisory_status:
+        elif advisory_status:
             advisory_count += 1
 
     template_data = {
