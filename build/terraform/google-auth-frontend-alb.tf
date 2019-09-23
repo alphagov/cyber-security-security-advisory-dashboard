@@ -2,8 +2,15 @@ resource "aws_lb" "event-normalisation-alb" {
   name               = "event-normalisation-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = ["${aws_security_group.event-normalisation-alb-ingress.id}", "${aws_security_group.event-normalisation-alb-egress.id}"]
-  subnets            = ["${aws_subnet.alb-frontend-subnet1-AZ-A.id}", "${aws_subnet.alb-frontend-subnet2-AZ-B.id}"]
+  security_groups    = [
+    "${aws_security_group.alphagov_audit_alb_ingress.id}",
+    "${aws_security_group.alphagov_audit_alb_egress.id}"
+  ]
+  subnets            = [
+    "${aws_default_subnet.z1.id}",
+    "${aws_default_subnet.z2.id}",
+    "${aws_default_subnet.z3.id}"
+  ]
 
   #  access_logs {
   #    bucket  = "${var.alb_access_logs}"
@@ -29,7 +36,7 @@ resource "aws_lb_target_group" "event-normalisation-tg" {
   }
 }
 
-resource "aws_lb_listener" "event-normalisation-listner" {
+resource "aws_lb_listener" "event-normalisation-listener" {
   load_balancer_arn = "${aws_lb.event-normalisation-alb.arn}"
   port              = "443"
   protocol          = "HTTPS"
@@ -42,7 +49,7 @@ resource "aws_lb_listener" "event-normalisation-listner" {
   }
 }
 
-resource "aws_lb_listener" "event-normalisation-listner_80" {
+resource "aws_lb_listener" "event-normalisation-listener_80" {
   load_balancer_arn = "${aws_lb.event-normalisation-alb.arn}"
   port              = "80"
   protocol          = "HTTP"
@@ -59,7 +66,7 @@ resource "aws_lb_listener" "event-normalisation-listner_80" {
 }
 
 resource "aws_lb_listener_rule" "route_auth" {
-  listener_arn = "${aws_lb_listener.event-normalisation-listner.arn}"
+  listener_arn = "${aws_lb_listener.event-normalisation-listener.arn}"
   priority     = 100
 
   action {

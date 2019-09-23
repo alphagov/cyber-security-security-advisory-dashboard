@@ -1,30 +1,15 @@
-variable "vpcid" {
-  description = "VPC forevent-normalisation firebreak Q1 2019"
-  default     = "vpc-4dc85b25"
+variable "region" {
+  type = "string"
+  default = "eu-west-2"
+}
+
+variable "dns_zone_fqdn" {
+  description = "The domain under which we will create our zone"
   type        = "string"
 }
 
-variable "aws_prim_az" {
-  description = "Primary Availability Zone"
-  default     = "eu-west-2a"
-  type        = "string"
-}
-
-variable "aws_second_az" {
-  description = "Secondary Availability Zone"
-  default     = "eu-west-2b"
-  type        = "string"
-}
-
-variable "cidr_subnet1_allocation" {
-  description = "Subnet IP CIDR range AZ A"
-  default     = "172.31.128.0/24"
-  type        = "string"
-}
-
-variable "cidr_subnet2_allocation" {
-  description = "Subnet IP CIDR range AZ B"
-  default     = "172.31.144.0/24"
+variable "sub_domain" {
+  description = "The subdomain for our zone"
   type        = "string"
 }
 
