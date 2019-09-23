@@ -36,7 +36,7 @@ package_dir: clean
 	mkdir -p build/.package/query
 	mkdir -p build/.package/output
 
-copy_src: package_dir
+copy_src: package_dir rebuild
 	cp *.py build/.package
 	cp -R static/* build/.package/static/
 	cp -R templates/* build/.package/templates/
