@@ -1,0 +1,71 @@
+{% extends "layouts/full_width_with_sidebar.html" %}
+{% block sidebar %}
+{% include "components/sidebars/how_to_sidebar_menu.html" %}
+{% endblock %}
+{% block content %}
+    <h1 class="govuk-heading-l">
+      {{ content.title }}
+    </h1>
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <p class="govuk-body">
+          In order to add your repository to dependabot there are a number of steps to
+          follow with some differences in configuration based on the repository.
+
+          The steps to take are as follows:
+
+          <ol class="govuk-list govuk-list--number">
+            <li>Navigate to <a href="https://dependabot.com" class="govuk-link">dependabot.com</a> and click <strong>Login</strong></li>
+            <li>Allow GitHub access to your account when prompted on logging into dependabot.com</li>
+            <li>Click on the <strong>Add repo</strong> button in the top left corner</li>
+            <li>If your repository is not listed, click on the <strong>Grant access to additional repos</strong> button</li>
+            <li>Once you find your repository in the list, check the checkbox and click
+              <strong>Add selected</strong>, found in the top right corner</li>
+            <li>If your dependency files are not found in the root of the repository, you will need to add a
+              <strong><a href="https://dependabot.com/docs/config-file/" class="govuk-link">.dependabot/config.yml</a></strong> to the root</li>
+          </ol>
+          <details class="govuk-details" data-module="govuk-details">
+            <summary class="govuk-details__summary">
+              <span class="govuk-details__summary-text">
+                .dependabot/config.yml example
+              </span>
+            </summary>
+            <div class="govuk-details__text">
+              <code>
+                version: 1<br/><br/>
+
+                update_configs:<br/>
+                  - package_manager: "ruby:bundler"<br/>
+                    directory: "/common"<br/>
+                    update_schedule: "live"<br/>
+                    default_reviewers:<br/>
+                    - greysteil<br/><br/>
+
+                  - package_manager: "php:composer"<br/>
+                    directory: "/composer/helpers"<br/>
+                    update_schedule: "live"<br/><br/>
+
+                  - package_manager: "elixir:hex"<br/>
+                    directory: "/hex/helpers"<br/>
+                    update_schedule: "live"<br/><br/>
+
+                  - package_manager: "javascript"<br/>
+                    directory: "/npm_and_yarn/helpers"<br/>
+                    update_schedule: "live"<br/><br/>
+
+                  - package_manager: "python"<br/>
+                    directory: "/python/helpers"<br/>
+                    update_schedule: "live"<br/><br/>
+
+                  - package_manager: "go:modules"<br/>
+                    directory: "/go_modules/helpers"<br/>
+                    update_schedule: "daily"<br/>
+              </code>
+            </div>
+          </details>
+          </div>
+        </p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

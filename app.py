@@ -706,6 +706,57 @@ def route_home():
         )
 
 
+@app.route("/how-to")
+def route_how_to():
+    try:
+        current = get_current_audit()
+        content = {"title": "How to"}
+        footer = {"updated": current}
+        return render_template(
+            "pages/how_to.html", header=get_header(), content=content, footer=footer
+        )
+    except FileNotFoundError as err:
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
+
+
+@app.route("/how-to/enable-dependabot")
+def route_how_to_enable_dependabot():
+    try:
+        current = get_current_audit()
+        content = {"title": "How to enable dependabot"}
+        footer = {"updated": current}
+        return render_template(
+            "pages/how_to_enable_dependabot.html",
+            header=get_header(),
+            content=content,
+            footer=footer,
+        )
+    except FileNotFoundError as err:
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
+
+
+@app.route("/how-to/enable-security-advisories")
+def route_how_to_enable_security_advisories():
+    try:
+        current = get_current_audit()
+        content = {"title": "How to enable security advisories"}
+        footer = {"updated": current}
+        return render_template(
+            "pages/how_to_enable_security_advisories.html",
+            header=get_header(),
+            content=content,
+            footer=footer,
+        )
+    except FileNotFoundError as err:
+        return render_template(
+            "pages/error.html", **get_error_data("Something went wrong.")
+        )
+
+
 @app.route("/overview")
 def route_overview():
     try:

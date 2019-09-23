@@ -1,0 +1,33 @@
+{% extends "layouts/full_width_with_sidebar.html" %}
+{% block sidebar %}
+{% include "components/sidebars/how_to_sidebar_menu.html" %}
+{% endblock %}
+{% block content %}
+    <h1 class="govuk-heading-l">
+      {{ content.title }}
+    </h1>
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <p class="govuk-body">
+          In order to enable security advisories in GitHub, you will first need to
+          ensure you have the correct permissions - you will need to be an
+          administrator of the repository or the organisation.
+
+          Once it has been established that you have the correct permissions,
+          follow the below instructions:
+
+          <ol class="govuk-list govuk-list--number">
+            <li>Navigate to the main page of the repository</li>
+            <li>Under the repoistory name, click <strong>settings</strong></li>
+            <li>Under "Data services", select <strong>Allow GitHub to perform
+              read-only analysis of this repository</strong></li>
+            <li>Select the checkboxes under <strong>Dependency Graph</strong>
+              and <strong>Vulnerability Alerts</strong></li>
+          </ol>
+          <img src="https://help.github.com/assets/images/help/repository/private-repo-data-use-additional-services.png"
+            alt="checkboxes for dependency graph and vulnerability alerts checked" />
+        </p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

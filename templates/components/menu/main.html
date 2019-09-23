@@ -11,6 +11,11 @@
         By repository
       </a>
     </li>
+    <li class="govuk-header__navigation-item {{ 'govuk-header__navigation-item--active' if 'how-to' in header.route }}">
+      <a class="govuk-header__link" href="/how-to">
+        How to
+      </a>
+    </li>
     {% set hide_login = True %}
     {%- if not hide_login -%} {# This is double negative so the login is shown by default #}
     {% block login %}
