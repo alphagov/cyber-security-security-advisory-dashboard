@@ -658,7 +658,6 @@ def route_home():
 @app.route("/how-to")
 def route_how_to():
     try:
-        # today = datetime.date.today().isoformat()
         current = get_current_audit()
         content = {"title": "How to"}
         footer = {"updated": current}
