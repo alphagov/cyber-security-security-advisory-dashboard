@@ -26,25 +26,6 @@ audit:
 task:
 	docker-compose run dashboard flask run-task $(TASK)
 
-activity_prs:
-	docker-compose run dashboard flask activity_prs
-
-dependabot_status:
-	docker-compose run dashboard flask dependabot-status alphagov
-
-alert_status:
-	docker-compose run dashboard flask alert-status
-
-build_routes:
-	docker-compose run dashboard flask build-routes
-
-repo_owners:
-	docker-compose run dashboard flask repo-owners
-
-pr_status:
-	docker-compose run dashboard flask pr-status
-
-
 # DEPLOY
 reset:
 	rm -f setup.cfg
