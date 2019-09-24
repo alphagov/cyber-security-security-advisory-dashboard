@@ -33,7 +33,7 @@ resource "aws_lb_target_group" "github-audit-tg" {
   target_type = "lambda"
 
   health_check {
-    path     = "/__gtg"
+    path     = "/healthy"
     matcher  = "200"
     interval = "60"
   }

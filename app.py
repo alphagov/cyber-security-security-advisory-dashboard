@@ -279,3 +279,12 @@ def route_by_repository():
         return render_template(
             "pages/error.html", **get_error_data("Something went wrong.")
         )
+
+
+@app.route("/healthy")
+def route_healthcheck():
+    """An unauthenticated route for health checks
+    """
+    # log.msg("gtg")
+    response = "OK"
+    return response
