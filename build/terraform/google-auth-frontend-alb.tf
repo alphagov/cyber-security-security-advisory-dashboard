@@ -3,8 +3,8 @@ resource "aws_lb" "github-audit-alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [
-    "${aws_security_group.alphagov_audit_alb_ingress.id}",
-    "${aws_security_group.alphagov_audit_alb_egress.id}"
+    "${aws_security_group.github_audit_alb_ingress.id}",
+    "${aws_security_group.github_audit_alb_egress.id}"
   ]
   subnets            = [
     "${aws_default_subnet.z1.id}",
