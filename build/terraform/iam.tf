@@ -6,8 +6,9 @@ data "template_file" "trust" {
 data "template_file" "policy" {
   template = "${file("${path.module}/json/policy.json")}"
   vars {
-    region      = "${var.region}"
-    account_id  = "${data.aws_caller_identity.current.account_id}"
+    region              = "${var.region}"
+    account_id          = "${data.aws_caller_identity.current.account_id}"
+    storage_bucket_arn  = "${aws_s3_bucket.s3_storage.arn}"
   }
 }
 

@@ -26,6 +26,25 @@
             "Resource": [
                 "arn:aws:ssm:${region}:${account_id}:parameter/ssd/github/pat"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject"
+            ],
+            "Resource": [
+                "${storage_bucket_arn}"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "${storage_bucket_arn}"
+            ]
         }
     ]
 }
