@@ -21,7 +21,7 @@ test:
 	docker-compose run dashboard sh test.sh
 
 audit:
-	docker-compose run dashboard flask audit
+	docker-compose run dashboard python audit_lambda.py
 
 task:
 	docker-compose run dashboard flask run-task $(TASK)
