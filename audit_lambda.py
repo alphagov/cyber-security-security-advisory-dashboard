@@ -71,7 +71,6 @@ def update_github_advisories_status():
 
     storage.save_json(f"{today}/data/repositories.json", today_repositories)
     status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
-    status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
     return status
 
 
