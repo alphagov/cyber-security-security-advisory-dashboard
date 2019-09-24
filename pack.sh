@@ -7,7 +7,6 @@ rm -rf build/.package build/*.zip build/.package build/node_modules build/packag
 mkdir -p build/.package/static
 mkdir -p build/.package/templates
 mkdir -p build/.package/query
-mkdir -p build/.package/output
 
 # install node_modules and rebuild assets
 cd build
@@ -20,7 +19,6 @@ cp *.py build/.package
 cp -R static/* build/.package/static/
 cp -R templates/* build/.package/templates/
 cp -R query/* build/.package/query/
-cp -R output/* build/.package/output/
 
 # install requirements
 # bash -c "echo -e '[install]\nprefix=\n' > setup.cfg"
