@@ -47,11 +47,6 @@ def filter_abbreviate(word):
     return abbrevs[lowercase_word] if (lowercase_word in abbrevs) else word
 
 
-@app.cli.command("audit")
-def cronable_vulnerability_audit():
-    audit_lambda.cronable_vulnerability_audit()
-
-
 @app.cli.command("run-task")
 @click.argument("task")
 def cli_task(task):
