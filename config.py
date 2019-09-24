@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 
 
@@ -32,7 +31,8 @@ def load():
                 SETTINGS = Dict(json.loads(settings_file.read()))
                 set_region(get_value("aws_region"))
 
-        except:
+        except Exception as e:
+            print(e.message)
             SETTINGS = Dict({})
 
     return SETTINGS

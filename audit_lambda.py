@@ -1,16 +1,12 @@
-import os
 import sys
 import json
-import re
-import time
 import datetime
-import traceback
-from collections import defaultdict, Counter
-import warnings
+import time
+
+from collections import defaultdict
 
 from addict import Dict
 import arrow
-from arrow.factory import ArrowParseWarning
 
 import pgraph
 import repository_summarizer
@@ -22,15 +18,61 @@ import config
 import storage
 
 
-def get_history():
-    history_file = "all/data/history.json"
+settings = config.load()
 
-    default = Dict({"current": None, "alltime": {}})
-    history = storage.read_json(history_file, default=default)
+if settings.aws_region:
+    storage.set_region(config.get_value("aws_region"))
 
-    print(str(history), sys.stderr)
+if settings.storage:
+    storage_options = config.get_value("storage")
+    storage.set_options(storage_options)
 
-    return history
+
+def update_github_advisories_status():
+    today = datetime.date.today().isoformat()
+    current = get_current_audit()
+
+    by_alert_status = defaultdict(list)
+
+    today_repositories = storage.read_json(f"{today}/data/repositories.json")
+    current_repositories = storage.read_json(f"{current}/data/repositories.json")
+    for today_repo in today_repositories["public"]:
+        new_repo = True
+        update_status = False
+        for current_repo in current_repositories["public"]:
+            if today_repo.name == current_repo.name:
+                if not current_repo.securityAdvisoriesEnabledStatus:
+                    update_status = True
+                    new_repo = False
+
+        if new_repo | update_status:
+
+            response = github_rest_client.get(
+                f"/repos/{today_repo.owner.login}/{today_repo.name}/vulnerability-alerts"
+            )
+            alerts_enabled = response.status_code == 204
+            vulnerable = today_repo.vulnerabilityAlerts.edges
+
+            if vulnerable:
+                status = "vulnerable"
+            elif alerts_enabled:
+                status = "clean"
+            else:
+                status = "disabled"
+
+            # append status to repo in original repositories file
+            today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
+
+            by_alert_status[status].append(today_repo)
+            time.sleep(0.1)
+        else:
+            alerts_enabled = current_repo.securityAdvisoriesEnabledStatus
+            today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
+
+    storage.save_json(f"{today}/data/repositories.json", today_repositories)
+    status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
+    status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
+    return status
 
 
 def update_history(history):
@@ -134,9 +176,7 @@ def get_dependabot_status(org, today):
         output.counts = counts
         output.repositories = dependabot_status
 
-        raw_data_saved = storage.save_json(
-            f"{today}/data/dependabot_status.json", output
-        )
+        storage.save_json(f"{today}/data/dependabot_status.json", output)
 
         repositories = storage.read_json(f"{today}/data/repositories.json")
         for repo in repositories["public"]:
@@ -217,7 +257,6 @@ def analyse_activity_refs(today):
     now = arrow.utcnow()
     refs = storage.read_json(f"{today}/data/activity_refs.json")
     repositories = storage.read_json(f"{today}/data/repositories.json")
-    repo_activity = {}
     for repo_name, repo in refs.items():
         repo_commit_dates = []
         for ref in repo.refs.edges:
@@ -262,7 +301,7 @@ def analyse_activity_refs(today):
 def analyse_team_membership(today):
 
     try:
-        topics = storage.read_json(f"{today}/data/topics.json")
+        storage.read_json(f"{today}/data/topics.json")
         repositories = storage.read_json(f"{today}/data/repositories.json")
 
         # This one can't currently use storage because it's
@@ -296,14 +335,12 @@ def analyse_team_membership(today):
 def analyse_vulnerability_patch_recommendations(today):
     repositories = storage.read_json(f"{today}/data/repositories.json")
 
-    severities = vulnerability_summarizer.SEVERITIES
-
     vulnerable_list = [
         node for node in repositories.public if node.vulnerabilityAlerts.edges
     ]
     vulnerable_by_severity = vulnerability_summarizer.group_by_severity(vulnerable_list)
 
-    saved = storage.save_json(
+    storage.save_json(
         f"{today}/data/vulnerable_by_severity.json", vulnerable_by_severity
     )
 
@@ -376,9 +413,6 @@ def route_data_overview_repositories_by_status(today):
     vulnerable_by_severity = storage.read_json(
         f"{today}/data/vulnerable_by_severity.json"
     )
-    severity_counts = stats.count_types(vulnerable_by_severity)
-    vulnerable_count = sum(severity_counts.values())
-    severities = vulnerability_summarizer.SEVERITIES
 
     template_data = {
         "content": {
@@ -477,12 +511,57 @@ def route_data_overview_activity(today):
     return overview_activity_status
 
 
-def cronable_vulnerability_audit():
+def get_current_audit():
+    try:
+        history = get_history()
+        current = history.current
+    except FileNotFoundError:
+        current = datetime.date.today().isoformat()
+    return current
 
-    set_region("eu-west-1")
-    set_options(
-        {"type": "s3", "location": "ssd-dev-to-be-removed", "region": "eu-west-1"}
-    )
+
+def get_history():
+    history_file = "all/data/history.json"
+
+    default = Dict({"current": None, "alltime": {}})
+    history = storage.read_json(history_file, default=default)
+
+    print(str(history), sys.stderr)
+
+    return history
+
+
+def get_github_resolve_alert_status():
+    today = datetime.date.today().isoformat()
+    by_alert_status = defaultdict(list)
+
+    repositories = storage.read_json(f"{today}/data/repositories.json")
+    for repo in repositories["public"]:
+        response = github_rest_client.get(
+            f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts"
+        )
+        alerts_enabled = response.status_code == 204
+        vulnerable = repo.vulnerabilityAlerts.edges
+
+        if vulnerable:
+            status = "vulnerable"
+        elif alerts_enabled:
+            status = "clean"
+        else:
+            status = "disabled"
+
+        # append status to repo in original repositories file
+        repo.securityAdvisoriesEnabledStatus = alerts_enabled
+
+        by_alert_status[status].append(repo)
+        time.sleep(0.2)
+
+    storage.save_json(f"{today}/data/repositories.json", repositories)
+    status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
+    return status
+
+
+def cronable_vulnerability_audit():
 
     today = datetime.date.today().isoformat()
 
@@ -494,10 +573,10 @@ def cronable_vulnerability_audit():
     # retrieve data from apis
     org = config.get_value("github_org")
     # todo - set maintenance mode
-    repository_status = get_github_repositories_and_classify_by_status(org, today)
-    refs_status = get_github_activity_refs_audit(org, today)
-    prs_status = get_github_activity_prs_audit(org, today)
-    dbot_status = get_dependabot_status(org, today)
+    get_github_repositories_and_classify_by_status(org, today)
+    get_github_activity_refs_audit(org, today)
+    get_github_activity_prs_audit(org, today)
+    get_dependabot_status(org, today)
 
     if history.current:
         update_github_advisories_status()
@@ -505,11 +584,11 @@ def cronable_vulnerability_audit():
         get_github_resolve_alert_status()
 
     # analyse raw data
-    ownership_status = analyse_repo_ownership(today)
-    pr_status = analyse_pull_request_status(today)
-    ref_status = analyse_activity_refs(today)
-    patch_status = analyse_vulnerability_patch_recommendations(today)
-    team_status = analyse_team_membership(today)
+    analyse_repo_ownership(today)
+    analyse_pull_request_status(today)
+    analyse_activity_refs(today)
+    analyse_vulnerability_patch_recommendations(today)
+    analyse_team_membership(today)
 
     # build page template data
     build_route_data(today)
