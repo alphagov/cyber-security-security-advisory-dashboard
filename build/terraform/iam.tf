@@ -5,19 +5,28 @@ data "template_file" "trust" {
 
 data "template_file" "policy" {
   template = "${file("${path.module}/json/policy.json")}"
-  vars {}
+  vars {
+    region      = "${var.region}"
+    account_id  = "${data.aws_caller_identity.current.account_id}"
+  }
 }
 
 resource "aws_iam_role" "alphagov_audit_lambda_exec_role" {
   name = "alphagov_audit_lambda_exec_role"
-
   assume_role_policy = "${data.template_file.trust.rendered}"
+
+  tags = {
+    Service = "${var.Service}"
+    Environment = "${var.Environment}"
+    SvcOwner = "${var.SvcOwner}"
+    DeployedUsing = "${var.DeployedUsing}"
+    SvcCodeURL = "${var.SvcCodeURL}"
+  }
 }
 
 resource "aws_iam_role_policy" "alphagov_audit_lambda_exec_role_policy" {
   name = "test_policy"
   role = "${aws_iam_role.alphagov_audit_lambda_exec_role.id}"
-
   policy = "${data.template_file.policy.rendered}"
 }
 

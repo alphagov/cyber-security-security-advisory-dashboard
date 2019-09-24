@@ -1,5 +1,5 @@
-resource "aws_s3_bucket" "s3_storage" {
-  bucket = "${var.bucket_prefix}-${var.Service}-${var.Environment}-storage"
+resource "aws_s3_bucket" "s3_logs" {
+  bucket = "${var.bucket_prefix}-${var.Service}-${var.Environment}-logs"
   acl    = "private"
 
   tags = {

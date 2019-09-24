@@ -16,14 +16,22 @@ resource "aws_lambda_function" "alphagov_audit_lambda" {
   environment {
     variables = {
       SECRET_KEY = "${random_string.password.result}"
-      TEST_VAR   = "testing"
+      FLASK_ENV  = "${var.Environment}"
     }
   }
 
-  # vpc_config {
-  #   subnet_ids = ["${aws_subnet.alb-frontend-subnet1-AZ-A.id}", "${aws_subnet.alb-frontend-subnet2-AZ-B.id}"]
-  #   security_group_ids = ["${aws_security_group.event-normalisation-lambda-ingress.id}", "${aws_security_group.event-normalisation-lambda-egress.id}"]
-  # }
+  vpc_config {
+    subnet_ids = ["${aws_default_subnet.z1.id}", "${aws_default_subnet.z2.id}", "${aws_default_subnet.z3.id}"]
+    security_group_ids = ["${aws_security_group.alphagov_audit_alb_ingress.id}", "${aws_security_group.alphagov_audit_alb_egress.id}"]
+  }
+
+  tags = {
+    Service = "${var.Service}"
+    Environment = "${var.Environment}"
+    SvcOwner = "${var.SvcOwner}"
+    DeployedUsing = "${var.DeployedUsing}"
+    SvcCodeURL = "${var.SvcCodeURL}"
+  }
 }
 
 resource "aws_lambda_permission" "alphagov_audit_from_alb" {
@@ -31,11 +39,11 @@ resource "aws_lambda_permission" "alphagov_audit_from_alb" {
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.alphagov_audit_lambda.arn}"
   principal     = "elasticloadbalancing.amazonaws.com"
-  source_arn    = "${aws_lb_target_group.event-normalisation-tg.arn}"
+  source_arn    = "${aws_lb_target_group.github-audit-tg.arn}"
 }
 
 resource "aws_lb_target_group_attachment" "alphagov_audit_target_group_attachment" {
-  target_group_arn = "${aws_lb_target_group.event-normalisation-tg.arn}"
+  target_group_arn = "${aws_lb_target_group.github-audit-tg.arn}"
   target_id        = "${aws_lambda_function.alphagov_audit_lambda.arn}"
   depends_on       = ["aws_lambda_permission.alphagov_audit_from_alb"]
 }

@@ -5,8 +5,9 @@ resource "aws_route53_record" "csw_a_record" {
   type    = "A"
 
   alias {
-    name                   = "${aws_lb.event-normalisation-alb.dns_name}"
-    zone_id                = "${aws_lb.event-normalisation-alb.zone_id}"
+    name                   = "${aws_lb.github-audit-alb.dns_name}"
+    zone_id                = "${aws_lb.github-audit-alb.zone_id}"
     evaluate_target_health = true
   }
+
 }

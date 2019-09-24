@@ -16,7 +16,7 @@ resource "aws_security_group_rule" "ingress_https_from_internet" {
   to_port   = 443
   protocol  = "tcp"
 
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = ["${module.common_vars.gds_public_cidr_list}"]
   security_group_id = "${aws_security_group.alphagov_audit_alb_ingress.id}"
 }
 
@@ -27,7 +27,7 @@ resource "aws_security_group_rule" "ingress_http_from_internet" {
   to_port   = 80
   protocol  = "tcp"
 
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = ["${module.common_vars.gds_public_cidr_list}"]
   security_group_id = "${aws_security_group.alphagov_audit_alb_ingress.id}"
 }
 

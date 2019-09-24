@@ -1,5 +1,5 @@
-resource "aws_lb" "event-normalisation-alb" {
-  name               = "event-normalisation-alb"
+resource "aws_lb" "github-audit-alb" {
+  name               = "github-audit-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [
@@ -12,21 +12,24 @@ resource "aws_lb" "event-normalisation-alb" {
     "${aws_default_subnet.z3.id}"
   ]
 
-  #  access_logs {
-  #    bucket  = "${var.alb_access_logs}"
-  #    enabled = true
-  #  }
+  access_logs {
+    bucket  = "${aws_s3_bucket.s3_logs.bucket}"
+    enabled = true
+  }
 
   enable_deletion_protection = true
-  tags {
-    Name      = "event-normalisation-alb"
-    Product   = "alb"
-    ManagedBy = "terraform"
+
+  tags = {
+    Service = "${var.Service}"
+    Environment = "${var.Environment}"
+    SvcOwner = "${var.SvcOwner}"
+    DeployedUsing = "${var.DeployedUsing}"
+    SvcCodeURL = "${var.SvcCodeURL}"
   }
 }
 
-resource "aws_lb_target_group" "event-normalisation-tg" {
-  name        = "target-group-event-normalisation"
+resource "aws_lb_target_group" "github-audit-tg" {
+  name        = "target-group-github-audit-alb"
   target_type = "lambda"
 
   health_check {
@@ -36,21 +39,21 @@ resource "aws_lb_target_group" "event-normalisation-tg" {
   }
 }
 
-resource "aws_lb_listener" "event-normalisation-listener" {
-  load_balancer_arn = "${aws_lb.event-normalisation-alb.arn}"
+resource "aws_lb_listener" "github-audit-listener" {
+  load_balancer_arn = "${aws_lb.github-audit-alb.arn}"
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS-1-1-2017-01"
-  certificate_arn   = "${var.alb_certificate_arn}"
+  certificate_arn   = "${aws_acm_certificate.github_audit_cert.arn}"
 
   default_action {
-    target_group_arn = "${aws_lb_target_group.event-normalisation-tg.arn}"
+    target_group_arn = "${aws_lb_target_group.github-audit-tg.arn}"
     type             = "forward"
   }
 }
 
 resource "aws_lb_listener" "event-normalisation-listener_80" {
-  load_balancer_arn = "${aws_lb.event-normalisation-alb.arn}"
+  load_balancer_arn = "${aws_lb.github-audit-alb.arn}"
   port              = "80"
   protocol          = "HTTP"
 
@@ -66,7 +69,7 @@ resource "aws_lb_listener" "event-normalisation-listener_80" {
 }
 
 resource "aws_lb_listener_rule" "route_auth" {
-  listener_arn = "${aws_lb_listener.event-normalisation-listener.arn}"
+  listener_arn = "${aws_lb_listener.github-audit-listener.arn}"
   priority     = 100
 
   action {
@@ -84,7 +87,7 @@ resource "aws_lb_listener_rule" "route_auth" {
   }
 
   action {
-    target_group_arn = "${aws_lb_target_group.event-normalisation-tg.arn}"
+    target_group_arn = "${aws_lb_target_group.github-audit-tg.arn}"
     type             = "forward"
   }
 
