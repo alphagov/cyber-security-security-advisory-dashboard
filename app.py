@@ -163,7 +163,6 @@ def route_how_to_enable_dependabot():
         )
     except FileNotFoundError as err:
         print(err.message)
-        print(err.message)
         return render_template(
             "pages/error.html", **get_error_data("Something went wrong.")
         )
