@@ -47,39 +47,6 @@ def filter_abbreviate(word):
     return abbrevs[lowercase_word] if (lowercase_word in abbrevs) else word
 
 
-@app.cli.command("run-task")
-@click.argument("task")
-def cli_task(task):
-    today = datetime.date.today().isoformat()
-    org = config.get_value("github_org")
-    history = audit_lambda.get_history()
-
-    if task == "repository-status":
-        audit_lambda.get_github_repositories_and_classify_by_status(org, today)
-    elif task == "get-activity":
-        audit_lambda.get_github_activity_refs_audit(org, today)
-        audit_lambda.get_github_activity_prs_audit(org, today)
-    elif task == "dependabot":
-        audit_lambda.get_dependabot_status(org, today)
-    elif task == "advisories":
-        if history.current:
-            audit_lambda.update_github_advisories_status()
-        else:
-            audit_lambda.get_github_resolve_alert_status()
-    elif task == "membership":
-        audit_lambda.analyse_repo_ownership(today)
-        audit_lambda.analyse_team_membership(today)
-    elif task == "analyse-activity":
-        audit_lambda.analyse_pull_request_status(today)
-        audit_lambda.analyse_activity_refs(today)
-    elif task == "patch":
-        audit_lambda.analyse_vulnerability_patch_recommendations(today)
-    elif task == "routes":
-        audit_lambda.build_route_data(today)
-    else:
-        print("ERROR: Undefined task")
-
-
 def get_header():
     org = config.get_value("github_org")
     org_name = org.title()

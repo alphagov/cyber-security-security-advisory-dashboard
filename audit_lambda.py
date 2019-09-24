@@ -2,12 +2,12 @@ import sys
 import json
 import datetime
 import time
-
 from collections import defaultdict
 
 from addict import Dict
-import arrow
+import click
 
+import arrow
 import pgraph
 import repository_summarizer
 import vulnerability_summarizer
@@ -560,6 +560,45 @@ def get_github_resolve_alert_status():
     return status
 
 
+@click.group()
+def cli():
+    pass
+
+
+@cli.command("run-task")
+@click.argument("task")
+def cli_task(task):
+    today = datetime.date.today().isoformat()
+    org = config.get_value("github_org")
+    history = get_history()
+
+    if task == "repository-status":
+        get_github_repositories_and_classify_by_status(org, today)
+    elif task == "get-activity":
+        get_github_activity_refs_audit(org, today)
+        get_github_activity_prs_audit(org, today)
+    elif task == "dependabot":
+        get_dependabot_status(org, today)
+    elif task == "advisories":
+        if history.current:
+            update_github_advisories_status()
+        else:
+            get_github_resolve_alert_status()
+    elif task == "membership":
+        analyse_repo_ownership(today)
+        analyse_team_membership(today)
+    elif task == "analyse-activity":
+        analyse_pull_request_status(today)
+        analyse_activity_refs(today)
+    elif task == "patch":
+        analyse_vulnerability_patch_recommendations(today)
+    elif task == "routes":
+        build_route_data(today)
+    else:
+        print("ERROR: Undefined task")
+
+
+@cli.command("audit")
 def cronable_vulnerability_audit():
 
     today = datetime.date.today().isoformat()
@@ -601,4 +640,4 @@ def cronable_vulnerability_audit():
 
 
 if __name__ == "__main__":
-    cronable_vulnerability_audit()
+    cli()

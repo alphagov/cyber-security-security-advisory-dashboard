@@ -24,7 +24,7 @@ audit:
 	docker-compose run dashboard python audit_lambda.py
 
 task:
-	docker-compose run dashboard flask run-task $(TASK)
+	docker-compose run dashboard python audit_lambda.py run-task $(TASK)
 
 # DEPLOY
 reset:
