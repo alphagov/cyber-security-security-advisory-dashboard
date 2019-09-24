@@ -14,4 +14,5 @@ pytest==5.1.2
 black==19.3b0
 arrow==0.14.6
 ipdb
-boto3==1.9.223
+boto3==1.9.22
+serverless-wsgi==1.7.33
