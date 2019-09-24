@@ -599,3 +599,7 @@ def cronable_vulnerability_audit():
     update_history(history)
     # todo - set enabled mode
     return True
+
+
+if __name__ == "__main__":
+    cronable_vulnerability_audit()
