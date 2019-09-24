@@ -8,7 +8,7 @@ resource "random_string" "password" {
 resource "aws_lambda_function" "alphagov_audit_lambda" {
   filename         = "../alphagov_audit_lambda_package.zip"
   source_code_hash = "${filebase64sha256("../alphagov_audit_lambda_package.zip")}"
-  function_name    = "alphagov_audit"
+  function_name    = "github_audit_interface"
   role             = "${aws_iam_role.alphagov_audit_lambda_exec_role.arn}"
   handler          = "lambda_handler.lambda_handler"
   runtime          = "${var.runtime}"
