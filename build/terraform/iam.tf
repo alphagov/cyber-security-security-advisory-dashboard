@@ -12,8 +12,8 @@ data "template_file" "policy" {
   }
 }
 
-resource "aws_iam_role" "alphagov_audit_lambda_exec_role" {
-  name = "alphagov_audit_lambda_exec_role"
+resource "aws_iam_role" "github_audit_lambda_exec_role" {
+  name = "github_audit_lambda_exec_role"
   assume_role_policy = "${data.template_file.trust.rendered}"
 
   tags = {
@@ -25,14 +25,14 @@ resource "aws_iam_role" "alphagov_audit_lambda_exec_role" {
   }
 }
 
-resource "aws_iam_role_policy" "alphagov_audit_lambda_exec_role_policy" {
+resource "aws_iam_role_policy" "github_audit_lambda_exec_role_policy" {
   name = "test_policy"
-  role = "${aws_iam_role.alphagov_audit_lambda_exec_role.id}"
+  role = "${aws_iam_role.github_audit_lambda_exec_role.id}"
   policy = "${data.template_file.policy.rendered}"
 }
 
-resource "aws_iam_role_policy_attachment" "alphagov_audit_lambda_exec_role_policy_attach" {
-  role       = "${aws_iam_role.alphagov_audit_lambda_exec_role.name}"
+resource "aws_iam_role_policy_attachment" "github_audit_lambda_exec_role_policy_attach" {
+  role       = "${aws_iam_role.github_audit_lambda_exec_role.name}"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 

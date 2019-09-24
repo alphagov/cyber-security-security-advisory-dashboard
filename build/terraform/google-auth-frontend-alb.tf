@@ -52,7 +52,7 @@ resource "aws_lb_listener" "github-audit-listener" {
   }
 }
 
-resource "aws_lb_listener" "event-normalisation-listener_80" {
+resource "aws_lb_listener" "github-audit-listener_80" {
   load_balancer_arn = "${aws_lb.github-audit-alb.arn}"
   port              = "80"
   protocol          = "HTTP"

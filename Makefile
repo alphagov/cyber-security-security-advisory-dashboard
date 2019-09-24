@@ -50,7 +50,7 @@ clean:
 	rm -rf setup.cnf build/.package build/*.zip
 
 zip: add_deps copy_src
-	cd build/.package; zip -9 ../alphagov_audit_lambda_package.zip -r .
+	cd build/.package; zip -9 ../github_audit_lambda_package.zip -r .
 
 deploy: zip
 	cd build/terraform; terraform apply

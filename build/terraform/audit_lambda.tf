@@ -1,15 +1,10 @@
 # Lambda
 
-resource "random_string" "password" {
-  length = 32
-  special = false
-}
-
-resource "aws_lambda_function" "alphagov_audit_lambda" {
-  filename         = "../alphagov_audit_lambda_package.zip"
-  source_code_hash = "${filebase64sha256("../alphagov_audit_lambda_package.zip")}"
+resource "aws_lambda_function" "github_audit_collector_lambda" {
+  filename         = "../github_audit_lambda_package.zip"
+  source_code_hash = "${filebase64sha256("../github_audit_lambda_package.zip")}"
   function_name    = "github_audit_collector"
-  role             = "${aws_iam_role.alphagov_audit_lambda_exec_role.arn}"
+  role             = "${aws_iam_role.github_audit_lambda_exec_role.arn}"
   handler          = "audit_lambda.cronable_vulnerability_audit"
   runtime          = "${var.runtime}"
 
@@ -22,7 +17,7 @@ resource "aws_lambda_function" "alphagov_audit_lambda" {
 
   vpc_config {
     subnet_ids = ["${aws_default_subnet.z1.id}", "${aws_default_subnet.z2.id}", "${aws_default_subnet.z3.id}"]
-    security_group_ids = ["${aws_security_group.alphagov_audit_alb_ingress.id}", "${aws_security_group.alphagov_audit_alb_egress.id}"]
+    security_group_ids = ["${aws_security_group.github_audit_alb_ingress.id}", "${aws_security_group.github_audit_alb_egress.id}"]
   }
 
   tags = {
@@ -34,16 +29,22 @@ resource "aws_lambda_function" "alphagov_audit_lambda" {
   }
 }
 
-resource "aws_lambda_permission" "alphagov_audit_from_alb" {
-  statement_id  = "AllowExecutionFromALB"
-  action        = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.alphagov_audit_lambda.arn}"
-  principal     = "elasticloadbalancing.amazonaws.com"
-  source_arn    = "${aws_lb_target_group.github-audit-tg.arn}"
+
+resource "aws_cloudwatch_event_rule" "github_audit_lambda_24_hours" {
+    name = "github-audit-24-hours"
+    description = "Fire github audit every 24 hours"
+    schedule_expression = "cron(0 23 * * * *)"
 }
 
-resource "aws_lb_target_group_attachment" "alphagov_audit_target_group_attachment" {
-  target_group_arn = "${aws_lb_target_group.github-audit-tg.arn}"
-  target_id        = "${aws_lambda_function.alphagov_audit_lambda.arn}"
-  depends_on       = ["aws_lambda_permission.alphagov_audit_from_alb"]
+resource "aws_cloudwatch_event_target" "github_audit_lambda_24_hours_tg" {
+    rule = "${aws_cloudwatch_event_rule.github_audit_lambda_24_hours.name}"
+    arn = "${aws_lambda_function.github_audit_collector_lambda.arn}"
+}
+
+resource "aws_lambda_permission" "download_nvd_lambda_allow_cloudwatch" {
+    statement_id = "AllowExecutionFromCloudWatch"
+    action = "lambda:InvokeFunction"
+    function_name = "${aws_lambda_function.github_audit_collector_lambda.function_name}"
+    principal = "events.amazonaws.com"
+    source_arn = "${aws_cloudwatch_event_rule.github_audit_lambda_24_hours.arn}"
 }
