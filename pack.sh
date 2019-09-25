@@ -13,6 +13,7 @@ bash assets.sh
 
 # copy python source and assets
 cp *.py build/.package
+cp *.json build/.package
 cp -R static/* build/.package/static/
 cp -R templates/* build/.package/templates/
 cp -R query/* build/.package/query/
