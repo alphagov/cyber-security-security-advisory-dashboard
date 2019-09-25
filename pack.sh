@@ -30,4 +30,4 @@ zip -9 ../github_audit_lambda_package.zip -r .
 
 # tidy up
 cd ../..
-rm -rf build/.package build/node_modules build/package-lock.json static
+rm -rf build/.package build/node_modules build/package-lock.json
