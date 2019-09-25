@@ -41,6 +41,7 @@ resource "aws_lb_target_group" "github-audit-tg" {
 }
 
 resource "aws_lb_listener" "github-audit-listener" {
+  depends_on        = ["aws_acm_certificate.github_audit_cert"]
   load_balancer_arn = "${aws_lb.github-audit-alb.arn}"
   port              = "443"
   protocol          = "HTTPS"

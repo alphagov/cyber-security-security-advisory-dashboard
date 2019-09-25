@@ -1,5 +1,4 @@
 resource "aws_acm_certificate" "github_audit_cert" {
-  provider          = "aws.use1"
   domain_name       = "${var.sub_domain}.${var.dns_zone_fqdn}"
   validation_method = "DNS"
 

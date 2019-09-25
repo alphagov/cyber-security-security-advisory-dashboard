@@ -1,6 +1,7 @@
 resource "aws_s3_bucket" "s3_logs" {
-  bucket = "${var.bucket_prefix}-${var.Service}-${var.Environment}-logs"
-  acl    = "log-delivery-write"
+  bucket        = "${var.bucket_prefix}-${var.Service}-${var.Environment}-logs"
+  acl           = "log-delivery-write"
+  force_destroy = true
 
   tags = {
     Service = "${var.Service}"
