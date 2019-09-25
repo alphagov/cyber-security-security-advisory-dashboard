@@ -355,6 +355,19 @@ def analyse_vulnerability_patch_recommendations(today):
                     )
 
     updated = storage.save_json(f"{today}/data/repositories.json", repositories)
+
+    # TODO Remove this redundant rebuilding step
+
+    repositories = storage.read_json(f"{today}/data/repositories.json")
+
+    vulnerable_list = [
+        node for node in repositories.public if node.vulnerabilityAlerts.edges
+    ]
+    vulnerable_by_severity = vulnerability_summarizer.group_by_severity(vulnerable_list)
+
+    storage.save_json(
+        f"{today}/data/vulnerable_by_severity.json", vulnerable_by_severity
+    )
     return updated
 
 
