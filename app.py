@@ -433,7 +433,7 @@ def analyse_activity_refs(today):
             currency_days = currency_delta.days
 
             for status, repo_list in repositories.items():
-                if status in ["public","private"]:
+                if status in ["public", "private"]:
                     for repo in repo_list:
                         if repo.name == repo_name:
                             repo.recentCommitDaysAgo = currency_days
@@ -646,20 +646,14 @@ def route_data_overview_activity(today):
     counts = defaultdict(int)
     repositories_by_activity = defaultdict(list)
     for status, repo_list in repositories_by_status.items():
-        if status in ["public","private"]:
+        if status in ["public", "private"]:
             for repo in repo_list:
                 if "recentCommitDaysAgo" in repo:
                     currency = repo.currencyBand
                     counts[currency] += 1
                     repositories_by_activity[currency].append(repo)
 
-
-    bands = [
-        "within a month",
-        "within a quarter",
-        "within a year",
-        "older"
-    ]
+    bands = ["within a month", "within a quarter", "within a year", "older"]
     template_data = {
         "content": {
             "title": "Overview - Activity",
@@ -667,15 +661,15 @@ def route_data_overview_activity(today):
             "activity": {
                 "bands": bands,
                 "counts": counts,
-                "repositories": repositories_by_activity
-            }
+                "repositories": repositories_by_activity,
+            },
         },
-        "footer": {
-            "updated": today
-        }
+        "footer": {"updated": today},
     }
 
-    overview_activity_status = storage.save_json(f"{today}/routes/overview_activity.json", template_data)
+    overview_activity_status = storage.save_json(
+        f"{today}/routes/overview_activity.json", template_data
+    )
     return overview_activity_status
 
 
@@ -776,6 +770,19 @@ def route_overview():
         return render_template(
             "pages/error.html", **get_error_data("Something went wrong.")
         )
+
+
+@app.route("/overview/activity")
+def route_overview_activity():
+    try:
+        current = get_current_audit()
+        template_data = storage.read_json(f"{current}/routes/overview_activity.json")
+        return render_template(
+            "pages/overview_activity.html", header=get_header(), **template_data
+        )
+    except FileNotFoundError as err:
+        print(err.message)
+        return render_template("pages/error.html", **get_error_data("File not found."))
 
 
 @app.route("/overview/monitoring-status")
