@@ -1,0 +1,22 @@
+{
+  "token": {
+    "source": "ssm",
+    "name": "/ssd/github/pat"
+  },
+  "aws_region": {
+    "source": "this",
+    "name": "eu-west-1"
+  },
+  "github_org": {
+    "source": "env",
+    "name": "GITHUB_ORG"
+  },
+  "storage": {
+    "source": "this",
+    "name": {
+      "type": "s3",
+      "location": "cyber-security-github-audit-staging-storage",
+      "region": "eu-west-1"
+    }
+  }
+}
