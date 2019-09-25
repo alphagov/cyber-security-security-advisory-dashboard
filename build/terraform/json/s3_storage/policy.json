@@ -1,0 +1,62 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::${account_id}:role/AdminRole"
+            },
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": [
+                "${bucket_arn}/*",
+                "${bucket_arn}"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": [
+                  "${audit_lambda_arn}"
+                ]
+            },
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject"
+            ],
+            "Resource": [
+                "${bucket_arn}/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": [
+                  "${interface_lambda_arn}"
+                ]
+            },
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "${bucket_arn}/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": [
+                  "${interface_lambda_arn}",
+                  "${audit_lambda_arn}"
+                ]
+            },
+            "Action": [
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}

@@ -33,7 +33,7 @@ resource "aws_lambda_function" "github_audit_collector_lambda" {
 resource "aws_cloudwatch_event_rule" "github_audit_lambda_24_hours" {
     name = "github-audit-24-hours"
     description = "Fire github audit every 24 hours"
-    schedule_expression = "cron(0 23 * * * *)"
+    schedule_expression = "cron(0 23 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "github_audit_lambda_24_hours_tg" {
@@ -41,7 +41,7 @@ resource "aws_cloudwatch_event_target" "github_audit_lambda_24_hours_tg" {
     arn = "${aws_lambda_function.github_audit_collector_lambda.arn}"
 }
 
-resource "aws_lambda_permission" "download_nvd_lambda_allow_cloudwatch" {
+resource "aws_lambda_permission" "github_audit_lambda_allow_cloudwatch" {
     statement_id = "AllowExecutionFromCloudWatch"
     action = "lambda:InvokeFunction"
     function_name = "${aws_lambda_function.github_audit_collector_lambda.function_name}"

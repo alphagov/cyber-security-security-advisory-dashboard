@@ -33,7 +33,7 @@ resource "aws_security_group_rule" "ingress_http_from_internet" {
 
 
 resource "aws_security_group" "github_audit_alb_egress" {
-  name        = "github_audit_alb_ingress"
+  name        = "github_audit_alb_egress"
   description = "Alphagov Audit Load Balancer SG"
   vpc_id      = "${aws_default_vpc.vpc.id}"
 }

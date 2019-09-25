@@ -14,10 +14,11 @@ resource "aws_lb" "github-audit-alb" {
 
   access_logs {
     bucket  = "${aws_s3_bucket.s3_logs.bucket}"
+    prefix  = "logs"
     enabled = true
   }
 
-  enable_deletion_protection = true
+  enable_deletion_protection = false
 
   tags = {
     Service = "${var.Service}"
