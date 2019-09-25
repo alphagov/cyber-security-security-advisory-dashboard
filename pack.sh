@@ -8,11 +8,8 @@ mkdir -p build/.package/static
 mkdir -p build/.package/templates
 mkdir -p build/.package/query
 
-# install node_modules and rebuild assets
-cd build
-npm install
-gulp
-cd ..
+# make sure assets are in place
+bash assets.sh
 
 # copy python source and assets
 cp *.py build/.package

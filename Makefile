@@ -7,15 +7,18 @@ help:
 	@echo "Commands:"
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
 
-run: rebuild
+# DEVELOP
+run: rebuild assets
 	docker-compose up
 
-# DEVELOP
 shell:
 	docker-compose run dashboard sh
 
 rebuild:
 	docker-compose build
+
+assets:
+	docker-compose run dashboard sh assets.sh
 
 test:
 	docker-compose run dashboard sh test.sh
