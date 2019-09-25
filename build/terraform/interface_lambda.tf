@@ -10,7 +10,7 @@ resource "aws_lambda_function" "github_audit_interface_lambda" {
   source_code_hash = "${filebase64sha256("../github_audit_lambda_package.zip")}"
   function_name    = "github_audit_interface"
   role             = "${aws_iam_role.github_interface_lambda_exec_role.arn}"
-  handler          = "lambda_handler.lambda_handler"
+  handler          = "frontend_lambda.lambda_handler"
   runtime          = "${var.runtime}"
 
   environment {
