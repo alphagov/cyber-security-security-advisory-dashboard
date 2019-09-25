@@ -7,6 +7,7 @@ resource "aws_lambda_function" "github_audit_collector_lambda" {
   role             = "${aws_iam_role.github_audit_lambda_exec_role.arn}"
   handler          = "audit_lambda.cronable_vulnerability_audit"
   runtime          = "${var.runtime}"
+  timeout          = "900"
 
   environment {
     variables = {

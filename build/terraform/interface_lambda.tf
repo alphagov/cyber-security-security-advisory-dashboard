@@ -12,6 +12,7 @@ resource "aws_lambda_function" "github_audit_interface_lambda" {
   role             = "${aws_iam_role.github_interface_lambda_exec_role.arn}"
   handler          = "frontend_lambda.lambda_handler"
   runtime          = "${var.runtime}"
+  timeout          = "30"
 
   environment {
     variables = {
