@@ -4,7 +4,9 @@ import serverless_wsgi
 import logging as log
 
 from app import app
+
 log.error("frontend_lambda called")
+
 
 def lambda_handler(event, context):
     sk = os.getenv("SECRET_KEY", "FALSE")
@@ -12,7 +14,6 @@ def lambda_handler(event, context):
         log.error(f"Key starts with: {sk[0:2]}")
         app.server_key = sk
         app.config["SECRET_KEY"] = sk
-
 
     log.error("Invoking flask via serverless_wsgi")
     return serverless_wsgi.handle_request(app, event, context)

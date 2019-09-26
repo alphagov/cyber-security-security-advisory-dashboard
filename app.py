@@ -19,10 +19,10 @@ import storage
 warnings.simplefilter("ignore", ArrowParseWarning)
 app = Flask(__name__, static_url_path="/assets")
 settings = config.load()
-log.error("Config loaded for env: "+os.environ["FLASK_ENV"])
+log.error("Config loaded for env: " + os.environ["FLASK_ENV"])
 
 if settings.aws_region:
-    log.error("Setting AWS region to: "+config.get_value("aws_region"))
+    log.error("Setting AWS region to: " + config.get_value("aws_region"))
     storage.set_region(config.get_value("aws_region"))
 
 if settings.storage:

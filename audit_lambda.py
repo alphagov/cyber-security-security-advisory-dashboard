@@ -52,7 +52,6 @@ def update_github_advisories_status():
                     update_status = True
                     new_repo = False
 
-
         if new_repo | update_status:
 
             response = github_rest_client.get(
