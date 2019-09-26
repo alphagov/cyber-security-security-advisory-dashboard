@@ -612,8 +612,15 @@ def cli_task(task):
 
 
 @cli.command("audit")
-def cronable_vulnerability_audit():
+def click_audit():
+    cronable_vulnerability_audit()
 
+
+def lambda_handler(event, context):
+    cronable_vulnerability_audit()
+
+
+def cronable_vulnerability_audit():
     today = datetime.date.today().isoformat()
 
     # set status to inprogress in history
