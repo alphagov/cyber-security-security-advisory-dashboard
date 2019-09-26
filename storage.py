@@ -1,9 +1,12 @@
 import os
 import sys
 import json
+import logging as log
 
 import boto3
 from addict import Dict
+
+import errors
 
 
 REGION = None
@@ -107,29 +110,33 @@ def get_s3_client():
 
 def save_s3(path, content):
     try:
+        log.error(f"Save to S3: {path}")
+        log.error(f"Content starts: {content[0:10]}")
         s3 = get_s3_client()
         bytes_content = str.encode(content)
         bucket_name = OPTIONS.location
         response = s3.put_object(Bucket=bucket_name, Key=path, Body=bytes_content)
         tag = response["ETag"]
-        print(f"Saved object tag: {tag} to bucket")
+        log.error(f"Saved object tag: {tag} to bucket")
         status = True
     except Exception as err:
         # TODO error handling
-        print(str(err))
+        log.error(errors.get_log_event())
         status = False
     return status
 
 
 def read_s3(path):
     try:
+        log.error(f"Read from S3: {path}")
         s3 = get_s3_client()
         response = s3.get_object(Bucket=OPTIONS.location, Key=path)
         bytes_content = response["Body"].read()
         content = bytes_content.decode()
+        log.error(f"Content starts: {content[0:10]}")
     except Exception as err:
         # TODO error handling
-        print(str(err))
+        log.error(errors.get_log_event())
         content = ""
 
     return content

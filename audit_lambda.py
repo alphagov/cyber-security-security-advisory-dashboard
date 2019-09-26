@@ -2,12 +2,15 @@ import sys
 import json
 import datetime
 import time
+import warnings
+import logging as log
 from collections import defaultdict
 
 from addict import Dict
 import click
 
 import arrow
+from arrow.factory import ArrowParseWarning
 import pgraph
 import repository_summarizer
 import vulnerability_summarizer
@@ -16,8 +19,10 @@ import dependabot_api
 import github_rest_client
 import config
 import storage
+import errors
 
 
+warnings.simplefilter("ignore", ArrowParseWarning)
 settings = config.load()
 
 if settings.aws_region:
@@ -39,11 +44,14 @@ def update_github_advisories_status():
     for today_repo in today_repositories["public"]:
         new_repo = True
         update_status = False
+        found_repo = None
         for current_repo in current_repositories["public"]:
             if today_repo.name == current_repo.name:
+                found_repo = current_repo
                 if not current_repo.securityAdvisoriesEnabledStatus:
                     update_status = True
                     new_repo = False
+
 
         if new_repo | update_status:
 
@@ -65,8 +73,8 @@ def update_github_advisories_status():
 
             by_alert_status[status].append(today_repo)
             time.sleep(0.1)
-        else:
-            alerts_enabled = current_repo.securityAdvisoriesEnabledStatus
+        elif found_repo:
+            alerts_enabled = found_repo.securityAdvisoriesEnabledStatus
             today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
 
     storage.save_json(f"{today}/data/repositories.json", today_repositories)
@@ -97,7 +105,8 @@ def get_github_repositories_and_classify_by_status(org, today):
         updated = storage.save_json(save_to, repositories_by_status)
 
     except Exception as err:
-        print(str(err), sys.stderr)
+        # print(str(err), sys.stderr)
+        log.error(errors.get_log_event())
         updated = False
     return updated
 
@@ -110,7 +119,7 @@ def get_github_activity_refs_audit(org, today):
 
         while not last:
 
-            page = pgraph.query("refs", org=org, nth=50, after=cursor)
+            page = pgraph.query("refs", org=org, nth=20, after=cursor)
 
             repository_list.extend(page.organization.repositories.nodes)
             last = not page.organization.repositories.pageInfo.hasNextPage
@@ -129,7 +138,8 @@ def get_github_activity_refs_audit(org, today):
         )
 
     except Exception as err:
-        print("Failed to run activity GQL: " + str(err), sys.stderr)
+        # print("Failed to run activity GQL: " + str(err), sys.stderr)
+        log.error(errors.get_log_event())
         updated = False
     return updated
 
@@ -161,7 +171,8 @@ def get_github_activity_prs_audit(org, today):
         )
 
     except Exception as err:
-        print("Failed to run activity GQL: " + str(err), sys.stderr)
+        # print("Failed to run activity GQL: " + str(err), sys.stderr)
+        log.error(errors.get_log_event())
         updated = False
     return updated
 
@@ -187,6 +198,7 @@ def get_dependabot_status(org, today):
         updated = storage.save_json(f"{today}/data/repositories.json", repositories)
 
     except Exception:
+        log.error(errors.get_log_event())
         updated = False
 
     return updated
@@ -326,7 +338,8 @@ def analyse_team_membership(today):
 
         updated = storage.save_json(f"{today}/data/repositories.json", repositories)
     except Exception as err:
-        print(str(err))
+        # print(str(err))
+        log.error(errors.get_log_event())
         updated = False
     return updated
 
@@ -529,6 +542,7 @@ def get_current_audit():
         current = history.current
     except FileNotFoundError:
         current = datetime.date.today().isoformat()
+        log.debug(errors.get_log_event())
     return current
 
 

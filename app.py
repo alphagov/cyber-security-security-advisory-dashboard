@@ -1,10 +1,12 @@
+import os
 import sys
+import json
 import datetime
 from collections import defaultdict
 import warnings
+import logging as log
 
 from flask import Flask
-import click
 from flask import render_template, request
 from addict import Dict
 import arrow
@@ -12,14 +14,15 @@ from arrow.factory import ArrowParseWarning
 
 import config
 import storage
-import audit_lambda
 
 
 warnings.simplefilter("ignore", ArrowParseWarning)
 app = Flask(__name__, static_url_path="/assets")
 settings = config.load()
+log.error("Config loaded for env: "+os.environ["FLASK_ENV"])
 
 if settings.aws_region:
+    log.error("Setting AWS region to: "+config.get_value("aws_region"))
     storage.set_region(config.get_value("aws_region"))
 
 if settings.storage:
@@ -54,6 +57,7 @@ def get_header():
 
 
 def get_error_data(message):
+    log.error(message)
     return {"header": get_header(), "content": {"title": message}, "message": message}
 
 
@@ -61,8 +65,10 @@ def get_current_audit():
     try:
         history = get_history()
         current = history.current
+        log.info(f"Found current: {current}")
     except FileNotFoundError:
         current = datetime.date.today().isoformat()
+        log.info(f"Missing current: {current} (assume today)")
     return current
 
 
@@ -72,16 +78,19 @@ def get_history():
     default = Dict({"current": None, "alltime": {}})
     history = storage.read_json(history_file, default=default)
 
-    print(str(history), sys.stderr)
+    # print(str(history), sys.stderr)
+    log.error(json.dumps(history))
 
     return history
 
 
 @app.route("/")
 def route_home():
+    log.error("Route: /")
     try:
         # today = datetime.date.today().isoformat()
         today = get_current_audit()
+        log.error(f"Getting audit results for: {today}")
 
         content = {"title": "Introduction", "org": config.get_value("github_org")}
         footer = {"updated": today}
@@ -186,6 +195,7 @@ def route_overview_activity():
 
 @app.route("/overview/monitoring-status")
 def route_overview_monitoring_status():
+    log.error("Route: /overview/monitoring-status")
     try:
         current = get_current_audit()
         template_data = storage.read_json(
@@ -205,6 +215,7 @@ def route_overview_monitoring_status():
 
 @app.route("/overview/repository-status")
 def route_overview_repository_status():
+    log.error("Route: /overview/repository-status")
     try:
         current = get_current_audit()
         template_data = storage.read_json(
@@ -286,5 +297,6 @@ def route_healthcheck():
     """An unauthenticated route for health checks
     """
     # log.msg("gtg")
+    log.error("Route: /healthy")
     response = "OK"
     return response
