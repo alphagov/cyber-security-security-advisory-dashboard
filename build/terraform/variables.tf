@@ -32,9 +32,7 @@ variable "sub_domain" {
   type        = "string"
 }
 
-/*
-variable "alb_access_logs" {
-  description = "S3 bucket name for ALB access logs"
+variable "github_org" {
+  description = "GitHub organisation short-name"
   type        = "string"
 }
-*/

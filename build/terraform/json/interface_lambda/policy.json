@@ -19,6 +19,17 @@
         {
             "Effect": "Allow",
             "Action": [
+                "ssm:GetParameter",
+                "ssm:GetParameters",
+                "ssm:GetParametersByPath"
+            ],
+            "Resource": [
+                "arn:aws:ssm:${region}:${account_id}:parameter/ssd/github/pat"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
                 "s3:GetObject",
                 "s3:PutObject"
             ],

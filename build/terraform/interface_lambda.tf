@@ -12,17 +12,18 @@ resource "aws_lambda_function" "github_audit_interface_lambda" {
   role             = "${aws_iam_role.github_interface_lambda_exec_role.arn}"
   handler          = "frontend_lambda.lambda_handler"
   runtime          = "${var.runtime}"
-  timeout          = "30"
+  timeout          = "600"
 
   environment {
     variables = {
       SECRET_KEY = "${random_string.password.result}"
       FLASK_ENV  = "${var.Environment}"
+      GITHUB_ORG = "${var.github_org}"
     }
   }
 
   vpc_config {
-    subnet_ids = ["${aws_default_subnet.z1.id}", "${aws_default_subnet.z2.id}", "${aws_default_subnet.z3.id}"]
+    subnet_ids = ["${module.subnet_b.public_subnet_id_out}", "${module.subnet_c.public_subnet_id_out}"]
     security_group_ids = ["${aws_security_group.github_audit_alb_ingress.id}", "${aws_security_group.github_audit_alb_egress.id}"]
   }
 

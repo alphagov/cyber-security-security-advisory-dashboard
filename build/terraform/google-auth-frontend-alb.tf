@@ -2,14 +2,14 @@ resource "aws_lb" "github-audit-alb" {
   name               = "github-audit-alb"
   internal           = false
   load_balancer_type = "application"
+
   security_groups    = [
     "${aws_security_group.github_audit_alb_ingress.id}",
     "${aws_security_group.github_audit_alb_egress.id}"
   ]
   subnets            = [
-    "${aws_default_subnet.z1.id}",
-    "${aws_default_subnet.z2.id}",
-    "${aws_default_subnet.z3.id}"
+    "${module.subnet_b.public_subnet_id_out}",
+    "${module.subnet_c.public_subnet_id_out}"
   ]
 
   access_logs {

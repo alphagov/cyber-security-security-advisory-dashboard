@@ -6,7 +6,7 @@
 resource "aws_security_group" "github_audit_alb_ingress" {
   name        = "github_audit_alb_ingress"
   description = "Alphagov Audit Load Balancer SG"
-  vpc_id      = "${aws_default_vpc.vpc.id}"
+  vpc_id      = "${aws_vpc.vpc.id}"
 }
 
 resource "aws_security_group_rule" "ingress_https_from_internet" {
@@ -35,14 +35,25 @@ resource "aws_security_group_rule" "ingress_http_from_internet" {
 resource "aws_security_group" "github_audit_alb_egress" {
   name        = "github_audit_alb_egress"
   description = "Alphagov Audit Load Balancer SG"
-  vpc_id      = "${aws_default_vpc.vpc.id}"
+  vpc_id      = "${aws_vpc.vpc.id}"
 }
 
-resource "aws_security_group_rule" "egress_to_internet" {
+resource "aws_security_group_rule" "egress_https_to_internet" {
   type = "egress"
 
   from_port = 443
   to_port   = 443
+  protocol  = "tcp"
+
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = "${aws_security_group.github_audit_alb_egress.id}"
+}
+
+resource "aws_security_group_rule" "egress_http_to_internet" {
+  type = "egress"
+
+  from_port = 80
+  to_port   = 80
   protocol  = "tcp"
 
   cidr_blocks       = ["0.0.0.0/0"]
