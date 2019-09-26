@@ -10,6 +10,6 @@ resource "aws_subnet" "subnet" {
   availability_zone = "${var.subnet_zone}"
 
   tags {
-    Name = "${var.prefix}-public-${var.subnet_zone}"
+    Name = "${var.prefix}-igw-${var.subnet_zone}"
   }
 }

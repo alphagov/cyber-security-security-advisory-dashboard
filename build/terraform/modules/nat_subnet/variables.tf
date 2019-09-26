@@ -1,7 +1,7 @@
 variable "vpc_id" {}
 variable "igw_id" {}
 variable "prefix" {}
-variable "nat_subnet_id" {}
+variable "igw_subnet_id" {}
 
 variable "subnet_zone" {
   description = "Availability zone for the subnet"

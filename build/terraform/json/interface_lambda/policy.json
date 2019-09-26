@@ -34,7 +34,7 @@
                 "s3:PutObject"
             ],
             "Resource": [
-                "${storage_bucket_arn}"
+                "${storage_bucket_arn}/*"
             ]
         },
         {

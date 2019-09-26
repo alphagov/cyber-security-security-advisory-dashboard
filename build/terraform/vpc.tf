@@ -27,31 +27,41 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-module "subnet_a" {
-  source                   = "modules/jump_subnet/"
+module "igw_subnet_a" {
+  source                   = "modules/igw_subnet/"
   vpc_id                   = "${aws_vpc.vpc.id}"
   region                   = "${var.region}"
   igw_id                   = "${aws_internet_gateway.igw.id}"
   prefix                   = "${var.Service}-${var.Environment}"
-  subnet_zone              = "${var.region}c"
+  subnet_zone              = "${var.region}a"
+  subnet_cidr_block        = "10.101.4.0/24"
+}
+
+module "igw_subnet_b" {
+  source                   = "modules/igw_subnet/"
+  vpc_id                   = "${aws_vpc.vpc.id}"
+  region                   = "${var.region}"
+  igw_id                   = "${aws_internet_gateway.igw.id}"
+  prefix                   = "${var.Service}-${var.Environment}"
+  subnet_zone              = "${var.region}b"
   subnet_cidr_block        = "10.101.5.0/24"
 }
 
-module "subnet_b" {
-  source            = "modules/public_subnet/"
+module "nat_subnet_a" {
+  source            = "modules/nat_subnet/"
   vpc_id            = "${aws_vpc.vpc.id}"
   igw_id            = "${aws_internet_gateway.igw.id}"
-  nat_subnet_id     = "${module.subnet_a.public_subnet_id_out}"
+  igw_subnet_id     = "${module.igw_subnet_a.public_subnet_id_out}"
   prefix            = "${var.Service}-${var.Environment}"
   subnet_zone       = "${var.region}a"
   subnet_cidr_block = "10.101.1.0/24"
 }
 
-module "subnet_c" {
-  source            = "modules/public_subnet/"
+module "nat_subnet_b" {
+  source            = "modules/nat_subnet/"
   vpc_id            = "${aws_vpc.vpc.id}"
   igw_id            = "${aws_internet_gateway.igw.id}"
-  nat_subnet_id     = "${module.subnet_a.public_subnet_id_out}"
+  igw_subnet_id     = "${module.igw_subnet_b.public_subnet_id_out}"
   prefix            = "${var.Service}-${var.Environment}"
   subnet_zone       = "${var.region}b"
   subnet_cidr_block = "10.101.2.0/24"

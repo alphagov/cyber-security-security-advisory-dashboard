@@ -8,15 +8,17 @@ resource "aws_lb" "github-audit-alb" {
     "${aws_security_group.github_audit_alb_egress.id}"
   ]
   subnets            = [
-    "${module.subnet_b.public_subnet_id_out}",
-    "${module.subnet_c.public_subnet_id_out}"
+    "${module.igw_subnet_a.public_subnet_id_out}",
+    "${module.igw_subnet_b.public_subnet_id_out}"
   ]
 
+  /*
   access_logs {
     bucket  = "${aws_s3_bucket.s3_logs.bucket}"
     prefix  = "logs"
     enabled = true
   }
+  */
 
   enable_deletion_protection = false
 

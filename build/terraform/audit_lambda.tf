@@ -18,7 +18,7 @@ resource "aws_lambda_function" "github_audit_collector_lambda" {
   }
 
   vpc_config {
-    subnet_ids = ["${module.subnet_b.public_subnet_id_out}", "${module.subnet_c.public_subnet_id_out}"]
+    subnet_ids = ["${module.nat_subnet_a.public_subnet_id_out}", "${module.nat_subnet_b.public_subnet_id_out}"]
     security_group_ids = ["${aws_security_group.github_audit_alb_ingress.id}", "${aws_security_group.github_audit_alb_egress.id}"]
   }
 
