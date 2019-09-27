@@ -4,6 +4,6 @@
 cd build
 npm install
 gulp
-rm -rf node_modules
+rm -rf node_modules package-lock.json
 cd ..
 
