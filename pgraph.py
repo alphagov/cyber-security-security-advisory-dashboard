@@ -1,4 +1,5 @@
 import os
+import logging as log
 from string import Template
 
 from addict import Dict
@@ -26,6 +27,7 @@ transport = RequestsHTTPTransport(
 
 
 def query(name, **kwargs):
+    log.error(f"Calling query {name}.graphql with token starting {api_token[0:4]}")
     client = Client(transport=transport, fetch_schema_from_transport=True)
     queries = {}
     for filename in os.listdir("query"):

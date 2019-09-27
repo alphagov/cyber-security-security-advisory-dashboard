@@ -1,17 +1,12 @@
 Click==7.0
 Flask==1.1.1
 flask-cli==0.4.0
-itsdangerous==1.1.0
 Jinja2==2.10.1
 MarkupSafe==1.1.1
 Werkzeug==0.15.6
 addict==2.2.1
 gql==0.1.0
 requests==2.22.0
-sgqlc==8.0
-waitress==1.3.1 #a pure python WSGI server that is a replacement for gunicorn
-pytest==5.1.2
-black==19.3b0
 arrow==0.14.6
-ipdb
-boto3==1.9.223
+boto3==1.9.22
+serverless-wsgi==1.7.3

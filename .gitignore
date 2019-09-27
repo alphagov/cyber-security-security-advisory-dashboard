@@ -3,7 +3,20 @@ __pycache__/
 *$py.class
 .DS_Store
 .idea
+.pytest_cache/
+
+#  Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+setup.cfg
 build/node_modules
+build/.package
+build/terraform/.terraform
+build/*.zip
 static
 output/*
 !output/README.md
