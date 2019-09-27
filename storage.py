@@ -150,7 +150,7 @@ def read_s3(path):
         bytes_content = response["Body"].read()
         content = bytes_content.decode()
         # remove newlines
-        content = ' '.join(content.splitlines())
+        content = " ".join(content.splitlines())
         log.error(f"Content starts: {content[0:10]}")
     except Exception as err:
         # TODO error handling

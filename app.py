@@ -121,7 +121,7 @@ def route_how_to():
     except Exception as err:
         print(err.message)
         log.error(errors.get_log_event())
-        page =  render_template(
+        page = render_template(
             "pages/error.html", **get_error_data("Something went wrong.")
         )
     return page
@@ -205,9 +205,7 @@ def route_overview_activity():
         template_data = storage.read_json(f"{current}/routes/overview_activity.json")
         log.error(f"Template data says footer updated: {template_data.footer.updated}")
         page = render_template(
-            "pages/overview_activity.html",
-            header=get_header(),
-            **template_data
+            "pages/overview_activity.html", header=get_header(), **template_data
         )
         log.error(f"Rendered page starts: {page[0:10]} and is {len(page)} characters")
     except Exception as err:
