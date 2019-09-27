@@ -12,13 +12,11 @@ resource "aws_lb" "github-audit-alb" {
     "${module.igw_subnet_b.public_subnet_id_out}"
   ]
 
-  /*
   access_logs {
     bucket  = "${aws_s3_bucket.s3_logs.bucket}"
     prefix  = "logs"
     enabled = true
   }
-  */
 
   enable_deletion_protection = false
 
