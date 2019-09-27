@@ -11,6 +11,7 @@ import errors
 
 REGION = None
 OPTIONS = None
+cache = {}
 
 
 def set_region(region):
@@ -47,14 +48,29 @@ def save(path, content):
     return status
 
 
-def read_json(path, default=""):
-    content = read(path)
+def read_json(path, default="", force_renew=False):
+    content = cache_read(path, force_renew)
     try:
+        log.error(f"String content starts: {content[0:10]}")
         parsed = Dict(json.loads(content))
+        log.error(f"Parsed content starts: " + json.dumps(parsed)[0:10])
     except json.decoder.JSONDecodeError:
         print("Not decodable - returning default content", sys.stderr)
         parsed = default
+    except Exception:
+        log.error(errors.get_log_event())
     return parsed
+
+
+def cache_read(path, force_renew=False):
+    if force_renew or path not in cache:
+        log.error(f"Cache miss: {path}")
+        content = read(path)
+        cache[path] = content
+    else:
+        log.error(f"Cache hit: {path}")
+        content = cache[path]
+    return content
 
 
 def read(path):
@@ -133,9 +149,12 @@ def read_s3(path):
         response = s3.get_object(Bucket=OPTIONS.location, Key=path)
         bytes_content = response["Body"].read()
         content = bytes_content.decode()
+        # remove newlines
+        content = ' '.join(content.splitlines())
         log.error(f"Content starts: {content[0:10]}")
     except Exception as err:
         # TODO error handling
+        log.error(f"Unable to load: {path}")
         log.error(errors.get_log_event())
         content = ""
 
