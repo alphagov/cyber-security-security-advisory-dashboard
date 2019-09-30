@@ -1,10 +1,10 @@
+import os
 import jwt
 import requests
 import base64
 import json
 from flask import request, redirect, session
 from functools import wraps
-from json_logging import LogPrint, LogLevel
 
 # https://docs.aws.amazon.com/elasticloadbalancing/latest/application/listener-authenticate-users.html
 
@@ -45,7 +45,7 @@ def login(encoded_jwt, verify=True):
     :returns:
     :rtype:
     """
-    LogPrint(encoded_jwt, severity=LogLevel.DEBUG)
+    # LogPrint(encoded_jwt, severity=LogLevel.DEBUG)
     kid = get_kid(encoded_jwt)
     public_key = PUBLIC_KEYS.get(kid, None)
     if not public_key:
@@ -59,8 +59,8 @@ def login(encoded_jwt, verify=True):
 
 def is_logged_in(app):
     session.new = True
-
-    if app.config["ENV"] == "development" or app.config["ENV"] == "unittest":
+    env = os.environ["FLASK_ENV"]
+    if env in ["development","unittest"]:
         login_details = {}
         session["login_details"] = login_details
         return True
@@ -88,11 +88,11 @@ def login_required(app):
                     # print("login_required:production_session")
                     return f(session["login_details"], *args, **kwargs)
 
-            if app.config["ENV"] == "unittest" and app.config["verify_oidc"]:
+            if os.environ["FLASK_ENV"] == "unittest" and app.config["verify_oidc"]:
                 # print("login_required:unittest")
                 return f({}, *args, **kwargs)
 
-            if app.config["ENV"] == "development":
+            if os.environ["FLASK_ENV"] == "development":
                 if "login_details" in session:
                     # print("login_required:development")
                     return f(session["login_details"], *args, **kwargs)

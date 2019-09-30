@@ -6,8 +6,14 @@ from collections import defaultdict
 import warnings
 import logging as log
 
-from flask import Flask
-from flask import render_template, request
+from flask import (
+    Flask,
+    send_from_directory,
+    session,
+    render_template,
+    request,
+    redirect
+)
 from addict import Dict
 import arrow
 from arrow.factory import ArrowParseWarning
@@ -15,6 +21,7 @@ from arrow.factory import ArrowParseWarning
 import config
 import storage
 import errors
+from oidc import login_required, is_logged_in
 
 
 warnings.simplefilter("ignore", ArrowParseWarning)
@@ -108,6 +115,34 @@ def route_home():
     return page
 
 
+@app.route("/login")
+def route_login():
+    today = get_current_audit()
+    content = {"title": "Introduction", "org": config.get_value("github_org")}
+    footer = {"updated": today}
+    page = render_template(
+        "pages/login.html",
+        header=get_header(),
+        content=content,
+        footer=footer
+    )
+    return page
+
+
+@app.route("/logout")
+def route_logout():
+    session.clear()
+    return redirect("/login", code=302)
+
+
+@app.route("/auth")
+def route_auth():
+    if is_logged_in(app):
+        return redirect("/index.html", code=302)
+    else:
+        return redirect("/login", code=302)
+
+
 @app.route("/how-to")
 def route_how_to():
     log.error("Route: /how-to")
@@ -172,6 +207,7 @@ def route_how_to_enable_security_advisories():
 
 
 @app.route("/overview")
+@login_required(app)
 def route_overview():
     log.error("Route: /overview")
     try:
@@ -198,6 +234,7 @@ def route_overview():
 
 
 @app.route("/overview/activity")
+@login_required(app)
 def route_overview_activity():
     log.error("Route: /overview/activity")
     try:
@@ -218,6 +255,7 @@ def route_overview_activity():
 
 
 @app.route("/overview/monitoring-status")
+@login_required(app)
 def route_overview_monitoring_status():
     log.error("Route: /overview/monitoring-status")
     try:
@@ -240,6 +278,7 @@ def route_overview_monitoring_status():
 
 
 @app.route("/overview/repository-status")
+@login_required(app)
 def route_overview_repository_status():
     log.error("Route: /overview/repository-status")
     try:
@@ -262,6 +301,7 @@ def route_overview_repository_status():
 
 
 @app.route("/overview/vulnerable-repositories")
+@login_required(app)
 def route_overview_vulnerable_repositories():
     log.error("Route: /overview/vulnerable-repositories")
     try:
@@ -282,6 +322,7 @@ def route_overview_vulnerable_repositories():
 
 
 @app.route("/by-repository")
+@login_required(app)
 def route_by_repository():
     log.error("Route: /by-repository")
     try:
