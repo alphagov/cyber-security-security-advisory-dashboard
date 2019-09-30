@@ -49,7 +49,7 @@ time to run.
 
 ## Run a local dev server 
 
-The `run`` task currently runs the npm install and then runs the gulp tasks 
+The `run` task currently runs the npm install and then runs the gulp tasks 
 to build the static assets, js and css. 
 
 ```run
