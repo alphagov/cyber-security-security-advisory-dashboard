@@ -15,7 +15,7 @@ shell:
 	docker-compose run dashboard bash
 
 rebuild:
-	docker-compose build
+	docker-compose build --pull
 
 assets:
 	docker-compose run dashboard sh assets.sh
