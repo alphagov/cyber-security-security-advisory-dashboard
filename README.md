@@ -110,6 +110,8 @@ runtime             = "python3.7"
 oidc_client_id      = "<your client_id>"
 oidc_client_secret  = "<your secret"
 
+dns_state_bucket    = "<S3 bucket for R53 delegated zone remote state>"
+dns_state_region    = "<S3 bucket home region for above>"
 dns_zone_fqdn       = "<the domain you want the interface to appear on>"
 sub_domain          = "<the sub-domain for the app>"
 github_org          = "<github organisation shortname>"

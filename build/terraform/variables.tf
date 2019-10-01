@@ -22,6 +22,16 @@ variable "oidc_client_secret" {
   type        = "string"
 }
 
+variable "dns_state_bucket" {
+  description = "The S3 bucket containing the delegated zone state file"
+  type        = "string"
+}
+
+variable "dns_state_region" {
+  description = "The home region for the remote state bucket"
+  type        = "string"
+}
+
 variable "dns_zone_fqdn" {
   description = "The domain under which we will create our zone"
   type        = "string"

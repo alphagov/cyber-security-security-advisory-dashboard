@@ -2,9 +2,9 @@
 data "terraform_remote_state" "dns_zone" {
   backend = "s3"
   config {
-    bucket  = "cyber-security-dns-state"
+    bucket  = "${var.dns_state_bucket}"
     key     = "dns/${var.dns_zone_fqdn}.dns.tfstate"
-    region  = "eu-west-2"
+    region  = "${var.dns_state_region}"
     encrypt = true
   }
 }
