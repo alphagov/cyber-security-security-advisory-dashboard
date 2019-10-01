@@ -4,42 +4,31 @@
 
 ## Prerequisites 
 
-Check you have docker and docker-compose installed 
+ - Check you have docker and docker-compose installed 
 
 ```
 docker --version 
 docker-compose --version
 ```
 
-A GITHUB_ORG env var containing the organisation login short name 
+ - Set a GITHUB_ORG env var containing the organisation login short name 
 from the GitHub URL.
 
-A TOKEN env var containing a read-only personal access token for a GitHub org 
-admin user. 
+ - Set a TOKEN env var containing a read-only personal access token for a GitHub org 
+admin user.
 
-Alternatively the token can be retrieved from SSM if the make command 
-is run via aws-vault or similar to set AWS credentials.  
+(Alternatively the token can be retrieved from SSM if the make command 
+is run via aws-vault or similar to set AWS credentials.)
 
-Create or change the `settings.[env].json` file 
+ - Create or change the `settings.[env].json` file 
 
-## Setup 
-
-Run the make task to build the container image. 
-
-This extends the python3 base image and installs the pip requirements 
-as well as installing node, npm and gulp. 
-```container
-make rebuild
-```
-
-## Run the cli tasks to build the data 
 
 ### Run an audit
 
-Gets the paged repository data with vulnerability alerts  
 ```audit
 make audit
 ```
+Gets the paged repository data with vulnerability alerts
 
 The audit process runs the api calls to collect vulnerability and 
 activity data from github as well as the dependabot config API to 
@@ -55,16 +44,14 @@ can call the following:
 make task TASK=routes
 ```
 
-This task has been kept separate because currently it takes too long 
-to run. 
+You can call the tasks separately because the full audit takes a long
+time to run.
 
 ## Run a local dev server 
 
-The run task currently runs the npm install and then runs the gulp tasks 
+The `run` task currently runs the npm install and then runs the gulp tasks 
 to build the static assets, js and css. 
 
-    TODO move the npm install into the docker build. 
-    
 ```run
 make run
 ```
