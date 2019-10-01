@@ -2,3 +2,6 @@ pytest==5.1.2
 black==19.3b0
 itsdangerous==1.1.0
 ipdb
+pytest-cov
+pytest-black
+pytest-flake8
