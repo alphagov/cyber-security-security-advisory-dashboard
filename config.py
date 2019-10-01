@@ -1,10 +1,9 @@
 import os
 import json
-
+from json import JSONDecodeError
 
 from addict import Dict
 import boto3
-
 
 SETTINGS = None
 REGION = None
@@ -15,22 +14,14 @@ def set_region(region):
     REGION = region
 
 
-def load():
-    global SETTINGS
-    if not SETTINGS:
-        try:
-            env = os.environ["FLASK_ENV"]
-            settings_file = f"settings.{env}.json"
-            # print(f"Settings file: {settings_file}", sys.stderr)
-            with open(settings_file, "r") as settings_file:
-                SETTINGS = Dict(json.loads(settings_file.read()))
-                set_region(get_value("aws_region"))
+def load(env=None):
+    """
+    Load settings
+    """
+    env = env or os.environ.get("FLASK_ENV", "development")
 
-        except Exception as e:
-            print(e.message)
-            SETTINGS = Dict({})
-
-    return SETTINGS
+    with open(f"settings.{env}.json", "r") as f:
+        return Dict(json.load(f))
 
 
 def get_ssm_client():
