@@ -21,3 +21,4 @@ static
 output/*
 !output/README.md
 htmlcov
+.coverage
