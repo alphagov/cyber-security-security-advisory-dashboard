@@ -19,11 +19,6 @@ def load():
     global SETTINGS
     if not SETTINGS:
         try:
-            # Unset all empty env vars.
-            for var, val in os.environ.items():
-                if val == "":
-                    del os.environ[var]
-
             env = os.environ["FLASK_ENV"]
             settings_file = f"settings.{env}.json"
             # print(f"Settings file: {settings_file}", sys.stderr)
