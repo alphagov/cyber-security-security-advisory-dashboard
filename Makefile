@@ -12,7 +12,7 @@ run: rebuild assets
 	docker-compose up
 
 shell:
-	docker-compose run dashboard sh
+	docker-compose run dashboard bash
 
 rebuild:
 	docker-compose build
