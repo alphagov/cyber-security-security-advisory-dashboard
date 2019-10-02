@@ -18,5 +18,9 @@
       "location": "ssd-test-to-be-removed",
       "region": "eu-west-1"
     }
+  },
+  "splunk": {
+    "source": "ssm",
+    "name": "/ssd/github/splunk"
   }
 }

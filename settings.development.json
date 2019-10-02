@@ -13,5 +13,9 @@
       "type": "local",
       "location": "output"
     }
+  },
+  "splunk": {
+    "source": "ssm",
+    "name": "/ssd/github/splunk"
   }
 }

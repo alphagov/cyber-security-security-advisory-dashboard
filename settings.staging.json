@@ -18,5 +18,9 @@
       "location": "cyber-security-github-audit-staging-storage",
       "region": "eu-west-2"
     }
+  },
+  "splunk": {
+    "source": "ssm",
+      "name": "/ssd/github/splunk"
   }
 }
