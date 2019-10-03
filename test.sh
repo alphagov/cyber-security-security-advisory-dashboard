@@ -8,4 +8,5 @@ py.test \
     --cov-fail-under 70 \
     --flake8 \
     --black \
+    --random-order \
     tests
