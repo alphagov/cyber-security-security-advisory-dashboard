@@ -1,4 +1,6 @@
 import json
+import os
+import pytest
 
 from addict import Dict
 
@@ -35,31 +37,38 @@ def test_read_json():
 # Both of these tests are broken because of the GLOBAL state in the
 # module file affecting the outcome of each test.
 
-# def test_save_s3():
-#     """
-#     This test only works if AWS credentials are available..
-#     ..and there is an S3 bucket to read/write from.
-#     The API call is not mocked.
-#     """
-#     if "AWS_SECRET_ACCESS_KEY" in os.environ:
-#         print(os.environ["AWS_ACCESS_KEY_ID"], sys.stderr)
-#         os.environ["FLASK_ENV"] == "production"
-#         storage.set_region(REGION)
-#         storage.set_options(S3_OPTIONS)
-#         status = storage.save(path, json.dumps(content, indent=2))
-#         assert status, "S3 put object reported success"
+
+def test_save_s3():
+    """
+    This test only works if AWS credentials are available..
+    ..and there is an S3 bucket to read/write from.
+    The API call is not mocked.
+    """
+    if (
+        "AWS_SECRET_ACCESS_KEY" not in os.environ
+        and os.environ["FLASK_ENV"] != "production"
+    ):
+        pytest.skip()
+
+    storage.set_region(REGION)
+    storage.set_options(S3_OPTIONS)
+    status = storage.save(path, json.dumps(content, indent=2))
+    assert status, "S3 put object reported success"
 
 
-# def test_read_s3():
-#     """
-#     This test only works if AWS credentials are available..
-#     ..and there is an S3 bucket to read/write from.
-#     The API call is not mocked.
-#     """
-#     if "AWS_SECRET_ACCESS_KEY" in os.environ:
-#         print(os.environ["AWS_ACCESS_KEY_ID"], sys.stderr)
-#         os.environ["FLASK_ENV"] == "production"
-#         storage.set_region(REGION)
-#         storage.set_options(S3_OPTIONS)
-#         parsed = storage.read_json(path)
-#         assert parsed.test1 == content.test1, "Read S3 object matches saved content"
+def test_read_s3():
+    """
+    This test only works if AWS credentials are available..
+    ..and there is an S3 bucket to read/write from.
+    The API call is not mocked.
+    """
+    if (
+        "AWS_SECRET_ACCESS_KEY" not in os.environ
+        and os.environ["FLASK_ENV"] != "production"
+    ):
+        pytest.skip()
+
+    storage.set_region(REGION)
+    storage.set_options(S3_OPTIONS)
+    parsed = storage.read_json(path)
+    assert parsed.test1 == content.test1, "Read S3 object matches saved content"
