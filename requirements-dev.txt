@@ -3,3 +3,4 @@ black==19.3b0
 itsdangerous==1.1.0
 ipdb
 pytest-mock
+pytest-cov
