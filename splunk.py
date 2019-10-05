@@ -1,6 +1,7 @@
 import requests
-import glob
-import datetime
+import json
+from VulnerableBySeveritySplunk import VulnerableBySeveritySplunk
+from concurrent.futures import ThreadPoolExecutor
 
 
 class Splunk(object):
@@ -12,7 +13,6 @@ class Splunk(object):
         """
         self.host = host
         self.hec_token = hec_token
-        self.data_prefix = datetime.date.today().isoformat()
 
     def send_json(self, json):
         """
@@ -25,15 +25,24 @@ class Splunk(object):
             f"https://{self.host}/services/collector",
             json,
             headers={"Authorization": f"Splunk {self.hec_token}"},
-            verify=False,
         )
 
-    def data_files(self):
-        """Generate a list of data files"""
-        return glob.glob(f"{self.data_prefix}/data/*.json")
+    def send_vulnerable_by_severtiy(self, v, max_workers=50):
+        """Send vulnerable_by_severity data to Splunk
 
-    def send_data_files(self):
-        """Send data files to Splunk"""
-        for df in self.data_files():
-            with open(df, "r") as f:
-                self.send_json(f.read())
+        :param v: dict() representation of vulnerable_by_severity.json
+        :param max_workers: Concurrent HTTP requests
+
+        """
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            for project in VulnerableBySeveritySplunk(v).splunk_format():
+                executor.submit(
+                    self.send_json,
+                    json.dumps(
+                        {
+                            "host": "advisory_dashboard",
+                            "source": f"vulnerable_by_severity",
+                            "event": project,
+                        }
+                    ),
+                )

@@ -1,13 +1,21 @@
 import pytest
 import requests
-import datetime
+import json
 from splunk import Splunk
+from VulnerableBySeveritySplunk import VulnerableBySeveritySplunk
 
 
 @pytest.fixture
 def splunk(mocker):
     mocker.patch("requests.post")
     return Splunk("host:443", "token")
+
+
+@pytest.fixture
+def vuln():
+    """Test data"""
+    with open("tests/fixtures/data/vulnerable_by_severity.json") as f:
+        return json.load(f)
 
 
 def test_send_json(splunk, mocker):
@@ -22,36 +30,28 @@ def test_send_json(splunk, mocker):
             "https://host:443/services/collector",
             {"test": "bar"},
             headers={"Authorization": "Splunk token"},
-            verify=False,
         )
     ]
 
 
-def test_splunk_data_files(splunk):
-    """Should return a list of JSON files from the fixtures directory."""
-
-    splunk.data_prefix = "tests/fixtures"
-
-    assert splunk.data_files() == ["tests/fixtures/data/repo.json"]
-
-
-def test_splunk_data_prefix(splunk):
-    """Should be set to todays date by default"""
-    assert splunk.data_prefix == datetime.date.today().isoformat()
-
-
-def test_splunk_send_data_files(splunk, mocker):
+def test_splunk_send_data_files(splunk, mocker, vuln):
     """Should send all data files to Splunk"""
 
-    splunk.data_prefix = "tests/fixtures"
+    splunk.send_vulnerable_by_severtiy(vuln)
 
-    splunk.send_data_files()
-
-    assert requests.post.call_args_list == [
+    expected_calls = [
         mocker.call(
             "https://host:443/services/collector",
-            '{"repo": "foo"}\n',
+            json.dumps(
+                {
+                    "host": "advisory_dashboard",
+                    "source": f"vulnerable_by_severity",
+                    "event": v,
+                }
+            ),
             headers={"Authorization": "Splunk token"},
-            verify=False,
         )
+        for v in VulnerableBySeveritySplunk(vuln).splunk_format()
     ]
+
+    assert all(call in requests.post.call_args_list for call in expected_calls)
