@@ -19,8 +19,12 @@
       "region": "eu-west-2"
     }
   },
-  "splunk": {
+  "splunk_host": {
     "source": "ssm",
-      "name": "/ssd/github/splunk"
+    "name": "/ssd/github/splunk_host"
+  },
+  "splunk_token": {
+    "source": "ssm",
+    "name": "/ssd/github/splunk_token"
   }
 }

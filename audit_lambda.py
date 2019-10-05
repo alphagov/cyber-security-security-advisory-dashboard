@@ -20,7 +20,7 @@ import github_rest_client
 import config
 import storage
 import errors
-
+from splunk import Splunk
 
 warnings.simplefilter("ignore", ArrowParseWarning)
 settings = config.load()
@@ -669,7 +669,25 @@ def cronable_vulnerability_audit():
     history.alltime[today] = "complete"
     update_history(history)
     # todo - set enabled mode
+
+    send_vulnerable_by_severtiy_to_splunk()
     return True
+
+
+@cli.command("send_to_splunk")
+def send_to_splunk():
+    send_vulnerable_by_severtiy_to_splunk()
+
+
+def send_vulnerable_by_severtiy_to_splunk():
+    """Send vulnerable_by_severity.json to Splunk"""
+    s = Splunk(config.get_value("splunk_host"), config.get_value("splunk_token"))
+
+    s.send_vulnerable_by_severtiy(
+        storage.read_json(
+            f"{datetime.date.today().isoformat()}/data/vulnerable_by_severity.json"
+        )
+    )
 
 
 if __name__ == "__main__":
