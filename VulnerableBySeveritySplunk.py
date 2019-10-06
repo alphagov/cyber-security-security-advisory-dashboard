@@ -79,6 +79,8 @@ class Project(object):
         for va in self.vulnerability_alerts:
             for s in va.splunk_format():
                 yield {**dict(self), "vulnerability_alerts": dict(s)}
+        if not self.data["vulnerabilityAlerts"]["edges"]:
+            yield dict(self)
 
 
 class VulnerabilityAlert(object):
@@ -88,8 +90,6 @@ class VulnerabilityAlert(object):
 
     def __init__(self, data):
         """
-        if not self.data["vulnerabilityAlerts"]["edges"]:
-            yield dict(self)
         :param data: Dict representing the Github API object
         """
         self.data = data
