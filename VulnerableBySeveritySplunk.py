@@ -62,6 +62,15 @@ class Project(object):
                 "name": self.data["name"],
                 "owner": self.owner,
                 "topics": self.topics,
+                "team": self.data.get("team", ""),
+                "securityAdvisoriesEnabledStatus": self.data.get(
+                    "securityAdvisoriesEnabledStatus", ""
+                ),
+                "recentPullRequestStatus": self.data.get("recentPullRequestStatus", ""),
+                "recentCommitDaysAgo": self.data.get("recentCommitDaysAgo", ""),
+                "averageCommitFrequency": self.data.get("averageCommitFrequency", ""),
+                "maxSeverity": self.data.get("maxSeverity", ""),
+                "currencyBand": self.data.get("currencyBand", ""),
             }.items()
         )
 

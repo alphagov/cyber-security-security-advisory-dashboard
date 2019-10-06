@@ -58,137 +58,19 @@ def test_project_iter(project):
         "name": "marples",
         "owner": "alphagov",
         "topics": ["govuk"],
+        "recentCommitDaysAgo": "",
+        "recentPullRequestStatus": "",
+        "securityAdvisoriesEnabledStatus": "",
+        "team": "",
+        "averageCommitFrequency": "",
+        "currencyBand": "",
+        "maxSeverity": "",
     }
 
 
 def test_project_splunk_format(project):
     """Should generate a new entry for each possible combination of child elements"""
-    assert list(project.splunk_format()) == [
-        {
-            "isArchived": False,
-            "isDisabled": False,
-            "isPrivate": False,
-            "name": "marples",
-            "owner": "alphagov",
-            "topics": ["govuk"],
-            "vulnerability_alerts": {
-                "packageName": "activerecord",
-                "summary": "Moderate severity vulnerability that "
-                "affects activerecord",
-                "vulnerability": {
-                    "description": "activerecord/lib/active_record/nested_attributes.rb "
-                    "in Active Record "
-                    "in Ruby on Rails "
-                    "3.1.x and 3.2.x "
-                    "before 3.2.22.1, "
-                    "4.0.x and 4.1.x "
-                    "before 4.1.14.1, "
-                    "4.2.x before "
-                    "4.2.5.1, and 5.x "
-                    "before "
-                    "5.0.0.beta1.1 "
-                    "does not properly "
-                    "implement a "
-                    "certain destroy "
-                    "option, which "
-                    "allows remote "
-                    "attackers to "
-                    "bypass intended "
-                    "change "
-                    "restrictions by "
-                    "leveraging use of "
-                    "the nested "
-                    "attributes "
-                    "feature.",
-                    "firstPatchedVersion": "3.2.22.1",
-                    "package": "activerecord",
-                    "severity": "MODERATE",
-                },
-                "vulnerableManifestPath": "marples.gemspec",
-                "vulnerableRequirements": "~> 3.1.0",
-            },
-        },
-        {
-            "isArchived": False,
-            "isDisabled": False,
-            "isPrivate": False,
-            "name": "marples",
-            "owner": "alphagov",
-            "topics": ["govuk"],
-            "vulnerability_alerts": {
-                "packageName": "activerecord",
-                "summary": "Moderate severity vulnerability that "
-                "affects activerecord",
-                "vulnerability": {
-                    "description": "activerecord/lib/active_record/nested_attributes.rb "
-                    "in Active Record "
-                    "in Ruby on Rails "
-                    "3.1.x and 3.2.x "
-                    "before 3.2.22.1, "
-                    "4.0.x and 4.1.x "
-                    "before 4.1.14.1, "
-                    "4.2.x before "
-                    "4.2.5.1, and 5.x "
-                    "before "
-                    "5.0.0.beta1.1 "
-                    "does not properly "
-                    "implement a "
-                    "certain destroy "
-                    "option, which "
-                    "allows remote "
-                    "attackers to "
-                    "bypass intended "
-                    "change "
-                    "restrictions by "
-                    "leveraging use of "
-                    "the nested "
-                    "attributes "
-                    "feature.",
-                    "firstPatchedVersion": "4.1.14.1",
-                    "package": "activerecord",
-                    "severity": "MODERATE",
-                },
-                "vulnerableManifestPath": "marples.gemspec",
-                "vulnerableRequirements": "~> 3.1.0",
-            },
-        },
-        {
-            "isArchived": False,
-            "isDisabled": False,
-            "isPrivate": False,
-            "name": "marples",
-            "owner": "alphagov",
-            "topics": ["govuk"],
-            "vulnerability_alerts": {
-                "packageName": "activerecord",
-                "summary": "High severity vulnerability that " "affects activerecord",
-                "vulnerability": {
-                    "description": "SQL injection "
-                    "vulnerability in "
-                    "activerecord/lib/active_record/connection_adapters/postgresql_adapter.rb "
-                    "in the PostgreSQL "
-                    "adapter for "
-                    "Active Record in "
-                    "Ruby on Rails 2.x "
-                    "and 3.x before "
-                    "3.2.19 allows "
-                    "remote attackers "
-                    "to execute "
-                    "arbitrary SQL "
-                    "commands by "
-                    "leveraging "
-                    "improper "
-                    "bitstring "
-                    "quoting.",
-                    "firstPatchedVersion": "3.2.19",
-                    "package": "activerecord",
-                    "severity": "HIGH",
-                },
-                "vulnerableManifestPath": "marples.gemspec",
-                "vulnerableRequirements": "~> 3.1.0",
-            },
-        },
-    ]
+    assert len(list(project.splunk_format())) == 3
 
 
 @pytest.fixture
