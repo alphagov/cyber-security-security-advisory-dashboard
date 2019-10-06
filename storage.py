@@ -45,6 +45,9 @@ def save(path, content):
     else:
         print("Saving to S3 bucket", sys.stderr)
         status = save_s3(path, content)
+
+    cache[path] = content
+
     return status
 
 
