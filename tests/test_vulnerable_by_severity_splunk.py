@@ -65,6 +65,7 @@ def test_project_iter(project):
         "averageCommitFrequency": "",
         "currencyBand": "",
         "maxSeverity": "",
+        "dependabotEnabledStatus": "",
     }
 
 

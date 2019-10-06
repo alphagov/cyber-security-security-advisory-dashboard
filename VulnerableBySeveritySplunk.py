@@ -71,6 +71,7 @@ class Project(object):
                 "averageCommitFrequency": self.data.get("averageCommitFrequency", ""),
                 "maxSeverity": self.data.get("maxSeverity", ""),
                 "currencyBand": self.data.get("currencyBand", ""),
+                "dependabotEnabledStatus": self.data.get("dependabotEnabledStatus", ""),
             }.items()
         )
 
