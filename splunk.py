@@ -25,6 +25,7 @@ class Splunk(object):
             f"https://{self.host}/services/collector",
             json,
             headers={"Authorization": f"Splunk {self.hec_token}"},
+            timeout=10,
         )
 
     def send_vulnerable_by_severtiy(self, v, max_workers=50):
