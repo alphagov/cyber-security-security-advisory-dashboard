@@ -681,12 +681,16 @@ def send_to_splunk():
 
 def send_vulnerable_by_severtiy_to_splunk():
     """Send vulnerable_by_severity.json to Splunk"""
-    s = Splunk(config.get_value("splunk_host"), config.get_value("splunk_token"))
+    host = config.get_value("splunk_host")
+    token = config.get_value("splunk_token")
+
+    if not host or not token:
+        raise
+
+    s = Splunk(host, token)
 
     s.send_vulnerable_by_severtiy(
-        storage.read_json(
-            f"{datetime.date.today().isoformat()}/data/vulnerable_by_severity.json"
-        )
+        storage.read_json(f"{datetime.date.today().isoformat()}/data/repositories.json")
     )
 
 

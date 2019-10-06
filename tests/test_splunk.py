@@ -51,8 +51,8 @@ def test_splunk_send_data_files(splunk, mocker, vuln):
                 }
             ),
             headers={"Authorization": "Splunk token"},
-        )
             timeout=10,
+        )
         for v in VulnerableBySeveritySplunk(vuln).splunk_format()
     ]
 

@@ -21,5 +21,9 @@
   "splunk_token": {
     "source": "ssm",
     "name": "/ssd/github/splunk_token"
+  },
+  "aws_region": {
+    "source": "this",
+    "name": "eu-west-2"
   }
 }
