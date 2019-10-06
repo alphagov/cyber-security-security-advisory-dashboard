@@ -79,6 +79,8 @@ class VulnerabilityAlert(object):
 
     def __init__(self, data):
         """
+        if not self.data["vulnerabilityAlerts"]["edges"]:
+            yield dict(self)
         :param data: Dict representing the Github API object
         """
         self.data = data
