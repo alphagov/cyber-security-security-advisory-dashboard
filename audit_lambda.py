@@ -541,7 +541,7 @@ def get_current_audit():
         current = history.current
     except FileNotFoundError:
         current = datetime.date.today().isoformat()
-        log.debug(errors.get_log_event())
+        log.error(errors.get_log_event())
     return current
 
 
