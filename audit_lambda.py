@@ -45,10 +45,13 @@ def update_github_advisories_status():
 
     today_repositories = storage.read_json(f"{today}/data/repositories.json")
     current_repositories = storage.read_json(f"{current}/data/repositories.json")
+
+
     for today_repo in today_repositories["public"]:
         new_repo = True
         update_status = False
         found_repo = None
+
         for current_repo in current_repositories["public"]:
             if today_repo.name == current_repo.name:
                 found_repo = current_repo
@@ -75,7 +78,7 @@ def update_github_advisories_status():
             today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
 
             by_alert_status[status].append(today_repo)
-            time.sleep(0.1)
+
         elif found_repo:
             alerts_enabled = found_repo.securityAdvisoriesEnabledStatus
             today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
@@ -550,7 +553,7 @@ def get_github_resolve_alert_status():
         repo.securityAdvisoriesEnabledStatus = alerts_enabled
 
         by_alert_status[status].append(repo)
-        time.sleep(0.2)
+
 
     storage.save_json(f"{today}/data/repositories.json", repositories)
     status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
