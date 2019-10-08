@@ -1,4 +1,8 @@
 terraform {
-  required_version = "= 0.11.14"
-  backend "s3" {}
+  backend "s3" {
+    bucket  = var.state_bucket
+    key     = var.state_key
+    region  = var.state_region
+    encrypt = var.state_encrypt
+  }
 }

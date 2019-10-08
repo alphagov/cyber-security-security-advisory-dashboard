@@ -33,21 +33,6 @@
             "Effect": "Allow",
             "Principal": {
                 "AWS": [
-                  "${interface_lambda_arn}"
-                ]
-            },
-            "Action": [
-                "s3:GetObject"
-            ],
-            "Resource": [
-                "${bucket_arn}/*"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": [
-                  "${interface_lambda_arn}",
                   "${audit_lambda_arn}"
                 ]
             },

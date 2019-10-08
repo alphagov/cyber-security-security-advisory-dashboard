@@ -1,7 +1,7 @@
 import audit_lambda
 import splunk
-import config
-import storage
+import config  # noqa
+import storage  # noqa
 
 
 def test_send_vulnerable_by_severtiy_to_splunk(mocker):

@@ -39,11 +39,11 @@ def save_json(path, content):
 def save(path, content):
     options = get_options()
     if options.type == "local":
-        print("Saving to local file system", sys.stderr)
+        log.debug(f"Saving to local file system {path}")
         relative_path = os.path.join(OPTIONS.location, path)
         status = save_local(relative_path, content)
     else:
-        print("Saving to S3 bucket", sys.stderr)
+        log.debug(f"Saving to S3 bucket {path}")
         status = save_s3(path, content)
 
     cache[path] = content
@@ -79,10 +79,10 @@ def cache_read(path, force_renew=False):
 def read(path):
     options = get_options()
     if options.type == "local":
-        print("Reading from local file system", sys.stderr)
+        log.debug(f"Reading from local file system {path}")
         content = read_local(path)
     else:
-        print("Reading from S3 bucket", sys.stderr)
+        log.debug(f"Reading from S3 bucket {path}")
         content = read_s3(path)
     return content
 

@@ -24,7 +24,7 @@
                 "ssm:GetParametersByPath"
             ],
             "Resource": [
-                "arn:aws:ssm:${region}:${account_id}:parameter/ssd/github/pat"
+                "arn:aws:ssm:${region}:${account_id}:parameter/ssd/github/*"
             ]
         },
         {

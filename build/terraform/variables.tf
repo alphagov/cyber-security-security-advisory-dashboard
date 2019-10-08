@@ -12,27 +12,27 @@ variable "runtime" {
   default     = "python3.7"
 }
 
-variable "oidc_client_id" {
-  description = "OIDC client ID"
-  type        = "string"
-}
-
-variable "oidc_client_secret" {
-  description = "OIDC client secret"
-  type        = "string"
-}
-
-variable "dns_zone_fqdn" {
-  description = "The domain under which we will create our zone"
-  type        = "string"
-}
-
-variable "sub_domain" {
-  description = "The subdomain for our zone"
-  type        = "string"
-}
-
 variable "github_org" {
   description = "GitHub organisation short-name"
+  type        = "string"
+}
+
+variable "state_bucket" {
+  description = "The state bucket"
+  type        = "string"
+}
+
+variable "stats_key" {
+  description = "The state bucket filename"
+  type        = "string"
+}
+
+variable "state_region" {
+  description = "The region that the state_bucket is in"
+  type        = "string"
+}
+
+variable "state_encrypt" {
+  description = "Is the state_bucket encrypted?"
   type        = "string"
 }
