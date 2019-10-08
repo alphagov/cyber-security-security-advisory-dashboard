@@ -1,12 +1,12 @@
 Click==7.0
 Flask==1.1.1
 flask-cli==0.4.0
-Jinja2==2.10.1
+Jinja2==2.10.3
 MarkupSafe==1.1.1
 Werkzeug==0.15.6
 addict==2.2.1
 gql==0.1.0
 requests==2.22.0
 arrow==0.15.2
-boto3==1.9.22
+boto3==1.9.244
 serverless-wsgi==1.7.3

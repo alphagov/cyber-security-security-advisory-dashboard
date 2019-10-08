@@ -7,15 +7,12 @@ from addict import Dict
 import config
 
 
-ROOT_URL = "https://api.dependabot.com"
-
-
-HEADERS = {"Authorization": "Personal %s" % config.get_value("token")}
-
-
 def get(path):
-    url = ROOT_URL + path
-    response = requests.get(url, headers=HEADERS)
+    root_url = "https://api.dependabot.com"
+    headers = {"Authorization": "Personal %s" % config.get_value("token")}
+
+    url = root_url + path
+    response = requests.get(url, headers=headers)
     return response
 
 
