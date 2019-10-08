@@ -10,6 +10,8 @@ for i in ${vars}; do
     fi
 done
 
+black .
+
 py.test \
     --capture=no \
     --verbose \
@@ -19,6 +21,5 @@ py.test \
     --cov-report html \
     --cov-fail-under 70 \
     --flake8 \
-    --black \
     --random-order \
     tests

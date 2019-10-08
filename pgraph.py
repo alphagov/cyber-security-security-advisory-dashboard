@@ -11,22 +11,20 @@ from jinja2 import Template
 import config
 
 
-url = "https://api.github.com/graphql"
-
-
-api_token = config.get_value("token")
-
-transport = RequestsHTTPTransport(
-    url=url,
-    use_json=True,
-    headers={
-        "Authorization": "Bearer %s" % api_token,
-        "Accept": "application/vnd.github.vixen-preview+json",
-    },
-)
-
-
 def query(name, **kwargs):
+    url = "https://api.github.com/graphql"
+
+    api_token = config.get_value("token")
+
+    transport = RequestsHTTPTransport(
+        url=url,
+        use_json=True,
+        headers={
+            "Authorization": "Bearer %s" % api_token,
+            "Accept": "application/vnd.github.vixen-preview+json",
+        },
+    )
+
     log.error(f"Calling query {name}.graphql with token starting {api_token[0:4]}")
     client = Client(transport=transport, fetch_schema_from_transport=True)
     queries = {}

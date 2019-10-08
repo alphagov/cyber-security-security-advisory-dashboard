@@ -29,6 +29,9 @@ audit:
 task:
 	docker-compose run dashboard python audit_lambda.py run-task $(TASK)
 
+send_to_splunk:
+	docker-compose run dashboard python audit_lambda.py send_to_splunk
+
 # DEPLOY
 reset:
 	rm -f setup.cfg
