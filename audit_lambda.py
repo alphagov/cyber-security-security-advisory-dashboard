@@ -23,8 +23,8 @@ from splunk import Splunk
 
 
 log.basicConfig(
-    format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
-    level=log.INFO)
+    format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s", level=log.DEBUG
+)
 
 settings = config.load()
 
@@ -37,7 +37,7 @@ if settings.storage:
 
 
 def update_github_advisories_status():
-    log.debug('update_github_advisories_status')
+    log.debug("update_github_advisories_status")
     today = datetime.date.today().isoformat()
     current = get_current_audit()
 
@@ -126,17 +126,14 @@ def get_github_activity_refs_audit(org, today):
         cursor = page.organization.repositories.pageInfo.endCursor
 
     total = len(repository_list)
-    print(f"Repository list count: {total}", sys.stderr)
+    log.debug(f"Repository list count: {total}")
 
     repository_lookup = {repo.name: repo for repo in repository_list}
 
     total = len(repository_lookup.keys())
-    print(f"Repository lookup count: {total}", sys.stderr)
+    log.debug(f"Repository lookup count: {total}")
 
-    updated = storage.save_json(
-        f"{today}/data/activity_refs.json", repository_lookup
-    )
-
+    updated = storage.save_json(f"{today}/data/activity_refs.json", repository_lookup)
 
 
 def get_github_activity_prs_audit(org, today):
@@ -153,16 +150,14 @@ def get_github_activity_prs_audit(org, today):
         cursor = page.organization.repositories.pageInfo.endCursor
 
     total = len(repository_list)
-    print(f"Repository list count: {total}", sys.stderr)
+    log.debug(f"Repository list count: {total}")
 
     repository_lookup = {repo.name: repo for repo in repository_list}
 
     total = len(repository_lookup.keys())
-    print(f"Repository lookup count: {total}", sys.stderr)
+    log.debug(f"Repository lookup count: {total}")
 
-    updated = storage.save_json(
-        f"{today}/data/activity_prs.json", repository_lookup
-    )
+    updated = storage.save_json(f"{today}/data/activity_prs.json", repository_lookup)
 
 
 def get_dependabot_status(org, today):
@@ -317,6 +312,7 @@ def analyse_team_membership(today):
 
     updated = storage.save_json(f"{today}/data/repositories.json", repositories)
 
+
 def analyse_vulnerability_patch_recommendations(today):
     repositories = storage.read_json(f"{today}/data/repositories.json")
 
@@ -333,7 +329,7 @@ def analyse_vulnerability_patch_recommendations(today):
         for severity, vuln_repos in vulnerable_by_severity.items():
             for vuln_repo in vuln_repos:
                 if repo.name == vuln_repo.name:
-                    print(repo.name)
+                    log.debug(repo.name)
                     repo.maxSeverity = severity
                     repo.patches = vulnerability_summarizer.get_patch_list(repo)
                     repo.vulnerabiltyCounts = vulnerability_summarizer.get_repository_severity_counts(
@@ -525,7 +521,7 @@ def get_history():
     default = Dict({"current": None, "alltime": {}})
     history = storage.read_json(history_file, default=default)
 
-    print(str(history), sys.stderr)
+    log.debug(str(history))
 
     return history
 
@@ -553,7 +549,6 @@ def get_github_resolve_alert_status():
         repo.securityAdvisoriesEnabledStatus = alerts_enabled
 
         by_alert_status[status].append(repo)
-
 
     storage.save_json(f"{today}/data/repositories.json", repositories)
     status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
@@ -595,7 +590,7 @@ def cli_task(task):
     elif task == "routes":
         build_route_data(today)
     else:
-        print("ERROR: Undefined task")
+        log.error("ERROR: Undefined task")
 
 
 @cli.command("audit")
