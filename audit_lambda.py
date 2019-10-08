@@ -21,6 +21,7 @@ import storage
 import errors
 from splunk import Splunk
 
+from concurrent.futures import ThreadPoolExecutor
 
 log.basicConfig(
     format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s", level=log.DEBUG
@@ -36,6 +37,26 @@ if settings.storage:
     storage.set_options(storage_options)
 
 
+def get_adv_status(repo):
+    response = github_rest_client.get(
+        f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts"
+    )
+    alerts_enabled = response.status_code == 204
+    vulnerable = repo.vulnerabilityAlerts.edges
+
+    if vulnerable:
+        repo.status = "vulnerable"
+    elif alerts_enabled:
+        repo.status = "clean"
+    else:
+        repo.status = "disabled"
+
+    # append status to repo in original repositories file
+    repo.securityAdvisoriesEnabledStatus = alerts_enabled
+
+    return repo
+
+
 def update_github_advisories_status():
     log.debug("update_github_advisories_status")
     today = datetime.date.today().isoformat()
@@ -46,43 +67,12 @@ def update_github_advisories_status():
     today_repositories = storage.read_json(f"{today}/data/repositories.json")
     current_repositories = storage.read_json(f"{current}/data/repositories.json")
 
+    for state in today_repositories.keys():
+        log.debug(f"{state} repos: {len(today_repositories[state])}")
 
-    for today_repo in today_repositories["public"]:
-        new_repo = True
-        update_status = False
-        found_repo = None
-
-        for current_repo in current_repositories["public"]:
-            if today_repo.name == current_repo.name:
-                found_repo = current_repo
-                if not current_repo.securityAdvisoriesEnabledStatus:
-                    update_status = True
-                    new_repo = False
-
-        if new_repo | update_status:
-
-            response = github_rest_client.get(
-                f"/repos/{today_repo.owner.login}/{today_repo.name}/vulnerability-alerts"
-            )
-            alerts_enabled = response.status_code == 204
-            vulnerable = today_repo.vulnerabilityAlerts.edges
-
-            if vulnerable:
-                status = "vulnerable"
-            elif alerts_enabled:
-                status = "clean"
-            else:
-                status = "disabled"
-
-            # append status to repo in original repositories file
-            today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
-
-            by_alert_status[status].append(today_repo)
-
-        elif found_repo:
-            alerts_enabled = found_repo.securityAdvisoriesEnabledStatus
-            today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
-
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            for r in executor.map(get_adv_status, today_repositories[state]):
+                by_alert_status[r.status].append(r)
 
     storage.save_json(f"{today}/data/repositories.json", today_repositories)
     status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
@@ -109,7 +99,6 @@ def get_github_repositories_and_classify_by_status(org, today):
     repositories_by_status = repository_summarizer.group_by_status(repository_list)
     save_to = f"{today}/data/repositories.json"
     updated = storage.save_json(save_to, repositories_by_status)
-
 
 
 def get_github_activity_refs_audit(org, today):
