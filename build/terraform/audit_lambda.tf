@@ -8,6 +8,7 @@ resource "aws_lambda_function" "github_audit_collector_lambda" {
   handler          = "audit_lambda.lambda_handler"
   runtime          = "${var.runtime}"
   timeout          = "900"
+  memory_size      = 512
 
   environment {
     variables = {
