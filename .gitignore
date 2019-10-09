@@ -22,3 +22,4 @@ output/*
 !output/README.md
 htmlcov
 .coverage
+pipeline_vars.yml

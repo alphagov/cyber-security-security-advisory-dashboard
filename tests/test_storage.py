@@ -39,6 +39,7 @@ def test_read_json():
 # Both of these tests are broken because of the GLOBAL state in the
 # module file affecting the outcome of each test.
 
+
 @pytest.mark.skip(reason="Breaks when run out of order")
 def test_save_s3():
     """
@@ -56,6 +57,7 @@ def test_save_s3():
     storage.set_options(S3_OPTIONS)
     status = storage.save(path, json.dumps(content, indent=2))
     assert status, "S3 put object reported success"
+
 
 @pytest.mark.skip(reason="Breaks when run out of order")
 def test_read_s3():
