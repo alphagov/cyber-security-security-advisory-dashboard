@@ -28,19 +28,17 @@ jobs:
         build: security-advisory-dashboard-git
         tag_as_latest: true
 
-
 - name: sec_adv_tests
   serial: true
   plan:
-    - get: security-advisory-dashboard-git
-      trigger: true
-
     - get: docker-image
       trigger: true
 
     - task: test
-
       config:
+        inputs:
+          - name: docker-image
+
         params:
           TOKEN: faketoken
           GITHUB_ORG: fakeorg
