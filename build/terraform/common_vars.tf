@@ -8,7 +8,3 @@
 #    encrypt = true
 #  }
 #}
-
-module "common_vars" {
-  source = "git@github.com:alphagov/cyber-security-dns.git?ref=master//vars/common"
-}

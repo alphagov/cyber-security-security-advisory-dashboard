@@ -40,6 +40,7 @@ def test_read_json():
 # module file affecting the outcome of each test.
 
 
+@pytest.mark.skip(reason="Breaks when run out of order")
 def test_save_s3():
     """
     This test only works if AWS credentials are available..
@@ -58,6 +59,7 @@ def test_save_s3():
     assert status, "S3 put object reported success"
 
 
+@pytest.mark.skip(reason="Breaks when run out of order")
 def test_read_s3():
     """
     This test only works if AWS credentials are available..

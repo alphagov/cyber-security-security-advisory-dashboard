@@ -8,18 +8,13 @@ resource "aws_lambda_function" "github_audit_collector_lambda" {
   handler          = "audit_lambda.lambda_handler"
   runtime          = "${var.runtime}"
   timeout          = "900"
+  memory_size      = 512
 
   environment {
     variables = {
-      SECRET_KEY = "${random_string.password.result}"
       FLASK_ENV  = "${var.Environment}"
       GITHUB_ORG = "${var.github_org}"
     }
-  }
-
-  vpc_config {
-    subnet_ids = ["${module.nat_subnet_a.public_subnet_id_out}", "${module.nat_subnet_b.public_subnet_id_out}"]
-    security_group_ids = ["${aws_security_group.github_audit_alb_ingress.id}", "${aws_security_group.github_audit_alb_egress.id}"]
   }
 
   tags = {

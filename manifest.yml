@@ -1,6 +1,0 @@
----
-applications:
-- name: gh-security-dashboard
-  memory: 512M
-  buildpacks:
-  - python_buildpack

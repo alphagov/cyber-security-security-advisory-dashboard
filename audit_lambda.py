@@ -10,7 +10,6 @@ from addict import Dict
 import click
 
 import arrow
-from arrow.factory import ArrowParseWarning
 import pgraph
 import repository_summarizer
 import vulnerability_summarizer
@@ -22,7 +21,12 @@ import storage
 import errors
 from splunk import Splunk
 
-warnings.simplefilter("ignore", ArrowParseWarning)
+from concurrent.futures import ThreadPoolExecutor
+
+log.basicConfig(
+    format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s", level=log.DEBUG
+)
+
 settings = config.load()
 
 if settings.aws_region:
@@ -33,7 +37,28 @@ if settings.storage:
     storage.set_options(storage_options)
 
 
+def get_adv_status(repo):
+    response = github_rest_client.get(
+        f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts"
+    )
+    alerts_enabled = response.status_code == 204
+    vulnerable = repo.vulnerabilityAlerts.edges
+
+    if vulnerable:
+        repo.status = "vulnerable"
+    elif alerts_enabled:
+        repo.status = "clean"
+    else:
+        repo.status = "disabled"
+
+    # append status to repo in original repositories file
+    repo.securityAdvisoriesEnabledStatus = alerts_enabled
+
+    return repo
+
+
 def update_github_advisories_status():
+    log.debug("update_github_advisories_status")
     today = datetime.date.today().isoformat()
     current = get_current_audit()
 
@@ -41,40 +66,13 @@ def update_github_advisories_status():
 
     today_repositories = storage.read_json(f"{today}/data/repositories.json")
     current_repositories = storage.read_json(f"{current}/data/repositories.json")
-    for today_repo in today_repositories["public"]:
-        new_repo = True
-        update_status = False
-        found_repo = None
-        for current_repo in current_repositories["public"]:
-            if today_repo.name == current_repo.name:
-                found_repo = current_repo
-                if not current_repo.securityAdvisoriesEnabledStatus:
-                    update_status = True
-                    new_repo = False
 
-        if new_repo | update_status:
+    for state in today_repositories.keys():
+        log.debug(f"{state} repos: {len(today_repositories[state])}")
 
-            response = github_rest_client.get(
-                f"/repos/{today_repo.owner.login}/{today_repo.name}/vulnerability-alerts"
-            )
-            alerts_enabled = response.status_code == 204
-            vulnerable = today_repo.vulnerabilityAlerts.edges
-
-            if vulnerable:
-                status = "vulnerable"
-            elif alerts_enabled:
-                status = "clean"
-            else:
-                status = "disabled"
-
-            # append status to repo in original repositories file
-            today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
-
-            by_alert_status[status].append(today_repo)
-            time.sleep(0.1)
-        elif found_repo:
-            alerts_enabled = found_repo.securityAdvisoriesEnabledStatus
-            today_repo.securityAdvisoriesEnabledStatus = alerts_enabled
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            for r in executor.map(get_adv_status, today_repositories[state]):
+                by_alert_status[r.status].append(r)
 
     storage.save_json(f"{today}/data/repositories.json", today_repositories)
     status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
@@ -86,121 +84,89 @@ def update_history(history):
 
 
 def get_github_repositories_and_classify_by_status(org, today):
-    try:
-        cursor = None
-        last = False
-        repository_list = []
+    cursor = None
+    last = False
+    repository_list = []
 
-        while not last:
+    while not last:
 
-            page = pgraph.query("all", org=org, nth=100, after=cursor)
+        page = pgraph.query("all", org=org, nth=100, after=cursor)
 
-            repository_list.extend(page.organization.repositories.nodes)
-            last = not page.organization.repositories.pageInfo.hasNextPage
-            cursor = page.organization.repositories.pageInfo.endCursor
+        repository_list.extend(page.organization.repositories.nodes)
+        last = not page.organization.repositories.pageInfo.hasNextPage
+        cursor = page.organization.repositories.pageInfo.endCursor
 
-        repositories_by_status = repository_summarizer.group_by_status(repository_list)
-        save_to = f"{today}/data/repositories.json"
-        updated = storage.save_json(save_to, repositories_by_status)
-
-    except Exception as err:
-        # print(str(err), sys.stderr)
-        log.error(errors.get_log_event())
-        updated = False
-    return updated
+    repositories_by_status = repository_summarizer.group_by_status(repository_list)
+    save_to = f"{today}/data/repositories.json"
+    updated = storage.save_json(save_to, repositories_by_status)
 
 
 def get_github_activity_refs_audit(org, today):
-    try:
-        cursor = None
-        last = False
-        repository_list = []
+    cursor = None
+    last = False
+    repository_list = []
 
-        while not last:
+    while not last:
 
-            page = pgraph.query("refs", org=org, nth=20, after=cursor)
+        page = pgraph.query("refs", org=org, nth=20, after=cursor)
 
-            repository_list.extend(page.organization.repositories.nodes)
-            last = not page.organization.repositories.pageInfo.hasNextPage
-            cursor = page.organization.repositories.pageInfo.endCursor
+        repository_list.extend(page.organization.repositories.nodes)
+        last = not page.organization.repositories.pageInfo.hasNextPage
+        cursor = page.organization.repositories.pageInfo.endCursor
 
-        total = len(repository_list)
-        print(f"Repository list count: {total}", sys.stderr)
+    total = len(repository_list)
+    log.debug(f"Repository list count: {total}")
 
-        repository_lookup = {repo.name: repo for repo in repository_list}
+    repository_lookup = {repo.name: repo for repo in repository_list}
 
-        total = len(repository_lookup.keys())
-        print(f"Repository lookup count: {total}", sys.stderr)
+    total = len(repository_lookup.keys())
+    log.debug(f"Repository lookup count: {total}")
 
-        updated = storage.save_json(
-            f"{today}/data/activity_refs.json", repository_lookup
-        )
-
-    except Exception as err:
-        # print("Failed to run activity GQL: " + str(err), sys.stderr)
-        log.error(errors.get_log_event())
-        updated = False
-    return updated
+    updated = storage.save_json(f"{today}/data/activity_refs.json", repository_lookup)
 
 
 def get_github_activity_prs_audit(org, today):
-    try:
-        cursor = None
-        last = False
-        repository_list = []
+    cursor = None
+    last = False
+    repository_list = []
 
-        while not last:
+    while not last:
 
-            page = pgraph.query("prs", org=org, nth=100, after=cursor)
+        page = pgraph.query("prs", org=org, nth=100, after=cursor)
 
-            repository_list.extend(page.organization.repositories.nodes)
-            last = not page.organization.repositories.pageInfo.hasNextPage
-            cursor = page.organization.repositories.pageInfo.endCursor
+        repository_list.extend(page.organization.repositories.nodes)
+        last = not page.organization.repositories.pageInfo.hasNextPage
+        cursor = page.organization.repositories.pageInfo.endCursor
 
-        total = len(repository_list)
-        print(f"Repository list count: {total}", sys.stderr)
+    total = len(repository_list)
+    log.debug(f"Repository list count: {total}")
 
-        repository_lookup = {repo.name: repo for repo in repository_list}
+    repository_lookup = {repo.name: repo for repo in repository_list}
 
-        total = len(repository_lookup.keys())
-        print(f"Repository lookup count: {total}", sys.stderr)
+    total = len(repository_lookup.keys())
+    log.debug(f"Repository lookup count: {total}")
 
-        updated = storage.save_json(
-            f"{today}/data/activity_prs.json", repository_lookup
-        )
-
-    except Exception as err:
-        # print("Failed to run activity GQL: " + str(err), sys.stderr)
-        log.error(errors.get_log_event())
-        updated = False
-    return updated
+    updated = storage.save_json(f"{today}/data/activity_prs.json", repository_lookup)
 
 
 def get_dependabot_status(org, today):
-    try:
-        updated = False
-        dependabot_status = dependabot_api.get_repos_by_status(org)
-        counts = stats.count_types(dependabot_status)
-        output = Dict()
-        output.counts = counts
-        output.repositories = dependabot_status
+    updated = False
+    dependabot_status = dependabot_api.get_repos_by_status(org)
+    counts = stats.count_types(dependabot_status)
+    output = Dict()
+    output.counts = counts
+    output.repositories = dependabot_status
 
-        storage.save_json(f"{today}/data/dependabot_status.json", output)
+    storage.save_json(f"{today}/data/dependabot_status.json", output)
 
-        repositories = storage.read_json(f"{today}/data/repositories.json")
-        for repo in repositories["public"]:
-            for status, dbot_repositories in dependabot_status.items():
-                for dbot_repo in dbot_repositories:
-                    if dbot_repo.attributes.name == repo.name:
-                        repo.dependabotEnabledStatus = status == "active"
+    repositories = storage.read_json(f"{today}/data/repositories.json")
+    for repo in repositories["public"]:
+        for status, dbot_repositories in dependabot_status.items():
+            for dbot_repo in dbot_repositories:
+                if dbot_repo.attributes.name == repo.name:
+                    repo.dependabotEnabledStatus = status == "active"
 
-        updated = storage.save_json(f"{today}/data/repositories.json", repositories)
-
-    except Exception:
-        log.error(errors.get_log_event())
-        updated = False
-
-    return updated
+    updated = storage.save_json(f"{today}/data/repositories.json", repositories)
 
 
 def analyse_repo_ownership(today):
@@ -309,38 +275,31 @@ def analyse_activity_refs(today):
 
 
 def analyse_team_membership(today):
+    storage.read_json(f"{today}/data/topics.json")
+    repositories = storage.read_json(f"{today}/data/repositories.json")
 
-    try:
-        storage.read_json(f"{today}/data/topics.json")
-        repositories = storage.read_json(f"{today}/data/repositories.json")
+    # This one can't currently use storage because it's
+    # outside the output folder and not written to S3.
+    with open("teams.json", "r") as teams_file:
+        teams = json.loads(teams_file.read())
 
-        # This one can't currently use storage because it's
-        # outside the output folder and not written to S3.
-        with open("teams.json", "r") as teams_file:
-            teams = json.loads(teams_file.read())
+    for status, repo_list in repositories.items():
+        for repo in repo_list:
+            repo_team = "unknown"
+            repo_topics = []
+            if repo.repositoryTopics:
+                repo_topics = [
+                    topic_edge.node.topic.name
+                    for topic_edge in repo.repositoryTopics.edges
+                ]
 
-        for status, repo_list in repositories.items():
-            for repo in repo_list:
-                repo_team = "unknown"
-                repo_topics = []
-                if repo.repositoryTopics:
-                    repo_topics = [
-                        topic_edge.node.topic.name
-                        for topic_edge in repo.repositoryTopics.edges
-                    ]
+            for team, team_topics in teams.items():
+                for topic in team_topics:
+                    if topic in repo_topics:
+                        repo_team = team
+            repo.team = repo_team
 
-                for team, team_topics in teams.items():
-                    for topic in team_topics:
-                        if topic in repo_topics:
-                            repo_team = team
-                repo.team = repo_team
-
-        updated = storage.save_json(f"{today}/data/repositories.json", repositories)
-    except Exception as err:
-        # print(str(err))
-        log.error(errors.get_log_event())
-        updated = False
-    return updated
+    updated = storage.save_json(f"{today}/data/repositories.json", repositories)
 
 
 def analyse_vulnerability_patch_recommendations(today):
@@ -359,7 +318,7 @@ def analyse_vulnerability_patch_recommendations(today):
         for severity, vuln_repos in vulnerable_by_severity.items():
             for vuln_repo in vuln_repos:
                 if repo.name == vuln_repo.name:
-                    print(repo.name)
+                    log.debug(repo.name)
                     repo.maxSeverity = severity
                     repo.patches = vulnerability_summarizer.get_patch_list(repo)
                     repo.vulnerabiltyCounts = vulnerability_summarizer.get_repository_severity_counts(
@@ -551,7 +510,7 @@ def get_history():
     default = Dict({"current": None, "alltime": {}})
     history = storage.read_json(history_file, default=default)
 
-    print(str(history), sys.stderr)
+    log.debug(str(history))
 
     return history
 
@@ -579,7 +538,6 @@ def get_github_resolve_alert_status():
         repo.securityAdvisoriesEnabledStatus = alerts_enabled
 
         by_alert_status[status].append(repo)
-        time.sleep(0.2)
 
     storage.save_json(f"{today}/data/repositories.json", repositories)
     status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
@@ -621,7 +579,7 @@ def cli_task(task):
     elif task == "routes":
         build_route_data(today)
     else:
-        print("ERROR: Undefined task")
+        log.error("ERROR: Undefined task")
 
 
 @cli.command("audit")

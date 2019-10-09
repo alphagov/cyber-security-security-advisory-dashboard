@@ -25,8 +25,8 @@ def query(name, **kwargs):
         },
     )
 
-    log.error(f"Calling query {name}.graphql with token starting {api_token[0:4]}")
-    client = Client(transport=transport, fetch_schema_from_transport=True)
+    log.debug(f"Calling query {name}.graphql with token starting {api_token[0:4]}")
+    client = Client(transport=transport, fetch_schema_from_transport=False)
     queries = {}
     for filename in os.listdir("query"):
         with open(f"query/{filename}") as query_file:

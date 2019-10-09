@@ -17,14 +17,11 @@ shell:
 rebuild:
 	docker-compose build --pull
 
-assets:
-	docker-compose run dashboard sh assets.sh
-
 test:
 	docker-compose run dashboard ./test.sh
 
 audit:
-	docker-compose run dashboard python audit_lambda.py audit
+	docker-compose run dashboard python -m cProfile -o audit.profile audit_lambda.py audit
 
 task:
 	docker-compose run dashboard python audit_lambda.py run-task $(TASK)
