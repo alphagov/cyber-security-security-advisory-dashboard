@@ -3,6 +3,12 @@ query {
     repositories(first:{{nth}}{{", after:\""+after+"\"" if after}}) {
       nodes {
         name
+        databaseId
+        languages(first: 10){
+         nodes{
+           name
+         }
+        }
         owner {
           login
         }

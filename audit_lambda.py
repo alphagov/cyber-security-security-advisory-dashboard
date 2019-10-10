@@ -645,30 +645,30 @@ def cronable_vulnerability_audit():
     org = config.get_value("github_org")
     # todo - set maintenance mode
     get_github_repositories_and_classify_by_status(org, today)
-    get_github_activity_refs_audit(org, today)
-    get_github_activity_prs_audit(org, today)
-    get_dependabot_status(org, today)
-
-    if history.current:
-        update_github_advisories_status()
-    else:
-        get_github_resolve_alert_status()
-
-    # analyse raw data
-    analyse_repo_ownership(today)
-    analyse_pull_request_status(today)
-    analyse_activity_refs(today)
-    analyse_vulnerability_patch_recommendations(today)
-    analyse_team_membership(today)
-
-    # build page template data
-    build_route_data(today)
-
-    # update current audit in history
-    history.current = today
-    history.alltime[today] = "complete"
-    update_history(history)
-    # todo - set enabled mode
+    # get_github_activity_refs_audit(org, today)
+    # get_github_activity_prs_audit(org, today)
+    # get_dependabot_status(org, today)
+    #
+    # if history.current:
+    #     update_github_advisories_status()
+    # else:
+    #     get_github_resolve_alert_status()
+    #
+    # # analyse raw data
+    # analyse_repo_ownership(today)
+    # analyse_pull_request_status(today)
+    # analyse_activity_refs(today)
+    # analyse_vulnerability_patch_recommendations(today)
+    # analyse_team_membership(today)
+    #
+    # # build page template data
+    # build_route_data(today)
+    #
+    # # update current audit in history
+    # history.current = today
+    # history.alltime[today] = "complete"
+    # update_history(history)
+    # # todo - set enabled mode
     return True
 
 
