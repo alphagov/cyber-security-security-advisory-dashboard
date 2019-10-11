@@ -25,16 +25,16 @@ resources:
       password: ((docker_password))
       repository: ((docker_username))/sec_adv
 
-  # - name: cyber-security-infrastructure
-  #   icon: github-circle
-  #   type: git
-  #   source:
-  #     uri: https://github.com/alphagov/cyber-security-terraform
-  #     branch: master
-  #     paths:
-  #       - service/github_audit/account/103495720024/apply.tfvars
-  #       - service/github_audit/account/103495720024/backend.tfvars
-
+  - name: cyber-security-infrastructure
+    icon: github-circle
+    type: git
+    source:
+      uri: git@github.com:alphagov/cyber-security-terraform.git
+      branch: master
+      private_key: ((deploy_key))
+      paths:
+        - service/github_audit/account/103495720024/apply.tfvars
+        - service/github_audit/account/103495720024/backend.tfvars
 
 blocks:
   - &security-advisory-dashboard-git
@@ -63,74 +63,88 @@ blocks:
         - name: security-advisory-dashboard-git
 
 jobs:
+  - name: sec_adv_build_docker_image
+    plan:
+      - get: security-advisory-dashboard-git_docker
+        trigger: true
 
-- name: sec_adv_build_docker_image
-  plan:
-    - get: security-advisory-dashboard-git_docker
-      trigger: true
+      - put: sec_adv_docker
+        params:
+          build: security-advisory-dashboard-git_docker
+          tag_as_latest: true
 
-    - put: sec_adv_docker
-      params:
-        build: security-advisory-dashboard-git_docker
-        tag_as_latest: true
-
-- name: sec_adv_tests
-  plan:
-    - *security-advisory-dashboard-git
-    - *sec_adv_docker
-    - task: test
-      config:
-        <<: *audit_lambda_build
-        run:
-          path: /bin/bash
-          args:
-            - test.sh
-          dir: security-advisory-dashboard-git
-
-
-- name: sec_adv_pack
-  # Needs to create zip and output to s3
-  plan:
-    - *security-advisory-dashboard-git
-    - *sec_adv_docker
-    - task: pack
-      config:
-        <<: *audit_lambda_build
-        run:
-          path: /bin/bash
-          args:
-            - pack.sh
-          dir: security-advisory-dashboard-git
+  - name: sec_adv_tests
+    plan:
+      - *security-advisory-dashboard-git
+      - *sec_adv_docker
+      - task: test
+        config:
+          <<: *audit_lambda_build
+          run:
+            path: /bin/bash
+            args:
+              - test.sh
+            dir: security-advisory-dashboard-git
 
 
-- name: terraform_deploy
-  # Needs to read in from s3
-  plan:
+  - name: sec_adv_pack
+    # Needs to create zip and output to s3
+    plan:
+      - *security-advisory-dashboard-git
+      - *sec_adv_docker
+      - task: pack
+        config:
+          <<: *audit_lambda_build
+          run:
+            path: /bin/bash
+            args:
+              - pack.sh
+            dir: security-advisory-dashboard-git
 
-    - get: security-advisory-dashboard-git
-      trigger: true
-      passed:
-        - sec_adv_pack
-        - sec_adv_tests
 
-    - &sec_adv_docker
-      get: sec_adv_docker
-      trigger: true
-      passed:
-        - sec_adv_tests
+  - name: terraform_deploy
+    # Needs to read in from s3
+    plan:
 
-    # - get: cyber-security-infrastructure
-    #   trigger: true
+      - get: security-advisory-dashboard-git
+        trigger: true
+        passed:
+          - sec_adv_pack
+          - sec_adv_tests
 
-    - task: deploy
-      config:
-        <<: *audit_lambda_build
+      - &sec_adv_docker
+        get: sec_adv_docker
+        trigger: true
+        passed:
+          - sec_adv_tests
 
-        inputs:
-          - name: security-advisory-dashboard-git
+      - get: cyber-security-infrastructure
+        trigger: true
 
-        run:
-          path: /bin/terraform
-          args:
-            - validate
-          dir: security-advisory-dashboard-git/build/terraform
+      - task: deploy
+        config:
+          <<: *audit_lambda_build
+          params:
+            AWS_ACCESS_KEY_ID: ((aws_access_key_id))
+            AWS_SECRET_ACCESS_KEY: ((aws_secret_access_key))
+            AWS_REGION: eu-west-2
+
+
+          inputs:
+            - name: security-advisory-dashboard-git
+            - name: cyber-security-infrastructure
+
+          run:
+            path: bash
+            args:
+            - -exc
+            - |
+              cp cyber-security-infrastructure/service/github_audit/account/103495720024/apply.tfvars   security-advisory-dashboard-git/build/terraform/terraform.tfvars
+              cp cyber-security-infrastructure/service/github_audit/account/103495720024/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
+              cat cyber-security-infrastructure/service/github_audit/account/103495720024/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
+              cd security-advisory-dashboard-git
+              bash pack.sh
+              cd build/terraform
+              source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::103495720024:role/AdminRole' 'eu-west-2'
+              terraform init
+              terraform apply --auto-approve
