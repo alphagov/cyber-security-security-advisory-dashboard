@@ -5,52 +5,132 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
-      branch: remove_frontend
+      branch: master
 
-  - name: docker-image
+  - name: security-advisory-dashboard-git_docker
+    icon: github-circle
+    type: git
+    source:
+      uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
+      branch: master
+      paths:
+        - Dockerfile
+        - requirements.txt
+        - requirements-dev.txt
+
+  - name: sec_adv_docker
     type: docker-image
     source:
       username: ((docker_username))
       password: ((docker_password))
       repository: ((docker_username))/sec_adv
 
+  # - name: cyber-security-infrastructure
+  #   icon: github-circle
+  #   type: git
+  #   source:
+  #     uri: https://github.com/alphagov/cyber-security-terraform
+  #     branch: master
+  #     paths:
+  #       - service/github_audit/account/103495720024/apply.tfvars
+  #       - service/github_audit/account/103495720024/backend.tfvars
+
+
+blocks:
+  - &security-advisory-dashboard-git
+    get: security-advisory-dashboard-git
+    trigger: true
+
+  - &sec_adv_docker
+    get: sec_adv_docker
+    trigger: true
+    passed:
+      - sec_adv_build_docker_image
+
+  - config: &audit_lambda_build
+      params:
+        TOKEN: faketoken
+        GITHUB_ORG: fakeorg
+
+      platform: linux
+
+      image_resource:
+        type: docker-image
+        source:
+          repository: ((docker_username))/sec_adv
+
+      inputs:
+        - name: security-advisory-dashboard-git
+
 jobs:
 
 - name: sec_adv_build_docker_image
-  serial: true
-  build_logs_to_retain: 10
   plan:
-    - get: security-advisory-dashboard-git
+    - get: security-advisory-dashboard-git_docker
       trigger: true
 
-    - put: docker-image
+    - put: sec_adv_docker
       params:
-        build: security-advisory-dashboard-git
+        build: security-advisory-dashboard-git_docker
         tag_as_latest: true
 
 - name: sec_adv_tests
-  serial: true
   plan:
-    - get: docker-image
-      trigger: true
-
+    - *security-advisory-dashboard-git
+    - *sec_adv_docker
     - task: test
       config:
-        inputs:
-          - name: docker-image
-
-        params:
-          TOKEN: faketoken
-          GITHUB_ORG: fakeorg
-
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            repository: ((docker_username))/sec_adv
-
+        <<: *audit_lambda_build
         run:
           path: /bin/bash
           args:
             - test.sh
-          dir: ../../../usr/src/app
+          dir: security-advisory-dashboard-git
+
+
+- name: sec_adv_pack
+  # Needs to create zip and output to s3
+  plan:
+    - *security-advisory-dashboard-git
+    - *sec_adv_docker
+    - task: pack
+      config:
+        <<: *audit_lambda_build
+        run:
+          path: /bin/bash
+          args:
+            - pack.sh
+          dir: security-advisory-dashboard-git
+
+
+- name: terraform_deploy
+  # Needs to read in from s3
+  plan:
+
+    - get: security-advisory-dashboard-git
+      trigger: true
+      passed:
+        - sec_adv_pack
+        - sec_adv_tests
+
+    - &sec_adv_docker
+      get: sec_adv_docker
+      trigger: true
+      passed:
+        - sec_adv_tests
+
+    # - get: cyber-security-infrastructure
+    #   trigger: true
+
+    - task: deploy
+      config:
+        <<: *audit_lambda_build
+
+        inputs:
+          - name: security-advisory-dashboard-git
+
+        run:
+          path: /bin/terraform
+          args:
+            - validate
+          dir: security-advisory-dashboard-git/build/terraform
