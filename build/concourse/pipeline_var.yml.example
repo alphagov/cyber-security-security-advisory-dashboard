@@ -1,2 +1,5 @@
 docker_username: FOO
 docker_password: BAR
+deploy_key: |-
+  AAAAAAA
+  AAAAAAA
