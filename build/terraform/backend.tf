@@ -1,8 +1,9 @@
+# This file should be overwriten with the correct values
 terraform {
   backend "s3" {
-    bucket  = var.state_bucket
-    key     = var.state_key
-    region  = var.state_region
-    encrypt = var.state_encrypt
+    bucket  = ""
+    key     = ""
+    region  = ""
+    encrypt = true
   }
 }

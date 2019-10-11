@@ -5,52 +5,146 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
-      branch: remove_frontend
+      branch: master
 
-  - name: docker-image
+  - name: security-advisory-dashboard-git_docker
+    icon: github-circle
+    type: git
+    source:
+      uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
+      branch: master
+      paths:
+        - Dockerfile
+        - requirements.txt
+        - requirements-dev.txt
+
+  - name: sec_adv_docker
     type: docker-image
     source:
       username: ((docker_username))
       password: ((docker_password))
       repository: ((docker_username))/sec_adv
 
-jobs:
+  - name: cyber-security-infrastructure
+    icon: github-circle
+    type: git
+    source:
+      uri: git@github.com:alphagov/cyber-security-terraform.git
+      branch: master
+      private_key: ((deploy_key))
+      paths:
+        - service/github_audit/account/103495720024/apply.tfvars
+        - service/github_audit/account/103495720024/backend.tfvars
 
-- name: sec_adv_build_docker_image
-  serial: true
-  build_logs_to_retain: 10
-  plan:
-    - get: security-advisory-dashboard-git
-      trigger: true
+blocks:
+  - &security-advisory-dashboard-git
+    get: security-advisory-dashboard-git
+    trigger: true
 
-    - put: docker-image
+  - &sec_adv_docker
+    get: sec_adv_docker
+    trigger: true
+    passed:
+      - sec_adv_build_docker_image
+
+  - config: &audit_lambda_build
       params:
-        build: security-advisory-dashboard-git
-        tag_as_latest: true
+        TOKEN: faketoken
+        GITHUB_ORG: fakeorg
 
-- name: sec_adv_tests
-  serial: true
-  plan:
-    - get: docker-image
-      trigger: true
+      platform: linux
 
-    - task: test
-      config:
-        inputs:
-          - name: docker-image
+      image_resource:
+        type: docker-image
+        source:
+          repository: ((docker_username))/sec_adv
 
+      inputs:
+        - name: security-advisory-dashboard-git
+
+jobs:
+  - name: sec_adv_build_docker_image
+    plan:
+      - get: security-advisory-dashboard-git_docker
+        trigger: true
+
+      - put: sec_adv_docker
         params:
-          TOKEN: faketoken
-          GITHUB_ORG: fakeorg
+          build: security-advisory-dashboard-git_docker
+          tag_as_latest: true
 
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            repository: ((docker_username))/sec_adv
+  - name: sec_adv_tests
+    plan:
+      - *security-advisory-dashboard-git
+      - *sec_adv_docker
+      - task: test
+        config:
+          <<: *audit_lambda_build
+          run:
+            path: /bin/bash
+            args:
+              - test.sh
+            dir: security-advisory-dashboard-git
 
-        run:
-          path: /bin/bash
-          args:
-            - test.sh
-          dir: ../../../usr/src/app
+
+  - name: sec_adv_pack
+    # Needs to create zip and output to s3
+    plan:
+      - *security-advisory-dashboard-git
+      - *sec_adv_docker
+      - task: pack
+        config:
+          <<: *audit_lambda_build
+          run:
+            path: /bin/bash
+            args:
+              - pack.sh
+            dir: security-advisory-dashboard-git
+
+
+  - name: terraform_deploy
+    # Needs to read in from s3
+    plan:
+
+      - get: security-advisory-dashboard-git
+        trigger: true
+        passed:
+          - sec_adv_pack
+          - sec_adv_tests
+
+      - &sec_adv_docker
+        get: sec_adv_docker
+        trigger: true
+        passed:
+          - sec_adv_tests
+
+      - get: cyber-security-infrastructure
+        trigger: true
+
+      - task: deploy
+        config:
+          <<: *audit_lambda_build
+          params:
+            AWS_ACCESS_KEY_ID: ((aws_access_key_id))
+            AWS_SECRET_ACCESS_KEY: ((aws_secret_access_key))
+            AWS_REGION: eu-west-2
+
+
+          inputs:
+            - name: security-advisory-dashboard-git
+            - name: cyber-security-infrastructure
+
+          run:
+            path: bash
+            args:
+            - -exc
+            - |
+              cp cyber-security-infrastructure/service/github_audit/account/103495720024/apply.tfvars   security-advisory-dashboard-git/build/terraform/terraform.tfvars
+              cp cyber-security-infrastructure/service/github_audit/account/103495720024/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
+              cat cyber-security-infrastructure/service/github_audit/account/103495720024/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
+              cd security-advisory-dashboard-git
+              bash pack.sh
+              cd build/terraform
+              source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::103495720024:role/AdminRole' 'eu-west-2'
+              terraform init
+              terraform apply --auto-approve
