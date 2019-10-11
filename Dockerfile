@@ -1,6 +1,6 @@
 FROM python:3
 WORKDIR /usr/src/app
-RUN apt-get update && apt-get install -y zip wget awscli
+RUN apt-get update && apt-get install -y zip wget awscli jq
 
 RUN wget https://releases.hashicorp.com/terraform/0.12.10/terraform_0.12.10_linux_amd64.zip &&\
         wget https://releases.hashicorp.com/terraform/0.12.10/terraform_0.12.10_SHA256SUMS &&\
