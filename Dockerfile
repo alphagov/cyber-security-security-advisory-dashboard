@@ -19,5 +19,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements-dev.txt
 RUN pip install --no-cache-dir -r requirements.txt
 ENV PYTHONDONTWRITEBYTECODE=1
+COPY sts-assume-role.sh /usr/local/bin/sts-assume-role.sh
 
 COPY . .
