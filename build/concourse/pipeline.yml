@@ -21,10 +21,8 @@ resources:
   - name: sec_adv_docker
     type: docker-image
     source:
-      username: ((docker_username))
-      password: ((docker_password))
-      repository: ((docker_username))/sec_adv
-
+      repository: ((ecs_repo))
+  
   - name: cyber-security-infrastructure
     icon: github-circle
     type: git
@@ -57,7 +55,7 @@ blocks:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker_username))/sec_adv
+          repository: ((ecs_repo))
 
       inputs:
         - name: security-advisory-dashboard-git
@@ -125,8 +123,6 @@ jobs:
         config:
           <<: *audit_lambda_build
           params:
-            AWS_ACCESS_KEY_ID: ((aws_access_key_id))
-            AWS_SECRET_ACCESS_KEY: ((aws_secret_access_key))
             AWS_REGION: eu-west-2
 
 
