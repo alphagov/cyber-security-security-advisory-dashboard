@@ -67,12 +67,11 @@ def update_github_advisories_status():
     today_repositories = storage.read_json(f"{today}/data/repositories.json")
     current_repositories = storage.read_json(f"{current}/data/repositories.json")
 
-    for state in today_repositories.keys():
-        log.debug(f"{state} repos: {len(today_repositories[state])}")
+    log.debug(f"{state} repos: {len(today_repositories[state])}")
 
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            for r in executor.map(get_adv_status, today_repositories[state]):
-                by_alert_status[r.status].append(r)
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        for r in executor.map(get_adv_status, today_repositories):
+            by_alert_status[r.status].append(r)
 
     storage.save_json(f"{today}/data/repositories.json", today_repositories)
     status = storage.save_json(f"{today}/data/alert_status.json", by_alert_status)
@@ -83,7 +82,7 @@ def update_history(history):
     return storage.save_json("all/data/history.json", history)
 
 
-def get_github_repositories_and_classify_by_status(org, today):
+def get_github_repositories(org, today):
     cursor = None
     last = False
     repository_list = []
@@ -96,9 +95,8 @@ def get_github_repositories_and_classify_by_status(org, today):
         last = not page.organization.repositories.pageInfo.hasNextPage
         cursor = page.organization.repositories.pageInfo.endCursor
 
-    repositories_by_status = repository_summarizer.group_by_status(repository_list)
     save_to = f"{today}/data/repositories.json"
-    updated = storage.save_json(save_to, repositories_by_status)
+    updated = storage.save_json(save_to, repository_list)
 
 
 def get_github_activity_refs_audit(org, today):
@@ -160,7 +158,7 @@ def get_dependabot_status(org, today):
     storage.save_json(f"{today}/data/dependabot_status.json", output)
 
     repositories = storage.read_json(f"{today}/data/repositories.json")
-    for repo in repositories["public"]:
+    for repo in repositories:
         for status, dbot_repositories in dependabot_status.items():
             for dbot_repo in dbot_repositories:
                 if dbot_repo.attributes.name == repo.name:
@@ -173,7 +171,7 @@ def analyse_repo_ownership(today):
     list_owners = defaultdict(list)
     list_topics = defaultdict(list)
     repositories = storage.read_json(f"{today}/data/repositories.json")
-    for repo in repositories["public"]:
+    for repo in repositories:
 
         if repo.repositoryTopics.edges:
             for topics in repo.repositoryTopics.edges:
@@ -251,23 +249,21 @@ def analyse_activity_refs(today):
             currency_delta = now - last_commit
             currency_days = currency_delta.days
 
-            for status, repo_list in repositories.items():
-                if status in ["public", "private"]:
-                    for repo in repo_list:
-                        if repo.name == repo_name:
-                            repo.recentCommitDaysAgo = currency_days
-                            repo.averageCommitFrequency = average_days
-                            repo.isActive = currency_days < 365 and average_days < 180
+            for repo in repositories:
+                if repo.name == repo_name:
+                    repo.recentCommitDaysAgo = currency_days
+                    repo.averageCommitFrequency = average_days
+                    repo.isActive = currency_days < 365 and average_days < 180
 
-                            currency_band = "older"
-                            if currency_days <= 28:
-                                currency_band = "within a month"
-                            elif currency_days <= 91:
-                                currency_band = "within a quarter"
-                            elif currency_days <= 365:
-                                currency_band = "within a year"
+                    currency_band = "older"
+                    if currency_days <= 28:
+                        currency_band = "within a month"
+                    elif currency_days <= 91:
+                        currency_band = "within a quarter"
+                    elif currency_days <= 365:
+                        currency_band = "within a year"
 
-                            repo.currencyBand = currency_band
+                    repo.currencyBand = currency_band
 
     updated = storage.save_json(f"{today}/data/repositories.json", repositories)
 
@@ -283,21 +279,19 @@ def analyse_team_membership(today):
     with open("teams.json", "r") as teams_file:
         teams = json.loads(teams_file.read())
 
-    for status, repo_list in repositories.items():
-        for repo in repo_list:
-            repo_team = "unknown"
-            repo_topics = []
-            if repo.repositoryTopics:
-                repo_topics = [
-                    topic_edge.node.topic.name
-                    for topic_edge in repo.repositoryTopics.edges
-                ]
+    for repo in repositories:
+        repo_team = "unknown"
+        repo_topics = []
+        if repo.repositoryTopics:
+            repo_topics = [
+                topic_edge.node.topic.name for topic_edge in repo.repositoryTopics.edges
+            ]
 
-            for team, team_topics in teams.items():
-                for topic in team_topics:
-                    if topic in repo_topics:
-                        repo_team = team
-            repo.team = repo_team
+        for team, team_topics in teams.items():
+            for topic in team_topics:
+                if topic in repo_topics:
+                    repo_team = team
+        repo.team = repo_team
 
     updated = storage.save_json(f"{today}/data/repositories.json", repositories)
 
@@ -314,7 +308,7 @@ def analyse_vulnerability_patch_recommendations(today):
         f"{today}/data/vulnerable_by_severity.json", vulnerable_by_severity
     )
 
-    for repo in repositories.public:
+    for repo in repositories:
         for severity, vuln_repos in vulnerable_by_severity.items():
             for vuln_repo in vuln_repos:
                 if repo.name == vuln_repo.name:
@@ -352,14 +346,14 @@ def build_route_data(today):
 
 def route_data_overview_monitoring_status(today):
     monitoring_disabled = storage.read_json(f"{today}/data/alert_status.json")
-    monitoring = storage.read_json(f"{today}/data/repositories.json")
+    repositories = storage.read_json(f"{today}/data/repositories.json")
 
     monitoring_alert = len(monitoring_disabled["disabled"])
 
     dependabot_count = 0
     advisory_count = 0
 
-    for repo in monitoring["public"]:
+    for repo in repositories:
         dependabot_status = repo.dependabotEnabledStatus
         advisory_status = repo.securityAdvisoriesEnabledStatus
 
@@ -463,16 +457,14 @@ def route_data_overview_vulnerable_repositories(today):
 
 
 def route_data_overview_activity(today):
-    repositories_by_status = storage.read_json(f"{today}/data/repositories.json")
+    repositories = storage.read_json(f"{today}/data/repositories.json")
     counts = defaultdict(int)
     repositories_by_activity = defaultdict(list)
-    for status, repo_list in repositories_by_status.items():
-        if status in ["public", "private"]:
-            for repo in repo_list:
-                if "recentCommitDaysAgo" in repo:
-                    currency = repo.currencyBand
-                    counts[currency] += 1
-                    repositories_by_activity[currency].append(repo)
+    for repo in repositories:
+        if "recentCommitDaysAgo" in repo:
+            currency = repo.currencyBand
+            counts[currency] += 1
+            repositories_by_activity[currency].append(repo)
 
     bands = ["within a month", "within a quarter", "within a year", "older"]
     template_data = {
@@ -520,7 +512,7 @@ def get_github_resolve_alert_status():
     by_alert_status = defaultdict(list)
 
     repositories = storage.read_json(f"{today}/data/repositories.json")
-    for repo in repositories["public"]:
+    for repo in repositories:
         response = github_rest_client.get(
             f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts"
         )
@@ -557,7 +549,7 @@ def cli_task(task):
     history = get_history()
 
     if task == "repository-status":
-        get_github_repositories_and_classify_by_status(org, today)
+        get_github_repositories(org, today)
     elif task == "get-activity":
         get_github_activity_refs_audit(org, today)
         get_github_activity_prs_audit(org, today)
@@ -602,7 +594,7 @@ def cronable_vulnerability_audit():
     # retrieve data from apis
     org = config.get_value("github_org")
     # todo - set maintenance mode
-    get_github_repositories_and_classify_by_status(org, today)
+    get_github_repositories(org, today)
     get_github_activity_refs_audit(org, today)
     get_github_activity_prs_audit(org, today)
     get_dependabot_status(org, today)

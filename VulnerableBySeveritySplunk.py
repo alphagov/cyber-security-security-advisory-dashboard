@@ -10,10 +10,9 @@ class VulnerableBySeveritySplunk:
     def splunk_format(self):
         """Format for splunk: Split out multivalue fields into separate
         events. One entry per possible combination."""
-        for _k, level in self.data.items():
-            for project in level:
-                for p in Project(project).splunk_format():
-                    yield p
+        for project in self.data:
+            for p in Project(project).splunk_format():
+                yield p
 
 
 class Project(object):
