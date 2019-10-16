@@ -1,7 +1,7 @@
 from addict import Dict
 
 
-STATUSES = ["public", "private", "archived", "disabled"]
+STATUSES = ["active", "archived", "disabled"]
 
 
 def get_status(repo):
@@ -9,10 +9,8 @@ def get_status(repo):
         status = "archived"
     elif repo.isDisabled:
         status = "disabled"
-    elif repo.isPrivate:
-        status = "private"
     else:
-        status = "public"
+        status = "active"
 
     return status
 
