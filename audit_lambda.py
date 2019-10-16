@@ -189,7 +189,7 @@ def analyse_pull_request_status(today):
     now = arrow.utcnow()
     pull_requests = storage.read_json(f"{today}/data/activity_prs.json")
     repositories = storage.read_json(f"{today}/data/repositories.json")
-    for repo in repositories.active:
+    for repo in repositories["active"]:
 
         repo_prs = pull_requests[repo.name]
 
@@ -304,7 +304,7 @@ def analyse_vulnerability_patch_recommendations(today):
     repositories = storage.read_json(f"{today}/data/repositories.json")
 
     vulnerable_list = [
-        node for node in repositories.active if node.vulnerabilityAlerts.edges
+        node for node in repositories["active"] if node.vulnerabilityAlerts.edges
     ]
     vulnerable_by_severity = vulnerability_summarizer.group_by_severity(vulnerable_list)
 
@@ -330,7 +330,7 @@ def analyse_vulnerability_patch_recommendations(today):
     repositories = storage.read_json(f"{today}/data/repositories.json")
 
     vulnerable_list = [
-        node for node in repositories.active if node.vulnerabilityAlerts.edges
+        node for node in repositories["active"] if node.vulnerabilityAlerts.edges
     ]
     vulnerable_by_severity = vulnerability_summarizer.group_by_severity(vulnerable_list)
 
