@@ -6,7 +6,7 @@ This is a tool developed within the Cyber Security tooling team to monitor estat
 
 #### Architecture
 ```
-* A [Lambdas](https://aws.amazon.com/lambda/) which connect to GitHub and Splunk
+* [Lambdas](https://aws.amazon.com/lambda/) which connect to GitHub and Splunk
 ```
 ### Where is it?
 
@@ -94,7 +94,7 @@ To create an environment follow the instructions in the readme.
 
 ### How does it work?
 
-The infrastructure is terraformed from the terraform in the terraform directory.
+The infrastructure is created using Terraform from the `build/terraform` directory.
 
 #### The audit process
 
