@@ -11,7 +11,6 @@ resource "aws_lambda_function" "lambda" {
   runtime          = "${var.lambda_runtime}"
   memory_size      = "${var.lambda_memory}"
   timeout          = "${var.lambda_timeout}"
-  kms_key_arn      = "${aws_kms_key.prod_kms_key.arn}"
 
 
   tags             = "${map(
@@ -22,7 +21,7 @@ resource "aws_lambda_function" "lambda" {
 
   environment {
     variables = {
-      github_key: "${data.aws_kms_secrets.example.plaintext["github_key"]}" 
+      github_key: "${data.aws_kms_secrets.github_key.plaintext["github_key"]}"
     }
   }
 }
@@ -74,7 +73,7 @@ resource "aws_iam_policy" "lambda-iam_policy" {
               "ssm:GetParameters"
             ],
             "Resource": [
-                "arn:aws:ssm:${var.region}:${var.aws_account_id}:key/alias/security-advisories-prod-kms" 
+                "arn:aws:ssm:${var.region}:${var.aws_account_id}:key/alias/security-advisories-prod-kms"
             ]
         }
     ]
