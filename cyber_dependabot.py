@@ -3,6 +3,7 @@ import datetime
 import logging
 from multiprocessing import Pool
 from collections import Counter
+from typing import Iterator, Callable
 
 from addict import Dict
 import requests
@@ -30,7 +31,7 @@ logging.basicConfig(level=logging.INFO)
 ROOT_URL = "https://api.github.com"
 
 
-def pmap(f, collection, size=10):
+def pmap(f: Callable, collection: Iterator, size: int = 10) -> list:
     """
     Applies `f` in parallel over `collection`.
     Pool `size` has a sensible default of 10.
@@ -39,7 +40,7 @@ def pmap(f, collection, size=10):
         return p.map(f, collection)
 
 
-def put(path, data=None):
+def put(path: str) -> requests.models.Response:
     """
     Adapter of `requests.put()`, supplying github credentials.
     """
@@ -50,7 +51,7 @@ def put(path, data=None):
     return requests.put(f"{ROOT_URL}{path}", headers=headers)
 
 
-def enable_alert(repo):
+def enable_alert(repo: Dict) -> int:
     """
     Enable vulnerability alerts on a single repo.
     """
@@ -62,7 +63,7 @@ def enable_alert(repo):
         return r.status_code
 
 
-def enable_vulnerability_alerts():
+def enable_vulnerability_alerts() -> None:
     """
     Enables vulnerability alerts on every repo in repositories.json.
     """
