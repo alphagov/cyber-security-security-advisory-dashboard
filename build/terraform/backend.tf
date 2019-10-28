@@ -1,4 +1,9 @@
+# This file should be overwriten with the correct values
 terraform {
-  required_version = "= 0.11.14"
-  backend "s3" {}
+  backend "s3" {
+    bucket  = ""
+    key     = ""
+    region  = ""
+    encrypt = true
+  }
 }

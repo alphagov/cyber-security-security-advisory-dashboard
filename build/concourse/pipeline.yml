@@ -1,142 +1,146 @@
+---
 resources:
-- name: security-advisory-dashboard-git
-  type: git
-  source:
-    branch: master
-    private_key: ((security-advisory-dashboard-read-only-ssh-private-key))
-    uri: git@github.com:alphagov/cyber-security-security-advisory-dashboard.git
-    ignored_paths: [requirements.txt, requirements-dev.txt]
+  - name: security-advisory-dashboard-git
+    icon: github-circle
+    type: git
+    source:
+      uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
+      branch: master
 
-- name: security-advisory-dashboard-libs-git
-  type: git
-  source:
-    branch: master
-    private_key: ((security-advisory-dashboard-read-only-ssh-private-key))
-    uri: git@github.com:alphagov/cyber-security-security-advisory-dashboard.git
-    paths: [requirements.txt]
+  - name: security-advisory-dashboard-git_docker
+    icon: github-circle
+    type: git
+    source:
+      uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
+      branch: master
+      paths:
+        - Dockerfile
+        - requirements.txt
+        - requirements-dev.txt
 
-- name: team-manual-build-image
-  type: docker-image
-  source:
-    repository: ((readonly_private_ecr_repo_url))
-    tag: team-manual-build-latest
+  - name: sec_adv_docker
+    type: docker-image
+    source:
+      repository: ((ecs_repo))
+  
+  - name: cyber-security-infrastructure
+    icon: github-circle
+    type: git
+    source:
+      uri: git@github.com:alphagov/cyber-security-terraform.git
+      branch: master
+      private_key: ((deploy_key))
+      paths:
+        - service/github_audit/account/103495720024/apply.tfvars
+        - service/github_audit/account/103495720024/backend.tfvars
 
-- name: team-manual-hosting-function-build-image
-  type: docker-image
-  source:
-    repository: ((readonly_private_ecr_repo_url))
-    tag: team-manual-hosting-function-build-latest
-
-jobs:
-- name: build-team-manual-image
-  build_logs_to_retain: 10
-  serial: true
-  plan:
-    - get: cyber-security-team-manual-libs-git
-      trigger: true
-    - get: team-manual-hosting-function-git
-    - put: team-manual-build-image
-      params:
-        dockerfile: team-manual-hosting-function-git/terraform/team-manual-image/Dockerfile
-        build: cyber-security-team-manual-libs-git
-
-- name: build-team-manual-hosting-function-image
-  build_logs_to_retain: 10
-  serial: true
-  plan:
-    - get: team-manual-hosting-function-libs-git
-      trigger: true
-    - get: team-manual-hosting-function-git
-    - put: team-manual-hosting-function-build-image
-      params:
-        dockerfile: team-manual-hosting-function-git/terraform/faas-team-manual-image/Dockerfile
-        build: team-manual-hosting-function-git
-
-- name: build-and-deploy-team-manual-to-lambda
-  serial: true
-  plan:
-  - get: team-manual-hosting-function-git
-    trigger: true
-  - get: cyber-security-team-manual-git
+blocks:
+  - &security-advisory-dashboard-git
+    get: security-advisory-dashboard-git
     trigger: true
 
-  - get: team-manual-build-image
-    passed: [build-team-manual-image]
+  - &sec_adv_docker
+    get: sec_adv_docker
+    trigger: true
+    passed:
+      - sec_adv_build_docker_image
 
-  - get: team-manual-hosting-function-build-image
-    passed: [build-team-manual-hosting-function-image]
+  - config: &audit_lambda_build
+      params:
+        TOKEN: faketoken
+        GITHUB_ORG: fakeorg
 
-  - task: build-team-manual-static-html
-    image: team-manual-build-image
-    config:
       platform: linux
-      run:
-        path: bash
-        args:
-        - -c
-        - |
-          set -ueo pipefail
-          echo "Building the Static HTML for the Team Manual"
-          cp -R cyber-security-team-manual-git/* cyber-security-team-manual-build/
-          cd cyber-security-team-manual-build
-          bundle exec middleman build
 
-      inputs:
-        - name: cyber-security-team-manual-git
-      outputs:
-        - name: cyber-security-team-manual-build
-
-  - task: build-team-manual-lambda-function
-    image: team-manual-hosting-function-build-image
-    config:
-      platform: linux
-      run:
-        path: bash
-        args:
-        - -c
-        - |
-          set -ueo pipefail
-          echo "Building the Python Lambda Function to Host the Team Manual"
-          cp -R team-manual-hosting-function-git/* team-manual-lambda-function-builddir/
-          cp -R cyber-security-team-manual-build/build/* team-manual-lambda-function-builddir/firebreakq1faas/static/
-          cd team-manual-lambda-function-builddir
-          make zip
-
-      inputs:
-        - name: cyber-security-team-manual-build
-        - name: team-manual-hosting-function-git
-      outputs:
-        - name: team-manual-lambda-function-builddir
-
-  - task: apply-terraform
-    timeout: 15m
-    config:
-      platform: linux
       image_resource:
         type: docker-image
         source:
-          repository: gdsre/aws-terraform
-          tag: 18.04-0.11.13
-      params:
-        ENV: demo
-        ACCOUNT_ID: '489877524855'
-        TF_VAR_oidc_client_id: ((oidc_client_id))
-        TF_VAR_oidc_client_secret: ((oidc_client_secret))
-        AWS_ACCESS_KEY_ID: ((demo-deploy-user-access-key))
-        AWS_SECRET_ACCESS_KEY: ((demo-deploy-user-secret-access-key))
-        AWS_DEFAULT_REGION: 'eu-west-2'
+          repository: ((ecs_repo))
 
-      run:
-        path: sh
-        args:
-          - -c
-          - |
-            set -ue
-            # Show what command terraform is running
-            set -x
-            ROOT_DIR=$(pwd)
-            cd team-manual-lambda-function-builddir/terraform/firebreak-q1-event-normalisation/
-            terraform init
-            terraform apply -auto-approve
       inputs:
-        - name: team-manual-lambda-function-builddir
+        - name: security-advisory-dashboard-git
+
+jobs:
+  - name: sec_adv_build_docker_image
+    plan:
+      - get: security-advisory-dashboard-git_docker
+        trigger: true
+
+      - put: sec_adv_docker
+        params:
+          build: security-advisory-dashboard-git_docker
+          tag_as_latest: true
+
+  - name: sec_adv_tests
+    plan:
+      - *security-advisory-dashboard-git
+      - *sec_adv_docker
+      - task: test
+        config:
+          <<: *audit_lambda_build
+          run:
+            path: /bin/bash
+            args:
+              - test.sh
+            dir: security-advisory-dashboard-git
+
+
+  - name: sec_adv_pack
+    # Needs to create zip and output to s3
+    plan:
+      - *security-advisory-dashboard-git
+      - *sec_adv_docker
+      - task: pack
+        config:
+          <<: *audit_lambda_build
+          run:
+            path: /bin/bash
+            args:
+              - pack.sh
+            dir: security-advisory-dashboard-git
+
+
+  - name: terraform_deploy
+    # Needs to read in from s3
+    plan:
+
+      - get: security-advisory-dashboard-git
+        trigger: true
+        passed:
+          - sec_adv_pack
+          - sec_adv_tests
+
+      - &sec_adv_docker
+        get: sec_adv_docker
+        trigger: true
+        passed:
+          - sec_adv_tests
+
+      - get: cyber-security-infrastructure
+        trigger: true
+
+      - task: deploy
+        config:
+          <<: *audit_lambda_build
+          params:
+            AWS_REGION: eu-west-2
+
+
+          inputs:
+            - name: security-advisory-dashboard-git
+            - name: cyber-security-infrastructure
+
+          run:
+            path: bash
+            args:
+            - -exc
+            - |
+              cp cyber-security-infrastructure/service/github_audit/account/103495720024/apply.tfvars   security-advisory-dashboard-git/build/terraform/terraform.tfvars
+              cp cyber-security-infrastructure/service/github_audit/account/103495720024/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
+              cat cyber-security-infrastructure/service/github_audit/account/103495720024/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
+              cd security-advisory-dashboard-git
+              bash pack.sh
+              cd build/terraform
+              source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::103495720024:role/AdminRole' 'eu-west-2'
+              terraform init
+              terraform apply --auto-approve

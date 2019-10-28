@@ -6,14 +6,13 @@ import json
 import config
 
 
-ROOT_URL = "https://api.github.com"
-HEADERS = {
-    "Authorization": "token %s" % config.get_value("token"),
-    "Accept": "application/vnd.github.dorian-preview+json",
-}
-
-
 def get(path):
-    url = ROOT_URL + path
-    response = requests.get(url, headers=HEADERS)
+    root_url = "https://api.github.com"
+    headers = {
+        "Authorization": "token %s" % config.get_value("token"),
+        "Accept": "application/vnd.github.dorian-preview+json",
+    }
+
+    url = root_url + path
+    response = requests.get(url, headers=headers)
     return response

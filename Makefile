@@ -15,19 +15,19 @@ shell:
 	docker-compose run dashboard bash
 
 rebuild:
-	docker-compose build
-
-assets:
-	docker-compose run dashboard sh assets.sh
+	docker-compose build --pull
 
 test:
-	docker-compose run dashboard sh test.sh
+	docker-compose run dashboard ./test.sh
 
 audit:
-	docker-compose run dashboard python audit_lambda.py audit
+	docker-compose run dashboard python -m cProfile -o audit.profile audit_lambda.py audit
 
 task:
 	docker-compose run dashboard python audit_lambda.py run-task $(TASK)
+
+send_to_splunk:
+	docker-compose run dashboard python audit_lambda.py send_to_splunk
 
 # DEPLOY
 reset:

@@ -15,7 +15,9 @@ docker-compose --version
 from the GitHub URL.
 
  - Set a TOKEN env var containing a read-only personal access token for a GitHub org
-admin user.
+admin user. The permissions needed for the token are:
+
+`repo`, `read:org`, `read:public_key`, `read:repo_hook`, `read:user`, `user:email`
 
 (Alternatively the token can be retrieved from SSM if the make command
 is run via aws-vault or similar to set AWS credentials.)
@@ -113,3 +115,6 @@ Then you can run
 ```apply
 terraform apply -var-file=path/to/apply.tfvars
 ```
+
+### Find vars at
+https://github.com/alphagov/cyber-security-terraform/pull/28/files

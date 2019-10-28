@@ -22,11 +22,10 @@ resource "aws_s3_bucket" "s3_storage" {
 
 data "template_file" "s3_storage_policy" {
   template = "${file("${path.module}/json/s3_storage/policy.json")}"
-  vars {
+  vars = {
     bucket_arn            = "${aws_s3_bucket.s3_storage.arn}"
     account_id            = "${data.aws_caller_identity.current.account_id}"
     audit_lambda_arn      = "${aws_iam_role.github_audit_lambda_exec_role.arn}"
-    interface_lambda_arn  = "${aws_iam_role.github_interface_lambda_exec_role.arn}"
   }
 }
 

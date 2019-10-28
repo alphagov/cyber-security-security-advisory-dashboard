@@ -20,3 +20,6 @@ build/*.zip
 static
 output/*
 !output/README.md
+htmlcov
+.coverage
+pipeline_vars.yml
