@@ -20,8 +20,6 @@
 data "aws_kms_secrets" "github_key" { # decrypts the key
     secret {
         name = "github_key"
-        payload = "" # from aws cli kms outpu
+        payload = "AQICAHhe01flQwZvqnxcRcriXcTn8QzO9B5PrggjEtFLxnGsSwGhx9NZkLHKsfr4AaF0MplCAAAAiDCBhQYJKoZIhvcNAQcGoHgwdgIBADBxBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDIWO4VVrz5kCj2FUNwIBEIBE7mON+d6P+9Jo3ogiMXHpGM/l64jU3IAqpXE2pE5Fn/Dmg2Tdavzpmlw3mDnSkdICweIW7Qc9cw2t4QjfPGcg6ttBTPM=" # from aws cli kms outpu
     }
 }
-
-
