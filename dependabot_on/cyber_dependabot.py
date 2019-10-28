@@ -46,10 +46,10 @@ def enable_vulnerability_alerts():
     Enables vulnerability alerts on every repo in repositories.json.
     """
     today = datetime.date.today().isoformat()
-    with open(f"../output/{today}/data/repositories.json", "r") as f:
+    with open(f"output/{today}/data/repositories.json", "r") as f:
         repos = json.load(f)
 
-    repos = [Dict(r) for v in repos.values() for r in v][:10]
+    repos = [Dict(r) for v in repos.values() for r in v]
     logging.info(f"Starting processing {len(repos)} repos...")
     results = pmap(enable_alert, repos)
     logging.info(Counter(results))
