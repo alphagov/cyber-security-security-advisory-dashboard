@@ -10,6 +10,8 @@ import requests
 import storage
 import config
 
+DRY_RUN = os.environ.get("DRY_RUN") == "true"
+
 logging.basicConfig(
     format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
     level=logging.INFO,
@@ -52,9 +54,12 @@ def enable_alert(repo):
     """
     Enable vulnerability alerts on a single repo.
     """
-    r = put(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
-    logging.info(f"repo: {repo.name}, PUT: {r.status_code}, {r.text}")
-    return r.status_code
+    if DRY_RUN:
+        return 200
+    else:
+        r = put(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
+        logging.info(f"repo: {repo.name}, PUT: {r.status_code}, {r.text}")
+        return r.status_code
 
 
 def enable_vulnerability_alerts():
