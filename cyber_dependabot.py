@@ -1,12 +1,28 @@
 import os
 import datetime
-import json
 import logging
 from multiprocessing import Pool
 from collections import Counter
 
 from addict import Dict
 import requests
+
+import storage
+import config
+
+logging.basicConfig(
+    format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
+    level=logging.INFO,
+)
+
+settings = config.load()
+
+if settings.aws_region:
+    storage.set_region(config.get_value("aws_region"))
+
+if settings.storage:
+    storage_options = config.get_value("storage")
+    storage.set_options(storage_options)
 
 logging.basicConfig(level=logging.INFO)
 ROOT_URL = "https://api.github.com"
@@ -46,8 +62,7 @@ def enable_vulnerability_alerts():
     Enables vulnerability alerts on every repo in repositories.json.
     """
     today = datetime.date.today().isoformat()
-    with open(f"output/{today}/data/repositories.json", "r") as f:
-        repos = json.load(f)
+    repos = storage.read_json(f"{today}/data/repositories.json")
 
     repos = [Dict(r) for v in repos.values() for r in v]
     logging.info(f"Starting processing {len(repos)} repos...")
