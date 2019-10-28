@@ -11,25 +11,6 @@ import requests
 import storage
 import config
 
-DRY_RUN = os.environ.get("DRY_RUN") == "true"
-
-logging.basicConfig(
-    format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
-    level=logging.INFO,
-)
-
-settings = config.load()
-
-if settings.aws_region:
-    storage.set_region(config.get_value("aws_region"))
-
-if settings.storage:
-    storage_options = config.get_value("storage")
-    storage.set_options(storage_options)
-
-logging.basicConfig(level=logging.INFO)
-ROOT_URL = "https://api.github.com"
-
 
 def pmap(f: Callable, collection: Iterator, size: int = 10) -> list:
     """
@@ -44,6 +25,7 @@ def put(path: str) -> requests.models.Response:
     """
     Adapter of `requests.put()`, supplying github credentials.
     """
+    ROOT_URL = "https://api.github.com"
     headers = {
         "Authorization": f'token {os.environ.get("TOKEN", "")}',
         "Accept": "application/vnd.github.dorian-preview+json",
@@ -55,7 +37,8 @@ def enable_alert(repo: Dict) -> int:
     """
     Enable vulnerability alerts on a single repo.
     """
-    if DRY_RUN:
+
+    if os.environ.get("DRY_RUN") == "true":
         return 200
     else:
         r = put(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
@@ -76,4 +59,22 @@ def enable_vulnerability_alerts() -> None:
     logging.info(Counter(results))
 
 
-enable_vulnerability_alerts()
+if __name__ == "__main__":
+
+    logging.basicConfig(
+        format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
+        level=logging.INFO,
+    )
+
+    settings = config.load()
+
+    if settings.aws_region:
+        storage.set_region(config.get_value("aws_region"))
+
+    if settings.storage:
+        storage_options = config.get_value("storage")
+        storage.set_options(storage_options)
+
+    logging.basicConfig(level=logging.INFO)
+
+    enable_vulnerability_alerts()
