@@ -1,4 +1,5 @@
 variable "region" {
+  type = "string"
   default  = "eu-west-2"
 }
 
@@ -7,11 +8,11 @@ variable "aws_account_id" {
 }
 
 # TODO
-variable "lambda_zip_location" { 
+variable "lambda_zip_location" {
   default = "function.zip"
 }
 
-variable "lambda_functionname" { 
+variable "lambda_functionname" {
   default = "cyber_dependabot"
 }
 
@@ -44,4 +45,13 @@ variable "lambda_envvars" {
 variable "tags" {
   type = "map"
   default = {}
+}
+
+variable "github_org" {
+  description = "GitHub organisation short-name"
+  type        = "string"
+}
+
+variable "bucket_prefix" {
+  type = "string"
 }
