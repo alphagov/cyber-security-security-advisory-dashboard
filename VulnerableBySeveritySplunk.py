@@ -109,6 +109,10 @@ class VulnerabilityAlert(object):
                 "vulnerableManifestPath": self.data["vulnerableManifestPath"],
                 "vulnerableRequirements": self.data["vulnerableRequirements"],
                 "summary": self.data["securityAdvisory"]["summary"],
+                "publishedAt": self.data["securityAdvisory"].get("publishedAt"),
+                "updatedAt": self.data["securityAdvisory"].get("updatedAt"),
+                "withdrawnAt": self.data["securityAdvisory"].get("withdrawnAt"),
+                "ghsaId": self.data["securityAdvisory"].get("ghsaId"),
             }.items()
         )
 

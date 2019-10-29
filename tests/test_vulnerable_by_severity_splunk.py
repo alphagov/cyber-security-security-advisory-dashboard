@@ -99,6 +99,10 @@ def test_vulnerability_alert_iter(vulnerability_alert):
         "summary": "Moderate severity vulnerability that affects activerecord",
         "vulnerableManifestPath": "marples.gemspec",
         "vulnerableRequirements": "~> 3.1.0",
+        "ghsaId": None,
+        "publishedAt": None,
+        "updatedAt": None,
+        "withdrawnAt": None,
     }
 
 
@@ -124,6 +128,10 @@ def test_vulnerability_alert_splunk_format(vulnerability_alert):
             },
             "vulnerableManifestPath": "marples.gemspec",
             "vulnerableRequirements": "~> 3.1.0",
+            "ghsaId": None,
+            "publishedAt": None,
+            "updatedAt": None,
+            "withdrawnAt": None,
         },
         {
             "packageName": "activerecord",
@@ -144,6 +152,10 @@ def test_vulnerability_alert_splunk_format(vulnerability_alert):
             },
             "vulnerableManifestPath": "marples.gemspec",
             "vulnerableRequirements": "~> 3.1.0",
+            "ghsaId": None,
+            "publishedAt": None,
+            "updatedAt": None,
+            "withdrawnAt": None,
         },
     ]
 

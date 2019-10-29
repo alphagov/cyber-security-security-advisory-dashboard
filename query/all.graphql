@@ -39,6 +39,10 @@ query {
               securityAdvisory {
                 id
                 summary
+                publishedAt
+                updatedAt
+                withdrawnAt
+                ghsaId
                 vulnerabilities(first:20) {
                   pageInfo {
                     endCursor
