@@ -21,7 +21,7 @@ resource "aws_lambda_function" "lambda" {
 
   environment {
     variables = {
-      github_key: "${data.aws_kms_secrets.github_key.plaintext["github_key"]}"
+      GITHUB_KEY: "AQICAHhe01flQwZvqnxcRcriXcTn8QzO9B5PrggjEtFLxnGsSwGhx9NZkLHKsfr4AaF0MplCAAAAiDCBhQYJKoZIhvcNAQcGoHgwdgIBADBxBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDIWO4VVrz5kCj2FUNwIBEIBE7mON+d6P+9Jo3ogiMXHpGM/l64jU3IAqpXE2pE5Fn/Dmg2Tdavzpmlw3mDnSkdICweIW7Qc9cw2t4QjfPGcg6ttBTPM="
     }
   }
 }
@@ -56,7 +56,6 @@ resource "aws_iam_role_policy_attachment" "lambda-policy-attach" {
 resource "aws_iam_policy" "lambda-iam_policy" {
   name = "${var.lambda_functionname}_iam_policy"
 
-  # TODO: resource path
   policy = <<EOF
 {
     "Version": "2012-10-17",
