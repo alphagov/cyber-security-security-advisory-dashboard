@@ -22,7 +22,7 @@ resources:
     type: docker-image
     source:
       repository: ((ecs_repo))
-  
+
   - name: cyber-security-infrastructure
     icon: github-circle
     type: git
@@ -31,8 +31,8 @@ resources:
       branch: master
       private_key: ((deploy_key))
       paths:
-        - service/github_audit/account/103495720024/apply.tfvars
-        - service/github_audit/account/103495720024/backend.tfvars
+        - service/github_audit/account/779799343306/apply.tfvars
+        - service/github_audit/account/779799343306/backend.tfvars
 
 blocks:
   - &security-advisory-dashboard-git
@@ -135,12 +135,12 @@ jobs:
             args:
             - -exc
             - |
-              cp cyber-security-infrastructure/service/github_audit/account/103495720024/apply.tfvars   security-advisory-dashboard-git/build/terraform/terraform.tfvars
-              cp cyber-security-infrastructure/service/github_audit/account/103495720024/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
-              cat cyber-security-infrastructure/service/github_audit/account/103495720024/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
+              cp cyber-security-infrastructure/service/github_audit/account/779799343306/apply.tfvars   security-advisory-dashboard-git/build/terraform/terraform.tfvars
+              cp cyber-security-infrastructure/service/github_audit/account/779799343306/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
+              cat cyber-security-infrastructure/service/github_audit/account/779799343306/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
               cd security-advisory-dashboard-git
               bash pack.sh
               cd build/terraform
-              source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::103495720024:role/AdminRole' 'eu-west-2'
+              source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/AdminRole' 'eu-west-2'
               terraform init
               terraform apply --auto-approve
