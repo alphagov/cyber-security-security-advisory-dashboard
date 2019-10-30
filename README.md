@@ -96,11 +96,6 @@ region              = "eu-west-2"
 bucket_prefix       = "cyber-security"
 runtime             = "python3.7"
 
-oidc_client_id      = "<your client_id>"
-oidc_client_secret  = "<your secret"
-
-dns_zone_fqdn       = "<the domain you want the interface to appear on>"
-sub_domain          = "<the sub-domain for the app>"
 github_org          = "<github organisation shortname>"
 
 Service             = "github-audit"
@@ -117,4 +112,4 @@ terraform apply -var-file=path/to/apply.tfvars
 ```
 
 ### Find vars at
-https://github.com/alphagov/cyber-security-terraform/pull/28/files
+https://github.com/alphagov/cyber-security-terraform/tree/master/service/github_audit/account/103495720024
