@@ -11,7 +11,7 @@ This is a tool developed within the Cyber Security tooling team to monitor estat
 ### Where is it?
 
 ```
-The staging and developer environments are hosted on the `gds-digital-security-test` (`103495720024`) AWS account.
+The staging and developer environments are hosted on the `gds-digital-security-prod` (`779799343306`) AWS account.
 ```
 #### The code
 
@@ -20,7 +20,7 @@ which contains the instructions to load an existing environment or to create a n
 
 ### Is it working?
 
-The tool dumps data to splunk once a day. If this data stream stops, it's not working. Any alerting can be based on that.
+The tool dumps data to Splunk once a day. If this data stream stops, it's not working. Any alerting can be based on that.
 There are no more frequent health checks because this tool is not vital to day-to-day, Dependabot is.
 
 #### Testing
