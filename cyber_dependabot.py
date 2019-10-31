@@ -63,8 +63,7 @@ def enable_vulnerability_alerts() -> None:
     logging.info(Counter(results))
 
 
-if __name__ == "__main__":
-
+def lambda_handler(event, context):
     logging.basicConfig(
         format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
         level=logging.INFO,
