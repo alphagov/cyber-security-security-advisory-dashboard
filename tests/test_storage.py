@@ -7,10 +7,10 @@ from addict import Dict
 import storage
 
 
-REGION = "eu-west-1"
+REGION = "eu-west-2"
 LOCAL_OPTIONS = Dict({"type": "local", "location": "output"})
 S3_OPTIONS = Dict(
-    {"type": "s3", "location": "ssd-test-to-be-removed", "region": "eu-west-1"}
+    {"type": "s3", "location": "ssd-test-to-be-removed", "region": "eu-west-2"}
 )
 path = "test/test.json"
 content = Dict({"test1": "test1", "test2": "test2"})
