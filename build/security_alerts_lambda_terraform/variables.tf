@@ -46,12 +46,3 @@ variable "tags" {
   type = "map"
   default = {}
 }
-
-variable "github_org" {
-  description = "GitHub organisation short-name"
-  type        = "string"
-}
-
-variable "bucket_prefix" {
-  type = "string"
-}
