@@ -15,6 +15,7 @@ black .
 py.test \
     --capture=no \
     --verbose \
+    -vv \
     --showlocals \
     -r a \
     --cov=. \

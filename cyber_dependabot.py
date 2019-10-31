@@ -26,12 +26,12 @@ def put(path: str) -> requests.models.Response:
     Adapter of `requests.put()`, supplying github credentials.
     """
     ENCRYPTED_GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
-    DECRYPTED_GITHUB_TOKEN = boto3.client('kms').decrypt(
+    DECRYPTED_GITHUB_TOKEN = boto3.client("kms").decrypt(
         CiphertextBlob=b64decode(ENCRYPTED_GITHUB_TOKEN)
-    )['Plaintext']
+    )["Plaintext"]
     ROOT_URL = "https://api.github.com"
     headers = {
-        "Authorization": f'token {DECRYPTED_GITHUB_TOKEN}',
+        "Authorization": f"token {DECRYPTED_GITHUB_TOKEN}",
         "Accept": "application/vnd.github.dorian-preview+json",
     }
     return requests.put(f"{ROOT_URL}{path}", headers=headers)
