@@ -31,7 +31,7 @@ variable "lambda_runtime" {
 }
 
 variable "lambda_handler" {
-  default  = "enable_vulnerability_alerts"
+  default  = "cyber_dependabot.lambda_handler"
 }
 variable "lambda_logarn" {
   default  = "arn:aws:logs:eu-west-2:*"
