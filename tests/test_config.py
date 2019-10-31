@@ -3,7 +3,7 @@ import sys
 
 import config
 
-REGION = "eu-west-1"
+REGION = "eu-west-2"
 token_value = "123abc"
 os.environ["TOKEN"] == token_value
 
