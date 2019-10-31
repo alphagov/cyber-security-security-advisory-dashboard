@@ -141,6 +141,6 @@ jobs:
               cd security-advisory-dashboard-git
               bash pack.sh
               cd build/terraform
-              source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/AdminRole' 'eu-west-2'
+              source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/github-advisories-concourse-role' 'eu-west-2'
               terraform init
               terraform apply --auto-approve
