@@ -15,7 +15,7 @@
     "source": "this",
     "name": {
       "type": "s3",
-      "location": "ssd-test-to-be-removed",
+      "location": "cyber-security-github-audit-production-storage",
       "region": "eu-west-2"
     }
   },
