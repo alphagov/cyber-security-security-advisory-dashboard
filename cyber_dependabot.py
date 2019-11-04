@@ -42,9 +42,13 @@ def enable_alert(repo: Dict) -> int:
         return r.status_code
 
 
-def tmap(func, iterable):
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        return list(executor.map(func, iterable))
+def tmap(f: Callable, iterable: Iterator, size: int = 10)) -> list:
+    """
+    Applies `f` in parallel Threads over `collection`.
+    Pool `size` has a sensible default of 10.
+    """
+    with ThreadPoolExecutor(max_workers=size) as executor:
+        return list(executor.map(f, iterable))
 
 
 def enable_vulnerability_alerts() -> None:
@@ -58,7 +62,6 @@ def enable_vulnerability_alerts() -> None:
     logging.info(f"Starting processing {len(repos)} repos...")
     results = tmap(enable_alert, repos)
     logging.info(Counter(results))
-    print(Counter(results))
 
 
 def lambda_handler(event, context):
