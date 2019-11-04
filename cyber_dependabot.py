@@ -4,21 +4,13 @@ import logging
 from multiprocessing import Pool
 from collections import Counter
 from typing import Iterator, Callable
+from concurrent.futures import ThreadPoolExecutor
 
 from addict import Dict
 import requests
 
 import storage
 import config
-
-
-def pmap(f: Callable, collection: Iterator, size: int = 10) -> list:
-    """
-    Applies `f` in parallel over `collection`.
-    Pool `size` has a sensible default of 10.
-    """
-    with Pool(size) as p:
-        return p.map(f, collection)
 
 
 def put(path: str) -> requests.models.Response:
@@ -50,6 +42,11 @@ def enable_alert(repo: Dict) -> int:
         return r.status_code
 
 
+def tmap(func, iterable):
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        return list(executor.map(func, iterable))
+
+
 def enable_vulnerability_alerts() -> None:
     """
     Enables vulnerability alerts on every repo in repositories.json.
@@ -59,8 +56,9 @@ def enable_vulnerability_alerts() -> None:
 
     repos = [Dict(r) for v in repos.values() for r in v]
     logging.info(f"Starting processing {len(repos)} repos...")
-    results = pmap(enable_alert, repos)
+    results = tmap(enable_alert, repos)
     logging.info(Counter(results))
+    print(Counter(results))
 
 
 def lambda_handler(event, context):
