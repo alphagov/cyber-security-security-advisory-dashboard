@@ -21,8 +21,8 @@ variable "aws_account_id" {
   default  = "779799343306"
 }
 
-variable "dependabot_lambda_zip_location" {
-  default = "zipped_lambda_functions/cyber_dependabot_lambda.zip"
+variable "lambda_zip_location" {
+  default = "../github_audit_lambda_package.zip"
 }
 
 variable "dependabot_lambda_functionname" {

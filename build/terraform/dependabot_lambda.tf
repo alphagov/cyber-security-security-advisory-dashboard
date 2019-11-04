@@ -1,6 +1,6 @@
 resource "aws_lambda_function" "lambda" {
-  filename         = "${var.dependabot_lambda_zip_location}"
-  source_code_hash = "${filebase64sha256(var.dependabot_lambda_zip_location)}"
+  filename         = "${var.lambda_zip_location}"
+  source_code_hash = "${filebase64sha256(var.lambda_zip_location)}"
   function_name    = "${var.dependabot_lambda_functionname}"
   role             = "${aws_iam_role.github_dependabot_lambda_exec_role.arn}"
   handler          = "${var.dependabot_lambda_handler}"
