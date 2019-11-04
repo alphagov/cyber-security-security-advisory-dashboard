@@ -4,9 +4,12 @@ import logging
 from collections import Counter
 from typing import Iterator, Callable
 from concurrent.futures import ThreadPoolExecutor
+from base64 import b64decode
 
 from addict import Dict
 import requests
+import boto3
+
 
 import storage
 import config
@@ -41,7 +44,7 @@ def enable_alert(repo: Dict) -> int:
         return r.status_code
 
 
-def tmap(f: Callable, iterable: Iterator, size: int = 10)) -> list:
+def tmap(f: Callable, iterable: Iterator, size: int = 10) -> list:
     """
     Applies `f` in parallel Threads over `collection`.
     Pool `size` has a sensible default of 10.
