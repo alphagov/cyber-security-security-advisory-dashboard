@@ -1,7 +1,6 @@
 import os
 import datetime
 import logging
-from multiprocessing import Pool
 from collections import Counter
 from typing import Iterator, Callable
 from concurrent.futures import ThreadPoolExecutor
