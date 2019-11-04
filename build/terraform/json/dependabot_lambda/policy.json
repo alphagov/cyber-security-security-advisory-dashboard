@@ -1,0 +1,36 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "${lambda_logarn}:*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:DescribeParameters",
+              "ssm:GetParameters"
+            ],
+            "Resource": [
+                "arn:aws:ssm:${region}:${aws_account_id}:key/alias/security-advisories-prod-kms"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "s3:GetObject",
+            "Resource": [
+                "arn:aws:s3:::cyber-security-github-audit-production-storage/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "arn:aws:s3:::cyber-security-github-audit-production-storage"
+            ]
+        }
+    ]
+}
