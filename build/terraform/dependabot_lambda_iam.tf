@@ -2,7 +2,6 @@ data "template_file" "dependabot_lambda_policy" {
   template = "${file("${path.module}/json/dependabot_lambda/policy.json")}"
   vars = {
       region         = "${var.region}"
-      lambda_logarn  = "${var.dependabot_lambda_logarn}"
       aws_account_id = "${var.aws_account_id}"
   }
 }

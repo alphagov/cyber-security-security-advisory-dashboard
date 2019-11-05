@@ -34,13 +34,9 @@ variable "dependabot_lambda_handler" {
 }
 
 variable "dependabot_lambda_memory" {
-  default  = 128
+  default  = 1024
 }
 
 variable "dependabot_lambda_timeout" {
   default  = 900
-}
-
-variable "dependabot_lambda_logarn" {
-  default  = "arn:aws:logs:eu-west-2:*"
 }

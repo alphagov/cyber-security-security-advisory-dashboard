@@ -4,16 +4,28 @@
         {
             "Effect": "Allow",
             "Action": "logs:CreateLogGroup",
-            "Resource": "${lambda_logarn}:*"
+            "Resource": "arn:aws:logs:${region}:${aws_account_id}:*"
         },
         {
             "Effect": "Allow",
             "Action": [
-              "ssm:DescribeParameters",
-              "ssm:GetParameters"
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
             ],
             "Resource": [
-                "arn:aws:ssm:${region}:${aws_account_id}:key/alias/security-advisories-prod-kms"
+                "arn:aws:logs:${region}:${aws_account_id}:log-group:/aws/lambda/cyber_dependabot:*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ssm:GetParameter",
+                "ssm:GetParameters",
+                "ssm:GetParametersByPath"
+            ],
+            "Resource": [
+                "arn:aws:ssm:${region}:${aws_account_id}:parameter/ssd/github/*"
             ]
         },
         {
