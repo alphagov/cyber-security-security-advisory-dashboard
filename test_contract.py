@@ -1,7 +1,7 @@
-from dependabot_api import get_parsed, get_repos_by_status
 from addict import Dict
 
 import pgraph
+from dependabot_api import get_parsed, get_repos_by_status
 
 
 def test_github_graphql() -> None:
@@ -9,14 +9,9 @@ def test_github_graphql() -> None:
     Tests that there are *some* repositories returned by each
     of the pgraph queries in `query/`
     """
-    page = Dict(pgraph.query("all", org="alphagov", nth=1, after=None))
-    assert page.organization.repositories.nodes
-
-    page = Dict(pgraph.query("prs", org="alphagov", nth=1, after=None))
-    assert page.organization.repositories.nodes
-
-    page = Dict(pgraph.query("refs", org="alphagov", nth=1, after=None))
-    assert page.organization.repositories.nodes
+    for query in ["all", "prs", "refs"]:
+        page = Dict(pgraph.query(query, org="alphagov", nth=1, after=None))
+        assert page.organization.repositories.nodes
 
 
 def test_github_dependabot() -> None:
