@@ -34,7 +34,7 @@ variable "dependabot_lambda_handler" {
 }
 
 variable "dependabot_lambda_memory" {
-  default  = 128
+  default  = 1024
 }
 
 variable "dependabot_lambda_timeout" {
