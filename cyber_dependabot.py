@@ -26,12 +26,32 @@ def put(path: str) -> requests.models.Response:
     return requests.put(f"{ROOT_URL}{path}", headers=headers)
 
 
+def get_topics(repo: Dict) -> list:
+
+    repo_topics = []
+    if repo.repositoryTopics:
+        repo_topics = [
+            topic_edge.node.topic.name for topic_edge in repo.repositoryTopics.edges
+        ]
+
+    return repo_topics
+
+
 def enable_alert(repo: Dict) -> int:
     """
     Enable vulnerability alerts on a single repo.
     """
 
+    no_security_advisories = ["mapit"]
+    repo_topics = get_topics(repo)
+
     if os.environ.get("DRY_RUN") == "true":
+        return 200
+    elif repo.name in no_security_advisories:
+        logging.info(f"Leaving {repo.name}, no-security-advisories value set.")
+        return 200
+    elif "no-security-advisories" in repo_topics:
+        logging.info(f"Leaving {repo.name}, no-security-advisories value set.")
         return 200
     else:
         r = put(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
