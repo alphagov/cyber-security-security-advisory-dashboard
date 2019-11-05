@@ -12,6 +12,11 @@ import requests
 import storage
 import config
 
+logging.basicConfig(
+        format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
+        level=logging.INFO,
+    )
+
 
 def put(path: str) -> requests.models.Response:
     """
@@ -27,7 +32,6 @@ def put(path: str) -> requests.models.Response:
 
 
 def get_topics(repo: Dict) -> list:
-
     repo_topics = []
     if repo.repositoryTopics:
         repo_topics = [
@@ -82,11 +86,6 @@ def enable_vulnerability_alerts() -> None:
 
 
 def lambda_handler(event, context):
-    logging.basicConfig(
-        format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
-        level=logging.INFO,
-    )
-
     settings = config.load()
 
     if settings.aws_region:
