@@ -4,11 +4,9 @@ import logging
 from collections import Counter
 from typing import Iterator, Callable
 from concurrent.futures import ThreadPoolExecutor
-from base64 import b64decode
 
 from addict import Dict
 import requests
-import boto3
 
 
 import storage
@@ -19,13 +17,10 @@ def put(path: str) -> requests.models.Response:
     """
     Adapter of `requests.put()`, supplying github credentials.
     """
-    ENCRYPTED_GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
-    DECRYPTED_GITHUB_TOKEN = boto3.client("kms").decrypt(
-        CiphertextBlob=b64decode(ENCRYPTED_GITHUB_TOKEN)
-    )["Plaintext"]
+    GITHUB_TOKEN = config.get_value("token")
     ROOT_URL = "https://api.github.com"
     headers = {
-        "Authorization": f"token {DECRYPTED_GITHUB_TOKEN}",
+        "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.dorian-preview+json",
     }
     return requests.put(f"{ROOT_URL}{path}", headers=headers)

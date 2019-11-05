@@ -20,11 +20,12 @@
         {
             "Effect": "Allow",
             "Action": [
-              "ssm:DescribeParameters",
-              "ssm:GetParameters"
+                "ssm:GetParameter",
+                "ssm:GetParameters",
+                "ssm:GetParametersByPath"
             ],
             "Resource": [
-                "arn:aws:ssm:${region}:${aws_account_id}:key/alias/security-advisories-prod-kms"
+                "arn:aws:ssm:${region}:${aws_account_id}:parameter/ssd/github/*"
             ]
         },
         {
