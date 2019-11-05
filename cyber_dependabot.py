@@ -12,10 +12,15 @@ import requests
 import storage
 import config
 
+root = logging.getLogger()
+if root.handlers:
+    for handler in root.handlers:
+        root.removeHandler(handler)
+
 logging.basicConfig(
-        format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
-        level=logging.INFO,
-    )
+    format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
+    level=logging.INFO,
+)
 
 
 def put(path: str) -> requests.models.Response:
