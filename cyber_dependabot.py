@@ -24,7 +24,7 @@ def put(path: str) -> requests.models.Response:
     """
     GITHUB_TOKEN = config.get_value("token")
     ROOT_URL = "https://api.github.com"
-    headers = {x
+    headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.dorian-preview+json",
     }
