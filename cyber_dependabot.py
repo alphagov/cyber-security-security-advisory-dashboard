@@ -12,15 +12,13 @@ import requests
 import storage
 import config
 
-root = logging.getLogger()
-if root.handlers:
-    for handler in root.handlers:
-        root.removeHandler(handler)
 
 logging.basicConfig(
     format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
     level=logging.INFO,
 )
+
+logger = logging.getLogger()
 
 
 def put(path: str) -> requests.models.Response:
@@ -57,14 +55,14 @@ def enable_alert(repo: Dict) -> int:
     if os.environ.get("DRY_RUN") == "true":
         return 200
     elif repo.name in no_security_advisories:
-        logging.info(f"Leaving {repo.name}, no-security-advisories value set.")
+        logger.info(f"Leaving {repo.name}, no-security-advisories value set.")
         return 200
     elif "no-security-advisories" in repo_topics:
-        logging.info(f"Leaving {repo.name}, no-security-advisories value set.")
+        logger.info(f"Leaving {repo.name}, no-security-advisories value set.")
         return 200
     else:
         r = put(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
-        logging.info(f"repo: {repo.name}, PUT: {r.status_code}, {r.text}")
+        logger.info(f"repo: {repo.name}, PUT: {r.status_code}, {r.text}")
         return r.status_code
 
 
@@ -85,9 +83,9 @@ def enable_vulnerability_alerts() -> None:
     repos = storage.read_json(f"{today}/data/repositories.json")
 
     repos = [Dict(r) for v in repos.values() for r in v]
-    logging.info(f"Starting processing {len(repos)} repos...")
+    logger.info(f"Starting processing {len(repos)} repos...")
     results = tmap(enable_alert, repos)
-    logging.info(Counter(results))
+    logger.info(Counter(results))
 
 
 def lambda_handler(event, context):
@@ -99,7 +97,5 @@ def lambda_handler(event, context):
     if settings.storage:
         storage_options = config.get_value("storage")
         storage.set_options(storage_options)
-
-    logging.basicConfig(level=logging.INFO)
 
     enable_vulnerability_alerts()
