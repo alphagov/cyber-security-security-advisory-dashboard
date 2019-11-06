@@ -1,6 +1,5 @@
 import os
 import datetime
-import logging
 from collections import Counter
 from typing import Iterator, Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -12,13 +11,9 @@ import requests
 import storage
 import config
 
-
-logging.basicConfig(
-    format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
-    level=logging.INFO,
-)
-
+import logging
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def put(path: str) -> requests.models.Response:
