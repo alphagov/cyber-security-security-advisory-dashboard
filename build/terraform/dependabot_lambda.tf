@@ -24,8 +24,8 @@ resource "aws_lambda_function" "lambda" {
 
 resource "aws_cloudwatch_event_rule" "turn_on_security_advisories_rule" {
     name = "24-hours"
-    description = "Fires every 24 hours at 01:00"
-    schedule_expression = "cron(0 1 * * ? *)"
+    description = "Fires every 24 hours at 23:30"
+    schedule_expression = "cron(30 23 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "turn_on_security_advisories_rule_tg" {

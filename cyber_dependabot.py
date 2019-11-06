@@ -51,10 +51,10 @@ def enable_alert(repo: Dict) -> int:
         return 200
     elif repo.name in no_security_advisories:
         logger.info(f"Leaving {repo.name}, no-security-advisories value set.")
-        return 200
+        return 204
     elif "no-security-advisories" in repo_topics:
         logger.info(f"Leaving {repo.name}, no-security-advisories value set.")
-        return 200
+        return 204
     else:
         r = put(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
         logger.info(f"repo: {repo.name}, PUT: {r.status_code}, {r.text}")
