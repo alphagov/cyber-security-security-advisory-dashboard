@@ -13,9 +13,9 @@ import storage
 import config
 
 logging.basicConfig(
-        format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
-        level=logging.INFO,
-    )
+    format="%(asctime)-15s [%(levelname)s] %(funcName)s: %(message)s",
+    level=logging.INFO,
+)
 
 
 def put(path: str) -> requests.models.Response:
@@ -53,10 +53,10 @@ def enable_alert(repo: Dict) -> int:
         return 200
     elif repo.name in no_security_advisories:
         logging.info(f"Leaving {repo.name}, no-security-advisories value set.")
-        return 200
+        return 204
     elif "no-security-advisories" in repo_topics:
         logging.info(f"Leaving {repo.name}, no-security-advisories value set.")
-        return 200
+        return 204
     else:
         r = put(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
         logging.info(f"repo: {repo.name}, PUT: {r.status_code}, {r.text}")
