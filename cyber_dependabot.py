@@ -12,6 +12,7 @@ import storage
 import config
 
 import logging
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -44,23 +45,23 @@ def enable_alert(repo: Dict) -> int:
     Enable vulnerability alerts on a single repo.
     """
 
-    no_security_advisories = ["mapit"]
     repo_topics = get_topics(repo)
+    repos_to_ignore = [
+        repo.name in ["mapit"],
+        "no-security-advisories" in repo_topics,
+        repo.securityAdvisoriesEnabledStatus is True,
+        repo.isArchived is True,
+    ]
 
     if os.environ.get("DRY_RUN") == "true":
         return 200
-    elif repo.name in no_security_advisories:
+    elif any(repos_to_ignore):
         logger.info(f"Leaving {repo.name}, no-security-advisories value set.")
         return 204
-    elif "no-security-advisories" in repo_topics:
-        logger.info(f"Leaving {repo.name}, no-security-advisories value set.")
-        return 204
-    elif repo.securityAdvisoriesEnabledStatus is False:
+    else:
         r = put(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
         logger.info(f"repo: {repo.name}, PUT: {r.status_code}, {r.text}")
         return r.status_code
-    else:
-        return 204
 
 
 def tmap(f: Callable, iterable: Iterator, size: int = 10) -> list:
