@@ -57,7 +57,7 @@ def enable_alert(repo: Dict) -> int:
     elif any(repos_to_ignore):
         logger.info(f"Leaving {repo.name}, no-security-advisories value set.")
         return 204
-    elif repo.securityAdvisoriesEnabledStatus is True"
+    elif repo.securityAdvisoriesEnabledStatus is True:
         logger.info(f"Leaving {repo.name}, security-advisories already enabled.")
         return 204
     else:
