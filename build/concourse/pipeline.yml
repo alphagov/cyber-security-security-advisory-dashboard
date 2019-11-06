@@ -33,8 +33,16 @@ resources:
       paths:
         - service/github_audit/account/779799343306/apply.tfvars
         - service/github_audit/account/779799343306/backend.tfvars
+  - name: every-hour-resource
+    type: time
+    icon: clock-outline
+    source:
+      interval: 1h
 
 blocks:
+  - &every-hour
+    get: every-hour-resource
+    trigger: true
   - &security-advisory-dashboard-git
     get: security-advisory-dashboard-git
     trigger: true
@@ -75,6 +83,7 @@ jobs:
     plan:
       - *security-advisory-dashboard-git
       - *sec_adv_docker
+      - *every-hour
       - task: test
         config:
           <<: *audit_lambda_build
