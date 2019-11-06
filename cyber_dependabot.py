@@ -3,7 +3,6 @@ import datetime
 from collections import Counter
 from typing import Iterator, Callable
 from concurrent.futures import ThreadPoolExecutor
-import time
 
 from addict import Dict
 import requests
@@ -56,11 +55,12 @@ def enable_alert(repo: Dict) -> int:
     elif "no-security-advisories" in repo_topics:
         logger.info(f"Leaving {repo.name}, no-security-advisories value set.")
         return 204
-    else:
+    elif repo.securityAdvisoriesEnabledStatus is False:
         r = put(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
-        time.sleep(1)
         logger.info(f"repo: {repo.name}, PUT: {r.status_code}, {r.text}")
         return r.status_code
+    else:
+        return 204
 
 
 def tmap(f: Callable, iterable: Iterator, size: int = 10) -> list:

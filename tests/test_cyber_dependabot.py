@@ -46,3 +46,14 @@ def test_enable_alert_ignores_correct_tags():
     actual = cyber_dependabot.enable_alert(mock_repo_with_correct_tag)
 
     assert actual == 204
+
+def test_enable_alert_ignores_already_enabled_repos():
+    mock_repo_with_security_alerts_enabled = Dict(
+        {
+            "securityAdvisoriesEnabledStatus": True
+        }
+    )
+
+    actual = cyber_dependabot.enable_alert(mock_repo_with_security_alerts_enabled)
+
+    assert actual == 204
