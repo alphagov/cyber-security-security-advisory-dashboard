@@ -49,7 +49,6 @@ def enable_alert(repo: Dict) -> int:
     repos_to_ignore = [
         repo.name in ["mapit"],
         "no-security-advisories" in repo_topics,
-        repo.securityAdvisoriesEnabledStatus is True,
         repo.isArchived is True,
     ]
 
@@ -57,6 +56,9 @@ def enable_alert(repo: Dict) -> int:
         return 200
     elif any(repos_to_ignore):
         logger.info(f"Leaving {repo.name}, no-security-advisories value set.")
+        return 204
+    elif repo.securityAdvisoriesEnabledStatus is True"
+        logger.info(f"Leaving {repo.name}, security-advisories already enabled.")
         return 204
     else:
         r = put(f"/repos/{repo.owner.login}/{repo.name}/vulnerability-alerts")
