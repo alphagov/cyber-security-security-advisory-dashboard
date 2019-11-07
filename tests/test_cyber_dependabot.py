@@ -61,3 +61,23 @@ def test_enable_alert_ignores_correct_repos():
 
     assert actual_aready_enabled == 204
     assert actual_archived == 204
+
+
+def test_enable_alerts_enables_alerts(mocker):
+    mocker.patch.object(cyber_dependabot, "put")
+    cyber_dependabot.put.return_value = Dict({"status_code": 567, "text": "test"})
+    mock_repo = Dict(
+        {
+            "securityAdvisoriesEnabledStatus": False,
+            "isArchived": False,
+            "owner": {"login": "test"},
+            "name": "test-repo",
+        }
+    )
+
+    cyber_dependabot.enable_alert(mock_repo)
+
+    cyber_dependabot.put.assert_called_with(
+        "/repos/test/test-repo/vulnerability-alerts",
+    )
+    cyber_dependabot.put.assert_called_once()
