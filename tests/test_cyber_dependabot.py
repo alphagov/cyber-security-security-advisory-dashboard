@@ -63,7 +63,7 @@ def test_enable_alert_ignores_correct_repos():
     assert actual_archived == 204
 
 
-def test_enable_alerts_enables_alerts(mocker):
+def test_enable_alerts_enables_correct_repos(mocker):
     mocker.patch.object(cyber_dependabot, "put")
     cyber_dependabot.put.return_value = Dict({"status_code": 567, "text": "test"})
     mock_repo = Dict(
