@@ -1,5 +1,7 @@
 #! /bin/bash
 
+directory="$1"
+
 vars="TOKEN GITHUB_ORG AWS_ACCESS_KEY_ID "
 vars+="AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_SECURITY_TOKEN"
 
@@ -23,4 +25,4 @@ py.test \
     --cov-fail-under 20 \
     --flake8 \
     --random-order \
-    tests
+    ${directory}
