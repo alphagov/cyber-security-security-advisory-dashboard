@@ -34,6 +34,7 @@ def get_ssm_client():
             region_name=region,
         )
     else:
+        print("aws_secret_key not in env, setting to none")
         ssm = None
     return ssm
 
