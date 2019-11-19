@@ -1,6 +1,5 @@
 import os
 import logging as log
-from string import Template
 
 from addict import Dict
 from gql import gql, Client
