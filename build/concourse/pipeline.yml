@@ -5,18 +5,19 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
-      branch: concourse-contract-tests
+      branch: master
 
   - name: security-advisory-dashboard-git_docker
     icon: github-circle
     type: git
     source:
       uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
-      branch: concourse-contract-tests
+      branch: master
       paths:
         - Dockerfile
         - requirements.txt
         - requirements-dev.txt
+        - test.sh
 
   - name: sec_adv_docker
     type: docker-image
@@ -33,6 +34,7 @@ resources:
       paths:
         - service/github_audit/account/779799343306/apply.tfvars
         - service/github_audit/account/779799343306/backend.tfvars
+
   - name: every-hour-resource
     type: time
     icon: clock-outline
@@ -43,6 +45,7 @@ blocks:
   - &every-hour
     get: every-hour-resource
     trigger: true
+
   - &security-advisory-dashboard-git
     get: security-advisory-dashboard-git
     trigger: true
@@ -83,16 +86,32 @@ jobs:
     plan:
       - *security-advisory-dashboard-git
       - *sec_adv_docker
-      - *every-hour
       - task: test
         config:
           <<: *audit_lambda_build
           run:
             path: /bin/bash
             args:
-              - test.sh
+              - test.sh 
+              - tests
             dir: security-advisory-dashboard-git
-
+  
+  - name: github_contract_tests
+    plan:
+      - *security-advisory-dashboard-git
+      - *sec_adv_docker
+      - *every-hour
+      - task: contract_test
+        config:
+          <<: *audit_lambda_build
+          run:
+            path: /bin/bash
+            args:
+              - -exc
+              - |
+                source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/github_contract_tests_role' 'eu-west-2'
+                /bin/bash test.sh contract_tests
+            dir: security-advisory-dashboard-git
 
   - name: sec_adv_pack
     # Needs to create zip and output to s3
