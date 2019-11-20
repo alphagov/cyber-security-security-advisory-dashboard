@@ -18,7 +18,10 @@ rebuild:
 	docker-compose build --pull
 
 test:
-	docker-compose run dashboard ./test.sh
+	docker-compose run dashboard ./test.sh tests
+
+contract-test:
+	docker-compose run dashboard ./test.sh contract_tests
 
 audit:
 	docker-compose run dashboard python -m cProfile -o audit.profile audit_lambda.py audit
