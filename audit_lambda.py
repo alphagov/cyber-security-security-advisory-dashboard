@@ -148,25 +148,15 @@ def get_github_activity_prs_audit(org, today):
 
 def get_dependabot_status(org, today):
     dependabot_status = dependabot_api.get_repos_by_status(org)
-    counts = stats.count_types(dependabot_status)
-    output = Dict()
-    output.counts = counts
-    output.repositories = dependabot_status
-
-    storage.save_json(f"{today}/data/dependabot_status.json", output)
+    storage.save_json(f"{today}/data/dependabot_status.json", dependabot_status)
 
     repositories = storage.read_json(f"{today}/data/repositories.json")
 
-    for repo in repositories["active"]:
-        repo.dependabotEnabledStatus = False
+    dependabot_repo_names = [r.attributes.name for r in dependabot_status]
+    for r in repositories["active"]:
+        r.dependabotEnabledStatus = r.name in dependabot_repo_names
 
-    for dbot_repo in dependabot_status["active"]:
-        for repo in repositories["active"]:
-            if dbot_repo.attributes.name == repo.name:
-                repo.dependabotEnabledStatus = True
-                break
-
-    updated = storage.save_json(f"{today}/data/repositories.json", repositories)
+    storage.save_json(f"{today}/data/repositories.json", repositories)
 
 
 def analyse_repo_ownership(today):

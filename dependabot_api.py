@@ -24,13 +24,10 @@ def get_parsed(path):
 
 def get_repos_by_status(org):
     accounts = get_parsed("/accounts")
-    states = ["active", "inactive"]
-    repositories = {}
     for account in accounts:
         if account.attributes["github-login"] == org:
-            for state in states:
-                repositories[state] = get_parsed(
-                    f"/active_repos?account-id={account.id}&account-type=org"
-                )
+            repositories = get_parsed(
+                f"/active_repos?account-id={account.id}&account-type=org"
+            )
 
     return repositories
