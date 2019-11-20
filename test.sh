@@ -12,6 +12,13 @@ for i in ${vars}; do
     fi
 done
 
+if [ ${directory}=="contract_tests" ]
+then
+    coverage_failure=""
+else
+    coverage_failure="--cov-fail-under 20"
+fi
+
 black .
 
 py.test \
@@ -22,7 +29,7 @@ py.test \
     -r a \
     --cov=. \
     --cov-report html \
-    --cov-fail-under 20 \
+    ${coverage_failure} \
     --flake8 \
     --random-order \
     ${directory}
