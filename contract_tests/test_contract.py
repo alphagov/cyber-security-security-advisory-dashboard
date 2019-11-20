@@ -30,12 +30,12 @@ def test_github_graphql() -> None:
         assert page.organization.repositories.nodes
 
 
-def test_github_dependabot() -> None:
-    """
-    Tests that there are more than 10 active, inactive, by_status and custom, repos.
-    """
-    active = "/repos?account-id=596977&account-type=org&installation-state=active"
-    assert len(get_parsed(active)) > 10
-    by_status = Dict(get_repos_by_status("alphagov"))
-    assert len(by_status.active) > 10
-    assert len(by_status.inactive) > 10
+# def test_github_dependabot() -> None:
+#     """
+#     Tests that there are more than 10 active, inactive, by_status and custom, repos.
+#     """
+#     active = "/repos?account-id=596977&account-type=org&installation-state=active"
+#     assert len(get_parsed(active)) > 10
+#     by_status = Dict(get_repos_by_status("alphagov"))
+#     assert len(by_status.active) > 10
+#     assert len(by_status.inactive) > 10
