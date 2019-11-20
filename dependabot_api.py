@@ -1,8 +1,8 @@
 import os
 import json
+
 import requests
 from addict import Dict
-
 
 import config
 
@@ -30,7 +30,7 @@ def get_repos_by_status(org):
         if account.attributes["github-login"] == org:
             for state in states:
                 repositories[state] = get_parsed(
-                    f"/repos?account-id={account.id}&account-type=org&installation-state={state}"
+                    f"/active_repos?account-id={account.id}&account-type=org"
                 )
 
     return repositories

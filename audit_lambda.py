@@ -147,7 +147,6 @@ def get_github_activity_prs_audit(org, today):
 
 
 def get_dependabot_status(org, today):
-    updated = False
     dependabot_status = dependabot_api.get_repos_by_status(org)
     counts = stats.count_types(dependabot_status)
     output = Dict()
@@ -157,11 +156,15 @@ def get_dependabot_status(org, today):
     storage.save_json(f"{today}/data/dependabot_status.json", output)
 
     repositories = storage.read_json(f"{today}/data/repositories.json")
+
     for repo in repositories["active"]:
-        for status, dbot_repositories in dependabot_status.items():
-            for dbot_repo in dbot_repositories:
-                if dbot_repo.attributes.name == repo.name:
-                    repo.dependabotEnabledStatus = status == "active"
+        repo.dependabotEnabledStatus = False
+
+    for dbot_repo in dependabot_status["active"]:
+        for repo in repositories["active"]:
+            if dbot_repo.attributes.name == repo.name:
+                repo.dependabotEnabledStatus = True
+                break
 
     updated = storage.save_json(f"{today}/data/repositories.json", repositories)
 
@@ -598,6 +601,7 @@ def cronable_vulnerability_audit():
     get_github_repositories_and_classify_by_status(org, today)
     get_github_activity_refs_audit(org, today)
     get_github_activity_prs_audit(org, today)
+
     get_dependabot_status(org, today)
 
     if history.current:
