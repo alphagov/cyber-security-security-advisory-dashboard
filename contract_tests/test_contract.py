@@ -4,21 +4,6 @@ import os
 from addict import Dict
 
 
-def setup_module(module):
-    """
-    Set FLASK_ENV to production to pull in the right env vars
-    for pgraph.query
-    """
-    os.environ["FLASK_ENV"] = "production"
-
-
-def teardown_module(module):
-    """
-    Set FLASK_ENV back to development for remaining tests
-    """
-    os.environ["FLASK_ENV"] = "development"
-
-
 def test_github_graphql() -> None:
     """
     Tests that there are *some* repositories returned by each
