@@ -96,7 +96,10 @@ jobs:
               - test.sh
               - tests
             dir: security-advisory-dashboard-git
-
+          params:
+            FLASK_ENV: development
+            GITHUB_ORG: fakeorg
+            TOKEN: faketoken
   - name: github_contract_tests
     plan:
       - *security-advisory-dashboard-git
@@ -111,6 +114,7 @@ jobs:
               - -exc
               - |
                 source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/github_contract_tests_role' 'eu-west-2'
+                export FLASK_ENV="production"
                 /bin/bash test.sh contract_tests
             dir: security-advisory-dashboard-git
 

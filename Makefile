@@ -1,4 +1,3 @@
-export FLASK_ENV=development
 
 help:
 	@echo "Docker-compose-backed builder for the github security advisory dashboard."
@@ -18,9 +17,11 @@ rebuild:
 	docker-compose build --pull
 
 test:
+	export FLASK_ENV=development
 	docker-compose run dashboard ./test.sh tests
 
 contract-test:
+	export FLASK_ENV=development
 	docker-compose run dashboard ./test.sh contract_tests
 
 audit:
