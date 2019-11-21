@@ -32,5 +32,4 @@ py.test \
     ${coverage_failure} \
     --flake8 \
     --random-order \
-    --pdb\
     ${directory}

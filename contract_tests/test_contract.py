@@ -9,7 +9,7 @@ def setup_module(module):
     Set FLASK_ENV to production to pull in the right env vars
     for pgraph.query
     """
-    os.environ["FLASK_ENV"] = "development"
+    os.environ["FLASK_ENV"] = "production"
 
 
 def teardown_module(module):
