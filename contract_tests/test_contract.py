@@ -1,5 +1,5 @@
 import pgraph
-from dependabot_api import get_parsed, get_repos_by_status
+from dependabot_api import get_parsed, get_active_repos
 import os
 from addict import Dict
 
@@ -36,5 +36,5 @@ def test_github_dependabot() -> None:
     """
     active = "/active_repos?account-id=596977&account-type=org"
     assert len(get_parsed(active)) > 10
-    by_status = get_repos_by_status("alphagov")
+    by_status = get_active_repos("alphagov")
     assert len(by_status) > 10

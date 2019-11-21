@@ -1,3 +1,4 @@
+
 ---
 resources:
   - name: security-advisory-dashboard-git
@@ -92,10 +93,10 @@ jobs:
           run:
             path: /bin/bash
             args:
-              - test.sh 
+              - test.sh
               - tests
             dir: security-advisory-dashboard-git
-  
+
   - name: github_contract_tests
     plan:
       - *security-advisory-dashboard-git

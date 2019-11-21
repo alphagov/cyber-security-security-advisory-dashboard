@@ -13,13 +13,13 @@ def set_region(region):
     REGION = region
 
 
-def load(env=None):
+def load():
     """
     Load settings
     """
-    env = env or os.environ.get("FLASK_ENV", "development")
+    flask_env = os.environ["FLASK_ENV"]
 
-    with open(f"settings.{env}.json", "r") as f:
+    with open(f"settings.{flask_env}.json", "r") as f:
         return Dict(json.load(f))
 
 
