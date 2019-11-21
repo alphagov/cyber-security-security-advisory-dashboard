@@ -1,6 +1,5 @@
 import pgraph
 from dependabot_api import get_parsed, get_active_repos
-import os
 from addict import Dict
 
 
