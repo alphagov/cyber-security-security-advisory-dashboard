@@ -1,4 +1,3 @@
-export FLASK_ENV=development
 
 help:
 	@echo "Docker-compose-backed builder for the github security advisory dashboard."
@@ -18,7 +17,12 @@ rebuild:
 	docker-compose build --pull
 
 test:
-	docker-compose run dashboard ./test.sh
+	export FLASK_ENV=development
+	docker-compose run dashboard ./test.sh tests
+
+contract-test:
+	export FLASK_ENV=development
+	docker-compose run dashboard ./test.sh contract_tests
 
 audit:
 	docker-compose run dashboard python -m cProfile -o audit.profile audit_lambda.py audit

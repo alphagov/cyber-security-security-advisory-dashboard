@@ -147,7 +147,7 @@ def get_github_activity_prs_audit(org, today):
 
 
 def get_dependabot_status(org, today):
-    dependabot_status = dependabot_api.get_repos_by_status(org)
+    dependabot_status = dependabot_api.get_active_repos(org)
     storage.save_json(f"{today}/data/dependabot_status.json", dependabot_status)
 
     repositories = storage.read_json(f"{today}/data/repositories.json")

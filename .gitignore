@@ -23,3 +23,5 @@ output/*
 htmlcov
 .coverage
 pipeline_vars.yml
+
+build/concourse/pipeline_var.yml

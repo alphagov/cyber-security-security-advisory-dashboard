@@ -1,5 +1,7 @@
 #! /bin/bash
 
+directory="$1"
+
 vars="TOKEN GITHUB_ORG AWS_ACCESS_KEY_ID "
 vars+="AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_SECURITY_TOKEN"
 
@@ -9,6 +11,13 @@ for i in ${vars}; do
         unset "${i}"
     fi
 done
+
+if [ ${directory}=="contract_tests" ]
+then
+    coverage_failure=""
+else
+    coverage_failure="--cov-fail-under 20"
+fi
 
 black .
 
@@ -20,7 +29,7 @@ py.test \
     -r a \
     --cov=. \
     --cov-report html \
-    --cov-fail-under 20 \
+    ${coverage_failure} \
     --flake8 \
     --random-order \
-    tests
+    ${directory}

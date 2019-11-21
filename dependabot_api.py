@@ -22,7 +22,7 @@ def get_parsed(path):
     return body.data
 
 
-def get_repos_by_status(org):
+def get_active_repos(org):
     accounts = get_parsed("/accounts")
     for account in accounts:
         if account.attributes["github-login"] == org:
