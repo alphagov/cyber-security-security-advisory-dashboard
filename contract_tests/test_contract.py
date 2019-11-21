@@ -1,6 +1,5 @@
 import pgraph
-
-# from dependabot_api import get_parsed, get_repos_by_status
+from dependabot_api import get_parsed, get_repos_by_status
 import os
 from addict import Dict
 
@@ -10,7 +9,7 @@ def setup_module(module):
     Set FLASK_ENV to production to pull in the right env vars
     for pgraph.query
     """
-    os.environ["FLASK_ENV"] = "production"
+    os.environ["FLASK_ENV"] = "development"
 
 
 def teardown_module(module):
@@ -31,12 +30,11 @@ def test_github_graphql() -> None:
         assert page.organization.repositories.nodes
 
 
-# def test_github_dependabot() -> None:
-#     """
-#     Tests that there are more than 10 active, inactive, by_status and custom, repos.
-#     """
-#     active = "/active_repos?account-id=596977&account-type=org"
-#     assert len(get_parsed(active)) > 10
-#     by_status = Dict(get_repos_by_status("alphagov"))
-#     assert len(by_status.active) > 10
-#     assert len(by_status.inactive) > 10
+def test_github_dependabot() -> None:
+    """
+    Tests that there are more than 10 active, inactive, by_status and custom, repos.
+    """
+    active = "/active_repos?account-id=596977&account-type=org"
+    assert len(get_parsed(active)) > 10
+    by_status = get_repos_by_status("alphagov")
+    assert len(by_status) > 10
