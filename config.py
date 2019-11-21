@@ -15,7 +15,7 @@ def set_region(region):
 
 def load():
     """
-    Load settings
+    Loads the correct settings file based on FLASK_ENV.
     """
     flask_env = os.environ["FLASK_ENV"]
 

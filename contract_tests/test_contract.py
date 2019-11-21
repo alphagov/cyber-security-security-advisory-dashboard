@@ -16,7 +16,7 @@ def test_github_graphql() -> None:
 
 def test_github_dependabot() -> None:
     """
-    Tests that there are more than 10 active, inactive, by_status and custom, repos.
+    Tests that there are more than 10 active repos.
     """
     active = "/active_repos?account-id=596977&account-type=org"
     assert len(get_parsed(active)) > 10
