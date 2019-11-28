@@ -98,4 +98,36 @@ def lambda_handler(event, context):
         storage_options = config.get_value("storage")
         storage.set_options(storage_options)
 
-    enable_vulnerability_alerts()
+
+# def update_config(repo):
+#     # https://github.com/dependabot/api-docs
+#     # https://api.github.com/repositories/1599151
+#     if not repo.languages.nodes:
+#         return
+
+#     for lang in repo.languages.nodes:
+#         if not (pm := package_managers.get(lang.name, None)):
+#             print(f'Skipping {repo.name}, lang: {lang.name}')
+#             continue
+
+#         config = {
+#             "repo-id": repo.databaseId,
+#             "update-schedule": "daily",
+#             "directory": "/",
+#             "account-id": "596977",
+#             "account-type": "org",
+#             "package-manager": pm,
+#         }
+
+#         root_url = "https://api.dependabot.com"
+
+#         headers = {
+#             "Authorization": f'Personal {os.environ.get("SP_TOKEN", "")}',
+#             "Accept": "application/vnd.github.baptiste-preview+json",
+#         }
+#         r = requests.post(root_url + "/update_configs", headers=headers, json=config)
+
+#         print(f'repo: {repo.name}, config: {lang.name}, r: {r.text}')
+
+
+enable_vulnerability_alerts()
