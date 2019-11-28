@@ -3,18 +3,35 @@ import datetime
 from collections import Counter
 from typing import Iterator, Callable
 from concurrent.futures import ThreadPoolExecutor
+import logging
 
 from addict import Dict
 import requests
 
-
 import storage
 import config
+from language_lookup import package_managers
 
-import logging
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+
+def post(path: str, body: str) -> requests.models.Response:
+    """
+    Adapter of `requests.post()`, supplying github credentials + JSON.
+    """
+    GITHUB_TOKEN = config.get_value("token")
+    ROOT_URL = "https://api.dependabot.com"
+    headers = {
+        "Authorization": f"Personal {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.baptiste-preview+json",
+    }
+    full_path = ROOT_URL + path
+    r = requests.post(full_path, headers=headers, json=body)
+
+    logger.info(f"POST: path: {full_path}, response text: {r.text}")
+    return r
 
 
 def put(path: str) -> requests.models.Response:
@@ -88,6 +105,19 @@ def enable_vulnerability_alerts() -> None:
     logger.info(Counter(results))
 
 
+def enable_all_dependabot() -> None:
+    """
+    Enables dependabot on every repo in repositories.json.
+    """
+    today = datetime.date.today().isoformat()
+    repos = storage.read_json(f"{today}/data/repositories.json")
+
+    repos = [Dict(r) for v in repos.values() for r in v]
+    logger.info(f"Starting processing {len(repos)} repos...")
+    results = tmap(enable_dependabot, repos)
+    logger.info(Counter(results))
+
+
 def lambda_handler(event, context):
     settings = config.load()
 
@@ -98,36 +128,61 @@ def lambda_handler(event, context):
         storage_options = config.get_value("storage")
         storage.set_options(storage_options)
 
-
-# def update_config(repo):
-#     # https://github.com/dependabot/api-docs
-#     # https://api.github.com/repositories/1599151
-#     if not repo.languages.nodes:
-#         return
-
-#     for lang in repo.languages.nodes:
-#         if not (pm := package_managers.get(lang.name, None)):
-#             print(f'Skipping {repo.name}, lang: {lang.name}')
-#             continue
-
-#         config = {
-#             "repo-id": repo.databaseId,
-#             "update-schedule": "daily",
-#             "directory": "/",
-#             "account-id": "596977",
-#             "account-type": "org",
-#             "package-manager": pm,
-#         }
-
-#         root_url = "https://api.dependabot.com"
-
-#         headers = {
-#             "Authorization": f'Personal {os.environ.get("SP_TOKEN", "")}',
-#             "Accept": "application/vnd.github.baptiste-preview+json",
-#         }
-#         r = requests.post(root_url + "/update_configs", headers=headers, json=config)
-
-#         print(f'repo: {repo.name}, config: {lang.name}, r: {r.text}')
+    enable_vulnerability_alerts()
 
 
-enable_vulnerability_alerts()
+def enable_dependabot(repo: Dict) -> int:
+    """
+    Enabled dependabot on all whitelisted repos.
+    """
+    # https://github.com/dependabot/api-docs
+    # https://api.github.com/repositories/1599151
+    whitelist = ["cyber-security-active-user-lambda"]
+    blacklist = ["mapit"]
+    repo_topics = get_topics(repo)
+
+    if os.environ.get("DRY_RUN") == "true":
+        return 200
+    elif any(
+        [
+            repo.name in blacklist,
+            "no-dependabot" in repo_topics,
+            repo.isArchived,
+            repo.name not in whitelist,
+        ]
+    ):
+        logger.info(
+            f"Leaving {repo.name}, no-dependabot value set or not in whitelist."
+        )
+        return 204
+    elif repo.dependabotEnabledStatus:
+        # This may need changing due to GitHub and dependabot API's not linking
+        logger.info(f"Leaving {repo.name}, dependabot already enabled.")
+        return 204
+    else:
+        if not repo.languages.nodes:
+            return 422
+
+        for lang in repo.languages.nodes:
+            lang_package_manager = package_managers.get(lang.name)
+            if not lang_package_manager:
+                logger.info(
+                    f"No package manager for lang: {lang.name}. Skipping {repo.name}"
+                )
+                continue
+
+            body = {
+                "repo-id": repo.databaseId,
+                "update-schedule": "daily",
+                "directory": "/",
+                "account-id": "596977",
+                "account-type": "org",
+                "package-manager": lang_package_manager,
+            }
+
+            path = "/update_configs"
+
+            r = post(path, body)
+            logger.info(f"repo: {repo.name}, POST: {r.status_code}, {r.text}")
+
+            return r.status_code
