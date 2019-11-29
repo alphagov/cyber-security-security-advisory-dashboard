@@ -28,10 +28,10 @@ def post(path: str, body: str) -> requests.models.Response:
         "Accept": "application/vnd.github.baptiste-preview+json",
     }
     full_path = ROOT_URL + path
-    r = requests.post(full_path, headers=headers, json=body)
+    response = requests.post(full_path, headers=headers, json=body)
 
-    logger.info(f"POST: path: {full_path}, response text: {r.text}")
-    return r
+    logger.info(f"POST: path: {full_path}, response text: {response.text}")
+    return response
 
 
 def put(path: str) -> requests.models.Response:
@@ -137,7 +137,7 @@ def enable_dependabot(repo: Dict) -> int:
     """
     # https://github.com/dependabot/api-docs
     # https://api.github.com/repositories/1599151
-    whitelist = ["cyber-security-active-user-lambda"]
+    whitelist = ["cyber-security-tech-test"]
     blacklist = ["mapit"]
     repo_topics = get_topics(repo)
 
@@ -183,6 +183,7 @@ def enable_dependabot(repo: Dict) -> int:
             path = "/update_configs"
 
             r = post(path, body)
+            logger.info(f"body: {body}")
             logger.info(f"repo: {repo.name}, POST: {r.status_code}, {r.text}")
 
             return r.status_code
