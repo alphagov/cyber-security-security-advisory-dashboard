@@ -6,14 +6,14 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
-      branch: master
+      branch: testing-boto3
 
   - name: security-advisory-dashboard-git_docker
     icon: github-circle
     type: git
     source:
       uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
-      branch: master
+      branch: testing-boto3
       paths:
         - Dockerfile
         - requirements.txt
