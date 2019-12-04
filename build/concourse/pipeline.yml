@@ -42,6 +42,11 @@ resources:
     source:
       interval: 1h
 
+  - name: notify
+    type: slack-notification
+    source:
+      url: ((slack-webhook))
+
 blocks:
   - &every-hour
     get: every-hour-resource
@@ -100,6 +105,7 @@ jobs:
             FLASK_ENV: development
             GITHUB_ORG: fakeorg
             TOKEN: faketoken
+  
   - name: github_contract_tests
     plan:
       - *security-advisory-dashboard-git
@@ -117,6 +123,10 @@ jobs:
                 export FLASK_ENV="production"
                 /bin/bash test.sh contract_tests
             dir: security-advisory-dashboard-git
+        on_failure:
+          put: notify
+          params:
+            text: "Contract tests failed"
 
   - name: sec_adv_pack
     # Needs to create zip and output to s3
