@@ -9,5 +9,6 @@ def test_github_graphql() -> None:
     """
 
     for query in ["all", "prs", "refs"]:
-        page = Dict(pgraph.query(query, org="alphagov", nth=1, after=None))
-        assert page.organization.repositories.nodes
+        # page = Dict(pgraph.query(query, org="alphagov", nth=1, after=None))
+        # assert page.organization.repositories.nodes
+        assert True is False
