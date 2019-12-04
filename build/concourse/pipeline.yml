@@ -47,6 +47,12 @@ resources:
     source:
       url: ((slack-webhook))
 
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
 blocks:
   - &every-hour
     get: every-hour-resource
@@ -126,7 +132,8 @@ jobs:
         on_failure:
           put: notify
           params:
-            text: "Contract tests failed"
+            username: "concourse cyber notifications"
+            text: "Github contract tests <https://cd.gds-reliability.engineering/teams/cybersecurity-tools/pipelines/github-security-advisories/jobs/github_contract_tests/|failed on Concourse>"
 
   - name: sec_adv_pack
     # Needs to create zip and output to s3
