@@ -4,8 +4,6 @@ import sys
 import config
 
 REGION = "eu-west-2"
-token_value = "123abc"
-os.environ["TOKEN"] == token_value
 
 
 def test_load():
@@ -20,10 +18,12 @@ def test_load():
 
 def test_get_value():
     """
-    Test retrieving a settings from an env variable defined above
+    Test config.get_value retrieves correct value
+    value is set to "faketoken" in env on concourse and when
+    running locally.
     """
     value = config.get_value("token")
-    assert not value == token_value, "Env var returned correctly"
+    assert value == "faketoken", "Env var returned correctly"
 
 
 def test_get_value_ssm():

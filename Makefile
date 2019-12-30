@@ -18,7 +18,7 @@ rebuild:
 
 test:
 	export FLASK_ENV=development
-	docker-compose run dashboard ./test.sh tests
+	docker-compose run -e TOKEN=faketoken dashboard ./test.sh tests
 
 contract-test:
 	export FLASK_ENV=development
