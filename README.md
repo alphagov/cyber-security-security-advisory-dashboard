@@ -58,6 +58,14 @@ to build the static assets, js and css.
 make run
 ```
 
+## Run the tests
+
+Run the unit tests by running
+
+```test
+make test
+```
+
 ## Terraform
 
 ### Build
