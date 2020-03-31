@@ -1,4 +1,5 @@
-FROM gdscyber/cyber-security-concourse-base-image
+# FROM gdscyber/cyber-security-concourse-base-image
+FROM gdscyber/ah-test-img
 WORKDIR /usr/src/app
 
 # Install python deps
