@@ -1,7 +1,7 @@
 Click==7.1.1
 Jinja2==2.11.2
 MarkupSafe==1.1.1
-Werkzeug==1.0.0
+Werkzeug==1.0.1
 addict==2.2.1
 gql==0.4.0
 requests==2.23.0
