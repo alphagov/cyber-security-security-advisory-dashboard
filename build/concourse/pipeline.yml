@@ -61,10 +61,11 @@ resources:
       interval: 1h
 
 resource_types:
-  - name: slack-notification
+  - name: http-api
     type: docker-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: gdscyber/http-api-resource
+      tag: 1.0a
 
 blocks:
   - &every-hour
