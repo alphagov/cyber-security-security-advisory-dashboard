@@ -36,10 +36,13 @@ query {
               vulnerableManifestPath
               vulnerableRequirements
               securityVulnerability {
-                package
+                package {
+                  name
+                }
               }
               securityAdvisory {
                 id
+                package
                 summary
                 publishedAt
                 updatedAt
