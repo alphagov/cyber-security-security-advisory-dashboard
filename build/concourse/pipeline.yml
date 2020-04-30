@@ -1,4 +1,7 @@
 ---
+health_status_notify: &health_status_notify
+  put: health-notification
+
 resources:
   - name: security-advisory-dashboard-git
     icon: github-circle
@@ -18,6 +21,22 @@ resources:
         - requirements.txt
         - requirements-dev.txt
         - test.sh
+  
+  - name: health-notification
+    type: http-api
+    source:
+        uri: https://((health_host_prod))/?alert_type=concourse$&alert_name=health
+        method: POST
+        headers:
+          Authorization: "Bearer ((health_token_prod))"
+        json:
+          service: "{service}"
+          state: "{health}"
+          message: "{message}"
+          pipeline: "{BUILD_PIPELINE_NAME}"
+          job: "{BUILD_JOB_NAME}"
+          build_number: "{BUILD_NAME}"
+        service: "GitHub Security Advisories"
 
   - name: sec_adv_docker
     type: docker-image
@@ -40,11 +59,6 @@ resources:
     icon: clock-outline
     source:
       interval: 1h
-
-  - name: notify
-    type: slack-notification
-    source:
-      url: ((slack-webhook))
 
 resource_types:
   - name: slack-notification
@@ -110,6 +124,16 @@ jobs:
             FLASK_ENV: development
             GITHUB_ORG: fakeorg
             TOKEN: faketoken
+        on_success:
+          <<: *health_status_notify
+          params:
+            message: "Cyber security dashboard tests completed successfully."
+            health: healthy
+        on_failure:
+          <<: *health_status_notify
+          params:
+            message: "Cyber security dashboard tests failed."
+            health: unhealthy
 
   - name: github_contract_tests
     plan:
@@ -128,11 +152,16 @@ jobs:
                 export FLASK_ENV="production"
                 /bin/bash test.sh contract_tests
             dir: security-advisory-dashboard-git
-        on_failure:
-          put: notify
+        on_success:
+          <<: *health_status_notify
           params:
-            username: "concourse cyber notifications"
-            text: "Github contract tests <https://cd.gds-reliability.engineering/teams/cybersecurity-tools/pipelines/github-security-advisories/jobs/github_contract_tests/|failed on Concourse>"
+            message: "Cyber security dashboard contract tests completed successfully."
+            health: healthy
+        on_failure:
+          <<: *health_status_notify
+          params:
+            message: "Cyber security dashboard contract tests failed."
+            health: unhealthy
 
   - name: sec_adv_pack
     # Needs to create zip and output to s3
@@ -147,6 +176,16 @@ jobs:
             args:
               - pack.sh
             dir: security-advisory-dashboard-git
+        on_success:
+          <<: *health_status_notify
+          params:
+            message: "Cyber security dashboard zip completed successfully."
+            health: healthy
+        on_failure:
+          <<: *health_status_notify
+          params:
+            message: "Cyber security dashboard zip failed."
+            health: unhealthy
 
 
   - name: terraform_deploy
@@ -193,3 +232,13 @@ jobs:
               source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/github-advisories-concourse-role' 'eu-west-2'
               terraform init
               terraform apply --auto-approve
+        on_success:
+          <<: *health_status_notify
+          params:
+            message: "Cyber security dashboard deploy completed successfully."
+            health: healthy
+        on_failure:
+          <<: *health_status_notify
+          params:
+            message: "Cyber security dashboard deploy failed."
+            health: unhealthy
