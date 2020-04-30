@@ -1,10 +1,10 @@
-Click==7.0
-Jinja2==2.11.1
+Click==7.1.2
+Jinja2==2.11.2
 MarkupSafe==1.1.1
-Werkzeug==1.0.0
+Werkzeug==1.0.1
 addict==2.2.1
-gql==0.3.0
+gql==0.4.0
 requests==2.23.0
-boto3==1.12.8
+boto3==1.12.48
 arrow==0.15.5
 graphql-core<3.0.0
