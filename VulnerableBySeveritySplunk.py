@@ -105,7 +105,7 @@ class VulnerabilityAlert(object):
         """Display object as custom dict()"""
         return iter(
             {
-                "packageName": self.data["packageName"],
+                "packageName": self.data["securityVulnerability"]["package"],
                 "vulnerableManifestPath": self.data["vulnerableManifestPath"],
                 "vulnerableRequirements": self.data["vulnerableRequirements"],
                 "summary": self.data["securityAdvisory"]["summary"],

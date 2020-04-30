@@ -32,6 +32,9 @@
               "packageName": "activerecord",
               "vulnerableManifestPath": "marples.gemspec",
               "vulnerableRequirements": "~> 3.1.0",
+              "securityVulnerability": {
+                "package": "activerecord"
+              },
               "securityAdvisory": {
                 "id": "MDE2OlNlY3VyaXR5QWR2aXNvcnlHSFNBLXhycjYtM3BjNC1tNDQ3",
                 "summary": "Moderate severity vulnerability that affects activerecord",
@@ -80,6 +83,9 @@
               "packageName": "activerecord",
               "vulnerableManifestPath": "marples.gemspec",
               "vulnerableRequirements": "~> 3.1.0",
+              "securityVulnerability": {
+                "package": "activerecord"
+              },
               "securityAdvisory": {
                 "id": "MDE2OlNlY3VyaXR5QWR2aXNvcnlHSFNBLW1od3AtcWhwYy1oM2pt",
                 "summary": "High severity vulnerability that affects activerecord",

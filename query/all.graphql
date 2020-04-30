@@ -33,9 +33,11 @@ query {
           edges {
             node {
               id
-              packageName
               vulnerableManifestPath
               vulnerableRequirements
+              securityVulnerability {
+                package
+              }
               securityAdvisory {
                 id
                 summary
