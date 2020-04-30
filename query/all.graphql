@@ -26,6 +26,7 @@ query {
         isPrivate
         isDisabled
         vulnerabilityAlerts(first:20) {
+          package
           pageInfo {
             endCursor
             hasNextPage
@@ -42,13 +43,13 @@ query {
               }
               securityAdvisory {
                 id
-                package
                 summary
                 publishedAt
                 updatedAt
                 withdrawnAt
                 ghsaId
                 vulnerabilities(first:20) {
+                  package
                   pageInfo {
                     endCursor
                     hasNextPage
