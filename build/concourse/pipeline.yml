@@ -54,11 +54,15 @@ resources:
         - service/github_audit/account/779799343306/apply.tfvars
         - service/github_audit/account/779799343306/backend.tfvars
 
-  - name: every-hour-resource
+  - name: every-weekday-resource
     type: time
     icon: clock-outline
     source:
-      interval: 1h
+      start: 10:00 AM
+      stop: 4:00 PM
+      location: Europe/London
+      interval: 24h
+      days: [Monday, Tuesday, Wednesday, Thursday, Friday]
 
 resource_types:
   - name: http-api
@@ -68,8 +72,8 @@ resource_types:
       tag: 1.0a
 
 blocks:
-  - &every-hour
-    get: every-hour-resource
+  - &every-weekday
+    get: every-weekday-resource
     trigger: true
 
   - &security-advisory-dashboard-git
@@ -140,7 +144,7 @@ jobs:
     plan:
       - *security-advisory-dashboard-git
       - *sec_adv_docker
-      - *every-hour
+      - *every-weekday
       - task: contract_test
         config:
           <<: *audit_lambda_build
