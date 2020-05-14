@@ -46,7 +46,7 @@ def test_splunk_send_data_files(splunk, mocker, vuln):
             json.dumps(
                 {
                     "host": "advisory_dashboard",
-                    "source": f"vulnerable_by_severity",
+                    "source": "vulnerable_by_severity",
                     "event": v,
                 }
             ),
