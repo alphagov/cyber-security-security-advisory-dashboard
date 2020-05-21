@@ -5,6 +5,6 @@ Werkzeug==1.0.1
 addict==2.2.1
 gql==0.5.0
 requests==2.23.0
-boto3==1.13.13
+boto3==1.13.14
 arrow==0.15.6
 graphql-core<3.0.0
