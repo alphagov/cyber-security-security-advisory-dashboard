@@ -9,12 +9,12 @@
         {
             "Effect": "Allow",
             "Action": [
-                "logs:CreateLogGroup",
                 "logs:CreateLogStream",
+                "logs:DescribeLogStream",
                 "logs:PutLogEvents"
             ],
             "Resource": [
-                "arn:aws:logs:${region}:${account_id}:log-group:/aws/lambda/github_audit:*"
+                "arn:aws:logs:${region}:${account_id}:log-group:/aws/lambda/github_audit_collector:*"
             ]
         },
         {
