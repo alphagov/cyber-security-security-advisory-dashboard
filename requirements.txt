@@ -6,5 +6,5 @@ addict==2.3.0
 gql==2.0.0
 requests==2.24.0
 boto3==1.15.13
-arrow==0.16.0
+arrow==0.17.0
 graphql-core<3.0.0
