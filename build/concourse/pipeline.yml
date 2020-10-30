@@ -70,6 +70,8 @@ resource_types:
     source:
       repository: gdscyber/http-api-resource
       tag: 1.0a
+      username: ((docker_hub_username))
+      password: ((docker_hub_password))
 
 blocks:
   - &every-weekday
