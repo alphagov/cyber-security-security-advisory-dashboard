@@ -4,7 +4,7 @@ MarkupSafe==1.1.1
 Werkzeug==1.0.1
 addict==2.4.0
 gql==2.0.0
-requests==2.25.0
+requests==2.25.1
 boto3==1.16.37
 arrow==0.17.0
 graphql-core<3.0.0
