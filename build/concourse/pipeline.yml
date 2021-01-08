@@ -2,6 +2,10 @@
 health_status_notify: &health_status_notify
   put: health-notification
 
+docker_hub_creds: &docker_hub_creds
+  username: ((docker_hub_username))
+  password: ((docker_hub_password))
+
 resources:
   - name: security-advisory-dashboard-git
     icon: github-circle
@@ -10,18 +14,6 @@ resources:
       uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
       branch: master
 
-  - name: security-advisory-dashboard-git_docker
-    icon: github-circle
-    type: git
-    source:
-      uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
-      branch: master
-      paths:
-        - Dockerfile
-        - requirements.txt
-        - requirements-dev.txt
-        - test.sh
-  
   - name: health-notification
     type: http-api
     source:
@@ -42,6 +34,7 @@ resources:
     type: docker-image
     source:
       repository: ((ecs_repo))
+      <<: *docker_hub_creds
 
   - name: cyber-security-infrastructure
     icon: github-circle
@@ -70,8 +63,7 @@ resource_types:
     source:
       repository: gdscyber/http-api-resource
       tag: 1.0a
-      username: ((docker_hub_username))
-      password: ((docker_hub_password))
+      <<: *docker_hub_creds
 
 blocks:
   - &every-weekday
@@ -85,8 +77,6 @@ blocks:
   - &sec_adv_docker
     get: sec_adv_docker
     trigger: true
-    passed:
-      - sec_adv_build_docker_image
 
   - config: &audit_lambda_build
       params:
@@ -99,21 +89,12 @@ blocks:
         type: docker-image
         source:
           repository: ((ecs_repo))
+          <<: *docker_hub_creds
 
       inputs:
         - name: security-advisory-dashboard-git
 
 jobs:
-  - name: sec_adv_build_docker_image
-    plan:
-      - get: security-advisory-dashboard-git_docker
-        trigger: true
-
-      - put: sec_adv_docker
-        params:
-          build: security-advisory-dashboard-git_docker
-          tag_as_latest: true
-
   - name: sec_adv_tests
     plan:
       - *security-advisory-dashboard-git
