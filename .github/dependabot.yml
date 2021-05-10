@@ -1,0 +1,43 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "03:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: boto3
+    versions:
+    - 1.16.62
+    - 1.17.16
+    - 1.17.17
+    - 1.17.19
+    - 1.17.2
+    - 1.17.21
+    - 1.17.26
+    - 1.17.29
+    - 1.17.30
+    - 1.17.32
+    - 1.17.34
+    - 1.17.37
+    - 1.17.39
+    - 1.17.40
+    - 1.17.41
+    - 1.17.43
+    - 1.17.44
+    - 1.17.5
+    - 1.17.57
+    - 1.17.59
+    - 1.17.6
+    - 1.17.8
+  - dependency-name: black
+    versions:
+    - 21.4b0
+    - 21.4b1
+- package-ecosystem: docker
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "03:00"
+  open-pull-requests-limit: 10
