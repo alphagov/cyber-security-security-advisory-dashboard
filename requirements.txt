@@ -1,6 +1,6 @@
 Click==7.1.2
 Jinja2==2.11.3
-MarkupSafe==1.1.1
+MarkupSafe==2.0.0
 Werkzeug==1.0.1
 addict==2.4.0
 gql==2.0.0
