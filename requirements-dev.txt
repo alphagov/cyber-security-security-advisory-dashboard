@@ -1,6 +1,6 @@
 pytest==6.2.4
 black==21.5b1
-itsdangerous==1.1.0
+itsdangerous==2.0.0
 ipdb
 pytest-mock
 pytest-cov
