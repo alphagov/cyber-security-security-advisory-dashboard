@@ -309,8 +309,8 @@ def analyse_vulnerability_patch_recommendations(today):
                     log.debug(repo.name)
                     repo.maxSeverity = severity
                     repo.patches = vulnerability_summarizer.get_patch_list(repo)
-                    repo.vulnerabiltyCounts = vulnerability_summarizer.get_repository_severity_counts(
-                        repo
+                    repo.vulnerabiltyCounts = (
+                        vulnerability_summarizer.get_repository_severity_counts(repo)
                     )
 
     updated = storage.save_json(f"{today}/data/repositories.json", repositories)
