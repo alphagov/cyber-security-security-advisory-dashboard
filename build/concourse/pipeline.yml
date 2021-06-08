@@ -28,12 +28,12 @@ resources:
           pipeline: "{BUILD_PIPELINE_NAME}"
           job: "{BUILD_JOB_NAME}"
           build_number: "{BUILD_NAME}"
-        service: "GitHub Security Advisories"
+        service: "security-advisory-dashboard"
 
-  - name: sec_adv_docker
+  - name: concourse_base_image
     type: docker-image
     source:
-      repository: ((ecs_repo))
+      repository: gdscyber/cyber-security-concourse-base-image
       <<: *docker_hub_creds
 
   - name: cyber-security-infrastructure
@@ -74,8 +74,8 @@ blocks:
     get: security-advisory-dashboard-git
     trigger: true
 
-  - &sec_adv_docker
-    get: sec_adv_docker
+  - &concourse_base_image
+    get: concourse_base_image
     trigger: true
 
   - config: &audit_lambda_build
@@ -88,7 +88,7 @@ blocks:
       image_resource:
         type: docker-image
         source:
-          repository: ((ecs_repo))
+          repository: gdscyber/cyber-security-concourse-base-image
           <<: *docker_hub_creds
 
       inputs:
@@ -98,15 +98,17 @@ jobs:
   - name: sec_adv_tests
     plan:
       - *security-advisory-dashboard-git
-      - *sec_adv_docker
+      - *concourse_base_image
       - task: test
         config:
           <<: *audit_lambda_build
           run:
             path: /bin/bash
-            args:
-              - test.sh
-              - tests
+            args: |
+              pip install -r requirements-dev.context
+              pip install -r requirements.txt
+              export PYTHONDONTWRITEBYTECODE=1
+              ./test.sh tests
             dir: security-advisory-dashboard-git
           params:
             FLASK_ENV: development
@@ -126,7 +128,7 @@ jobs:
   - name: github_contract_tests
     plan:
       - *security-advisory-dashboard-git
-      - *sec_adv_docker
+      - *concourse_base_image
       - *every-weekday
       - task: contract_test
         config:
@@ -138,7 +140,10 @@ jobs:
               - |
                 source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/github_contract_tests_role' 'eu-west-2'
                 export FLASK_ENV="production"
-                /bin/bash test.sh contract_tests
+                pip install -r requirements-dev.context
+                pip install -r requirements.txt
+                export PYTHONDONTWRITEBYTECODE=1
+                ./test.sh contract_tests
             dir: security-advisory-dashboard-git
         on_success:
           <<: *health_status_notify
@@ -155,14 +160,14 @@ jobs:
     # Needs to create zip and output to s3
     plan:
       - *security-advisory-dashboard-git
-      - *sec_adv_docker
+      - *concourse_base_image
       - task: pack
         config:
           <<: *audit_lambda_build
           run:
             path: /bin/bash
-            args:
-              - pack.sh
+            args: |
+              pack.sh
             dir: security-advisory-dashboard-git
         on_success:
           <<: *health_status_notify
@@ -187,7 +192,7 @@ jobs:
           - sec_adv_tests
 
       - &sec_adv_docker
-        get: sec_adv_docker
+        get: concourse_base_image
         trigger: true
         passed:
           - sec_adv_tests
@@ -215,7 +220,7 @@ jobs:
               cp cyber-security-infrastructure/service/github_audit/account/779799343306/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
               cat cyber-security-infrastructure/service/github_audit/account/779799343306/backend.tfvars security-advisory-dashboard-git/build/terraform/backend.tf
               cd security-advisory-dashboard-git
-              bash pack.sh
+              ./pack.sh
               cd build/terraform
               source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/github-advisories-concourse-role' 'eu-west-2'
               terraform init
