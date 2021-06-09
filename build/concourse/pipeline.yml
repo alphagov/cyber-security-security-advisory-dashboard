@@ -107,8 +107,9 @@ jobs:
             args:
               - -c
               - |
-                pip install -r requirements-dev.txt
                 export PYTHONDONTWRITEBYTECODE=1
+                pip3 install --no-cache-dir -r requirements-dev.txt
+                pip3 install --no-cache-dir -r requirements.txt
                 ./test.sh tests
             dir: security-advisory-dashboard-git
           params:
@@ -140,9 +141,10 @@ jobs:
               - -c
               - |
                 source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/github_contract_tests_role' 'eu-west-2'
-                export FLASK_ENV="production"
-                pip install -r requirements-dev.txt
                 export PYTHONDONTWRITEBYTECODE=1
+                export FLASK_ENV="production"
+                pip3 install --no-cache-dir -r requirements-dev.txt
+                pip3 install --no-cache-dir -r requirements.txt
                 ./test.sh contract_tests
             dir: security-advisory-dashboard-git
         on_success:
