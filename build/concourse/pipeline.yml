@@ -107,8 +107,7 @@ jobs:
             args:
               - -c
               - |
-                pip install -r requirements-dev.context
-                pip install -r requirements.txt
+                pip install -r requirements-dev.txt
                 export PYTHONDONTWRITEBYTECODE=1
                 ./test.sh tests
             dir: security-advisory-dashboard-git
@@ -142,8 +141,7 @@ jobs:
               - |
                 source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/github_contract_tests_role' 'eu-west-2'
                 export FLASK_ENV="production"
-                pip install -r requirements-dev.context
-                pip install -r requirements.txt
+                pip install -r requirements-dev.txt
                 export PYTHONDONTWRITEBYTECODE=1
                 ./test.sh contract_tests
             dir: security-advisory-dashboard-git
