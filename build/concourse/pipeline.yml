@@ -104,11 +104,13 @@ jobs:
           <<: *audit_lambda_build
           run:
             path: /bin/bash
-            args: |
-              pip install -r requirements-dev.context
-              pip install -r requirements.txt
-              export PYTHONDONTWRITEBYTECODE=1
-              ./test.sh tests
+            args:
+              - -c
+              - |
+                pip install -r requirements-dev.context
+                pip install -r requirements.txt
+                export PYTHONDONTWRITEBYTECODE=1
+                ./test.sh tests
             dir: security-advisory-dashboard-git
           params:
             FLASK_ENV: development
@@ -166,8 +168,9 @@ jobs:
           <<: *audit_lambda_build
           run:
             path: /bin/bash
-            args: |
-              pack.sh
+            args:
+              - -c
+              - bash pack.sh
             dir: security-advisory-dashboard-git
         on_success:
           <<: *health_status_notify
