@@ -12,7 +12,7 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
-      branch: master
+      branch: update-pipeine
 
   - name: health-notification
     type: http-api
@@ -95,6 +95,14 @@ blocks:
         - name: security-advisory-dashboard-git
 
 jobs:
+  - name: update-pipeline
+    serial: true
+    plan:
+      - get: security-advisory-dashboard-git
+        trigger: true
+      - set_pipeline: github-security-advisories
+        file: security-advisory-dashboard-git/build/concourse/pipeline.yml
+
   - name: sec_adv_tests
     plan:
       - *security-advisory-dashboard-git
