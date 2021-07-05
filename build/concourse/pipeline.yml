@@ -12,7 +12,7 @@ resources:
     type: git
     source:
       uri: https://github.com/alphagov/cyber-security-security-advisory-dashboard
-      branch: update-pipeine
+      branch: master
 
   - name: health-notification
     type: http-api
@@ -105,7 +105,9 @@ jobs:
 
   - name: sec_adv_tests
     plan:
-      - *security-advisory-dashboard-git
+      - get: security-advisory-dashboard-git
+        trigger: true
+        passed: [update-pipeline]
       - *concourse_base_image
       - task: test
         config:
@@ -169,7 +171,9 @@ jobs:
   - name: sec_adv_pack
     # Needs to create zip and output to s3
     plan:
-      - *security-advisory-dashboard-git
+      - get: security-advisory-dashboard-git
+        trigger: true
+        passed: [update-pipeline]
       - *concourse_base_image
       - task: pack
         config:
