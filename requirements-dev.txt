@@ -1,5 +1,5 @@
 pytest==6.2.4
-black==21.7b0
+black==22.1.0
 itsdangerous==2.0.1
 ipdb
 pytest-mock
