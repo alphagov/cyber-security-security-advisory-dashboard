@@ -592,7 +592,10 @@ def cronable_vulnerability_audit():
     get_github_activity_refs_audit(org, today)
     get_github_activity_prs_audit(org, today)
 
-    get_dependabot_status(org, today)
+    # Dependabot Preview has been shut down as of August 3rd, 2021. 
+    # In order to keep getting Dependabot updates, please migrate to GitHub-native Dependabot.
+    # https://preview.tinyurl.com/dependabot-deprecated
+    #get_dependabot_status(org, today)
 
     if history.current:
         update_github_advisories_status()
