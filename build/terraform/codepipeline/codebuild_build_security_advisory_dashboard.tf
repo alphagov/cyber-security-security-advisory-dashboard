@@ -24,6 +24,7 @@ resource "aws_codebuild_project" "codebuild_build_security_advisory_dashboard" {
     image_pull_credentials_type = "SERVICE_ROLE"
     privileged_mode             = false
     environment                 = "staging"
+    FLASK_ENV                   = "development"
 
     registry_credential {
       credential_provider = "SECRETS_MANAGER"
