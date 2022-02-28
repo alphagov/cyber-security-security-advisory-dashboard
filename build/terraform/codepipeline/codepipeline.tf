@@ -59,17 +59,17 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
     }
   }
 
-stage {
+  stage {
     name = "Tests"
 
     action {
-      name             = "SecAdvisoryTests"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      version          = "1"
-      run_order        = 1
-      input_artifacts  = ["git_security_advisory_dashboard", "changed_files"]
+      name            = "SecAdvisoryTests"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      input_artifacts = ["git_security_advisory_dashboard", "changed_files"]
       configuration = {
         PrimarySource = "git_security_advisory_dashboard"
         ProjectName   = aws_codebuild_project.codebuild_build_sec_adv_tests.name
@@ -81,13 +81,13 @@ stage {
     name = "Tests"
 
     action {
-      name             = "SecAdvisoryContractTests"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      version          = "1"
-      run_order        = 1
-      input_artifacts  = ["git_security_advisory_dashboard", "changed_files"]
+      name            = "SecAdvisoryContractTests"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      input_artifacts = ["git_security_advisory_dashboard", "changed_files"]
       configuration = {
         PrimarySource = "git_security_advisory_dashboard"
         ProjectName   = aws_codebuild_project.codebuild_build_github_contract_tests.name
@@ -98,12 +98,12 @@ stage {
   stage {
     name = "Deploy"
     action {
-      name      = "TerraformApply"
-      category  = "Build"
-      owner     = "AWS"
-      provider  = "CodeBuild"
-      version   = "1"
-      run_order = 1
+      name            = "TerraformApply"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
       input_artifacts = ["git_security_advisory_dashboard"]
       output_artifacts = [
         "staging_terraform_output"
