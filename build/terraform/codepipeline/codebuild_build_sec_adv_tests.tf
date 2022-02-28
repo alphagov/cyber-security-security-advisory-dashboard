@@ -1,9 +1,9 @@
 locals {
-  build_security_advisory_dashboard_project_name = "${var.pipeline_name}-Build-BuildSecurityAdvisoryDashboard"
+  build_sec_adv_tests_project_name = "${var.pipeline_name}-Build-BuildSecAdvTests"
 }
 
-resource "aws_codebuild_project" "codebuild_build_security_advisory_dashboard" {
-  name        = local.build_security_advisory_dashboard_project_name
+resource "aws_codebuild_project" "codebuild_build_sec_adv_tests" {
+  name        = local.build_sec_adv_tests_project_name
   description = "Run Terraform init and validate"
 
   service_role = data.aws_iam_role.pipeline_role.arn
@@ -23,8 +23,18 @@ resource "aws_codebuild_project" "codebuild_build_security_advisory_dashboard" {
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "SERVICE_ROLE"
     privileged_mode             = false
-    environment                 = "staging"
-    FLASK_ENV                   = "development"
+    environment_variable {
+      name  = "FLASK_ENV"
+      value = "development"
+    }
+    environment_variable {
+      name  = "GITHUB_ORG"
+      value = "fakeorg"
+    }
+    environment_variable {
+      name  = "TOKEN"
+      value = "faketoken"
+    }
 
     registry_credential {
       credential_provider = "SECRETS_MANAGER"
@@ -35,8 +45,8 @@ resource "aws_codebuild_project" "codebuild_build_security_advisory_dashboard" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = file("${path.module}/codebuild_build_sophos_lambda.yml")
+    buildspec = file("${path.module}/codebuild_build_sec_adv_tests.yml")
   }
 
-  tags = merge(local.tags, { "Name" : local.build_security_advisory_dashboard_project_name })
+  tags = merge(local.tags, { "Name" : local.build_sec_adv_tests_project_name })
 }
