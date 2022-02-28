@@ -1,4 +1,4 @@
-module "codebuild-get-changed-file-list" {
+module "codebuild_get_changed_file_list" {
   source                      = "github.com/alphagov/cyber-security-shared-terraform-modules//codebuild/codebuild_get_changed_file_list"
   codebuild_service_role_name = data.aws_iam_role.pipeline_role.name
   deployment_account_id       = data.aws_caller_identity.current.account_id

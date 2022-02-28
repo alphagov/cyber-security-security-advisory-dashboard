@@ -19,9 +19,9 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
       version          = "1"
       output_artifacts = ["git_security_advisory_dashboard"]
       configuration = {
-        ConnectionArn    = "arn:aws:codestar-connections:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:connection/${var.codestar_connection_id}"
-        FullRepositoryId = var.repository_name
-        BranchName       = var.github_branch_name
+        ConnectionArn    = "arn:aws:codestar-connections:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:connection/51c5be90-8c8f-4d32-8be4-18b8f05c802c"
+        FullRepositoryId = "cyber-security-security-advisory-dashboard"
+        BranchName       = "ce-471-create-codepipeline"
       }
     }
   }

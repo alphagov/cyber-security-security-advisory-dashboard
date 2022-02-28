@@ -24,18 +24,6 @@ variable "terraform_directory" {
   type        = string
 }
 
-variable "backend_var_file" {
-  description = "(Optional) the filename for the backend tfvars"
-  type        = string
-  default     = ""
-}
-
-variable "apply_var_file" {
-  description = "(Optional) the filename for the apply tfvars"
-  type        = string
-  default     = ""
-}
-
 variable "codebuild_service_role_name" {
   description = "the role code build uses to access other AWS services"
   type        = string
@@ -68,7 +56,7 @@ variable "environment" {
   type        = string
 }
 
-variable "docker_hub_credentials" {
+variable "docker_hub_creds" {
   description = "The name of the Secrets Manager secret that contains the username and password for the Docker Hub"
   type        = string
 }
@@ -89,4 +77,16 @@ variable "service_name" {
   description = "The name of service you are deploying"
   type        = string
   default     = "terraform_output"
+}
+
+variable "ssm_github_pat" {
+  type = string
+}
+
+variable "default_container_image" {
+  type = string
+}
+
+variable "ssm_deploy_key" {
+  type = string
 }

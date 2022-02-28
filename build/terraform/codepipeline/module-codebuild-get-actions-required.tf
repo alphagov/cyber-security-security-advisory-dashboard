@@ -1,4 +1,4 @@
-module "codebuild-get-actions-required" {
+module "codebuild_get_actions_required" {
   source                      = "github.com/alphagov/cyber-security-shared-terraform-modules//codebuild/codebuild_get_actions_required"
   codebuild_service_role_name = data.aws_iam_role.pipeline_role.name
   deployment_account_id       = data.aws_caller_identity.current.account_id
