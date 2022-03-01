@@ -60,7 +60,7 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
   }
 
   stage {
-    name = "Tests"
+    name = "SecAdvisoryTests"
 
     action {
       name            = "SecAdvisoryTests"
@@ -78,7 +78,7 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
   }
 
   stage {
-    name = "Tests"
+    name = "SecAdvisoryContractTests"
 
     action {
       name            = "SecAdvisoryContractTests"
