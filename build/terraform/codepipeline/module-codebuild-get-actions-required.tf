@@ -10,6 +10,6 @@ module "codebuild_get_actions_required" {
   environment                 = var.environment
   changed_files_json          = "/changed_files.json"
   output_artifact_path        = "actions_required.json"
-  action_triggers_json        = "build/terraform/codepipeline/action_triggers.json"
+  action_triggers_json        = "/build/terraform/codepipeline/action_triggers.json"
   docker_hub_credentials      = var.docker_hub_creds
 }
