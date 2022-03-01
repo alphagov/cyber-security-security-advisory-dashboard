@@ -18,7 +18,7 @@ variable "deployment_role_name" {
 variable "terraform_version" {
   description = "The terraform version to be used"
   type        = string
-  default     = "0.12.31"
+  default     = "0.14.7"
 }
 
 variable "codebuild_service_role_name" {
