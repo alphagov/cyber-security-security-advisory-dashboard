@@ -96,6 +96,24 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
   }
 
   stage {
+    name = "CreateLambdaDeploymentPackage"
+
+    action {
+      name            = "CreateLambdaDeploymentPackage"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      version         = "1"
+      run_order       = 1
+      input_artifacts = ["git_security_advisory_dashboard", "changed_files"]
+      configuration = {
+        PrimarySource = "git_security_advisory_dashboard"
+        ProjectName   = aws_codebuild_project.codebuild_build_sec_adv_pack.name
+      }
+    }
+  }
+
+  stage {
     name = "Deploy"
     action {
       name            = "TerraformApply"
