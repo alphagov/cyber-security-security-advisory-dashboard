@@ -69,7 +69,7 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 1
-      input_artifacts = ["git_security_advisory_dashboard", "changed_files"]
+      input_artifacts = ["git_security_advisory_dashboard"]
       configuration = {
         PrimarySource = "git_security_advisory_dashboard"
         ProjectName   = aws_codebuild_project.codebuild_build_sec_adv_tests.name
@@ -87,7 +87,7 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 1
-      input_artifacts = ["git_security_advisory_dashboard", "changed_files"]
+      input_artifacts = ["git_security_advisory_dashboard"]
       configuration = {
         PrimarySource = "git_security_advisory_dashboard"
         ProjectName   = aws_codebuild_project.codebuild_build_github_contract_tests.name
@@ -105,7 +105,7 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 1
-      input_artifacts = ["git_security_advisory_dashboard", "changed_files"]
+      input_artifacts = ["git_security_advisory_dashboard"]
       output_artifacts = ["git_sec_adv_dashboard_with_lambda_package"]
       configuration = {
         PrimarySource = "git_security_advisory_dashboard"
