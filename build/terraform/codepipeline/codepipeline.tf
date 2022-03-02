@@ -135,22 +135,22 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
     }
   }
 
-  #stage {
-  #  name = "Pipeline"
+  stage {
+   name = "UpdatePipeline"
 
-  #  action {
-  #    name             = "UpdatePipeline"
-  #    category         = "Build"
-  #    owner            = "AWS"
-  #    provider         = "CodeBuild"
-  #    version          = "1"
-  #    run_order        = 1
-  #    input_artifacts  = ["git_security_advisory_dashboard"]
-  #    output_artifacts = []
+   action {
+     name             = "UpdatePipeline"
+     category         = "Build"
+     owner            = "AWS"
+     provider         = "CodeBuild"
+     version          = "1"
+     run_order        = 1
+     input_artifacts  = ["git_security_advisory_dashboard"]
+     output_artifacts = []
 
-  #    configuration = {
-  #      ProjectName = module.codebuild_self_update.project_name
-  #    }
-  #  }
-  #}
+     configuration = {
+       ProjectName = module.codebuild_self_update.project_name
+     }
+   }
+  }
 }
