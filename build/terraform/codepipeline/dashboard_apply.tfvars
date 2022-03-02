@@ -6,6 +6,6 @@ github_org = "alphagov"
 
 Service       = "github-audit"
 SvcOwner      = "cyber.security@digital.cabinet-office.gov.uk"
-Environment   = "staging"
+Environment   = "production"
 DeployedUsing = "Terraform"
 SvcCodeURL    = "https://github.com/alphagov/cyber-security-security-advisory-dashboard"

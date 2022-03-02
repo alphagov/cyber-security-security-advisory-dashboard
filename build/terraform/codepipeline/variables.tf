@@ -6,7 +6,7 @@ variable "region_name" {
 variable "deployment_account_id" {
   description = "the account into which the terraform will be deployed"
   type        = string
-  default     = "103495720024"
+  default     = "779799343306"
 }
 
 variable "terraform_version" {
@@ -48,7 +48,7 @@ variable "action_name" {
 variable "environment" {
   description = "e.g. staging, production"
   type        = string
-  default     = "staging"
+  default     = "production"
 }
 
 variable "docker_hub_creds" {

@@ -26,38 +26,38 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
     }
   }
 
-  stage {
-    name = "Prep"
+  #stage {
+    #name = "Prep"
 
-    action {
-      name             = "GetChangedFiles"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      version          = "1"
-      run_order        = 1
-      input_artifacts  = ["git_security_advisory_dashboard"]
-      output_artifacts = ["changed_files"]
-      configuration = {
-        ProjectName = module.codebuild_get_changed_file_list.project_name
-      }
-    }
+    #action {
+      #name             = "GetChangedFiles"
+      #category         = "Build"
+      #owner            = "AWS"
+      #provider         = "CodeBuild"
+      #version          = "1"
+      #run_order        = 1
+      #input_artifacts  = ["git_security_advisory_dashboard"]
+      #output_artifacts = ["changed_files"]
+      #configuration = {
+        #ProjectName = module.codebuild_get_changed_file_list.project_name
+      #}
+    #}
 
-    action {
-      name             = "GetActionsRequired"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      version          = "1"
-      run_order        = 2
-      input_artifacts  = ["git_security_advisory_dashboard", "changed_files"]
-      output_artifacts = ["actions_required"]
-      configuration = {
-        PrimarySource = "git_security_advisory_dashboard"
-        ProjectName   = module.codebuild_get_actions_required.project_name
-      }
-    }
-  }
+    #action {
+      #name             = "GetActionsRequired"
+      #category         = "Build"
+      #owner            = "AWS"
+      #provider         = "CodeBuild"
+      #version          = "1"
+      #run_order        = 2
+      #input_artifacts  = ["git_security_advisory_dashboard", "changed_files"]
+      #output_artifacts = ["actions_required"]
+      #configuration = {
+        #PrimarySource = "git_security_advisory_dashboard"
+        #ProjectName   = module.codebuild_get_actions_required.project_name
+      #}
+    #}
+  #}
 
   stage {
     name = "SecAdvisoryTests"
