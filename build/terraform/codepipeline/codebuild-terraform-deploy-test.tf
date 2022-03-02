@@ -12,6 +12,6 @@ module "codebuild_terraform_deploy" {
   environment                 = var.environment
   docker_hub_credentials      = var.docker_hub_creds
   tags                        = local.tags
-  backend_var_file            = "codepipeline/backend.tfvars"
-  apply_var_file              = "codepipeline/apply.tfvars"
+  backend_var_file            = "codepipeline/dashboard_backend.tfvars"
+  apply_var_file              = "codepipeline/dashboard_apply.tfvars"
 }
