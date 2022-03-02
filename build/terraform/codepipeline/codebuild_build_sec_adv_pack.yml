@@ -1,0 +1,15 @@
+version: 0.2
+
+env:
+  shell: bash
+
+phases:
+  build:
+    commands:
+      - bash pack.sh
+
+artifacts:
+  files:
+    - "**/*"
+  discard-paths: no
+  base-directory: $CODEBUILD_SRC_DIR

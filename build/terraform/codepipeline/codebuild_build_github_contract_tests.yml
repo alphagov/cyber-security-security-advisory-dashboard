@@ -1,0 +1,13 @@
+version: 0.2
+
+env:
+  shell: bash
+
+phases:
+  build:
+    commands:
+      - source /usr/local/bin/sts-assume-role.sh 'arn:aws:iam::779799343306:role/github_contract_tests_role' 'eu-west-2'
+      - export PYTHONDONTWRITEBYTECODE=1
+      - pip3 install --no-cache-dir -r requirements-dev.txt
+      - pip3 install --no-cache-dir -r requirements.txt
+      - ./test.sh contract_tests
