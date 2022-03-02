@@ -6,13 +6,7 @@ variable "region_name" {
 variable "deployment_account_id" {
   description = "the account into which the terraform will be deployed"
   type        = string
-  default     = "670214072732"
-}
-
-variable "deployment_role_name" {
-  description = "the role used to deploy the terraform"
-  type        = string
-  default     = "CodePipelineDeployerRole_103495720024"
+  default     = "103495720024"
 }
 
 variable "terraform_version" {
