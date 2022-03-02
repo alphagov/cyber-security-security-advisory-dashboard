@@ -106,6 +106,7 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
       version         = "1"
       run_order       = 1
       input_artifacts = ["git_security_advisory_dashboard", "changed_files"]
+      output_artifacts = ["git_sec_adv_dashboard_with_lambda_package"]
       configuration = {
         PrimarySource = "git_security_advisory_dashboard"
         ProjectName   = aws_codebuild_project.codebuild_build_sec_adv_pack.name
@@ -122,13 +123,13 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
       provider        = "CodeBuild"
       version         = "1"
       run_order       = 1
-      input_artifacts = ["git_security_advisory_dashboard"]
+      input_artifacts = ["git_sec_adv_dashboard_with_lambda_package"]
       output_artifacts = [
         "staging_terraform_output"
       ]
 
       configuration = {
-        PrimarySource = "git_security_advisory_dashboard"
+        PrimarySource = "git_sec_adv_dashboard_with_lambda_package"
         ProjectName   = module.codebuild_terraform_deploy.project_name
       }
     }
