@@ -1,9 +1,8 @@
-# This file should be overwriten with the correct values
 terraform {
   backend "s3" {
-    bucket  = ""
-    key     = ""
-    region  = ""
+    bucket  = "gds-security-terraform"
+    key     = "terraform/state/account/103495720024/service/github_audit.tfstate"
+    region  = "eu-west-2"
     encrypt = true
   }
 }
