@@ -21,7 +21,7 @@ resource "aws_codepipeline" "cd-security-advisory-dashboard" {
       configuration = {
         ConnectionArn    = "arn:aws:codestar-connections:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:connection/51c5be90-8c8f-4d32-8be4-18b8f05c802c"
         FullRepositoryId = "alphagov/cyber-security-security-advisory-dashboard"
-        BranchName       = "ce-471-create-codepipeline"
+        BranchName       = "master"
       }
     }
   }
