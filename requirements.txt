@@ -3,7 +3,7 @@ Jinja2==3.0.1
 MarkupSafe==2.0.1
 Werkzeug==2.0.1
 addict==2.4.0
-gql==2.0.0
+gql==3.3.0
 requests==2.26.0
 boto3==1.18.1
 arrow==1.1.1
